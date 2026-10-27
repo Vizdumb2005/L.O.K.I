@@ -1,0 +1,177 @@
+import { expect, test, type Page } from "@playwright/test";
+
+// Deterministic answers for the Three of Diamonds. Used only for the documentation
+// screenshot so the reveal shot is reproducible instead of depending on a miss.
+const THREE_OF_DIAMONDS: Record<string, string> = {
+  "Does your card's colour feel warm?": "Yes",
+  "Is the suit a heart?": "No",
+  "Is it a diamond?": "Yes",
+  "Is it a spade?": "No",
+  "Is the value in the low half — Ace or Two?": "No",
+  "Is it a Three or a Four?": "Yes",
+  "Is the value even — Two or Four?": "No",
+  "Is the value odd — Ace or Three?": "Yes",
+  "Is it the Ace?": "No",
+  "Is it the Two?": "No",
+  "Is it the Three?": "Yes",
+  "Is it the Four?": "No",
+  "Is the rank a number rather than a letter?": "Yes",
+  "Does the suit symbol curve rather than angle?": "No",
+  "Is it a high red card — a red Three or Four?": "Yes",
+  "Is it a low black card — a black Ace or Two?": "No",
+  "Is it a heart above a Two?": "No",
+  "Is it a diamond below a Three?": "No",
+  "Is it a red Ace?": "No",
+  "Is it a high spade — a spade Three or Four?": "No"
+};
+
+async function answerThreeOfDiamonds(page: Page): Promise<void> {
+  for (let step = 0; step < 12; step++) {
+    await page.waitForTimeout(140);
+    const reveal = page.getByRole("button", { name: "Reveal it" });
+    if (await reveal.isVisible().catch(() => false)) {
+      await reveal.click();
+      await page.waitForTimeout(900);
+      return;
+    }
+
+    const clean = page.getByRole("button", { name: "One clean question" });
+    if (await clean.isVisible().catch(() => false)) {
+      await clean.click();
+      continue;
+    }
+
+    const line = (await page.locator("#line-heading").innerText().catch(() => ""))
+      .replace(/^One clean question\.\s*/, "")
+      .trim();
+    const answer = THREE_OF_DIAMONDS[line];
+    if (answer) {
+      await page.locator("button.choice").filter({ hasText: new RegExp(`^\\s*\\d+\\s*${answer}\\s*$`) }).click();
+      continue;
+    }
+
+    const primary = page.locator(".panel-actions button.primary");
+    if (await primary.isVisible().catch(() => false)) {
+      await primary.click();
+      continue;
+    }
+    break;
+  }
+  throw new Error("the deterministic screenshot run did not reach a reveal");
+}
+
+async function playToEnd(page: Page): Promise<void> {
+  for (let step = 0; step < 24; step++) {
+    if (await page.getByRole("button", { name: "Begin again" }).isVisible().catch(() => false)) {
+      return;
+    }
+
+    const choices = page.locator("button.choice");
+    if ((await choices.count()) > 0) {
+      await choices.first().click();
+      await page.waitForTimeout(80);
+      continue;
+    }
+
+    // "I have chosen", "One clean question", "Reveal it", "Continue" — all share
+    // the primary action slot; the label changes by beat.
+    const primary = page.locator(".panel-actions button.primary");
+    if (await primary.isVisible().catch(() => false)) {
+      await primary.click();
+      await page.waitForTimeout(120);
+      continue;
+    }
+
+    break;
+  }
+}
+
+test("consent gate explains the illusion and keeps the camera off", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "LOKI", exact: true })).toBeVisible();
+  await expect(page.getByText("It is an illusion, not mind reading.")).toBeVisible();
+  await expect(page.getByText("Camera lab opt-in (optional).")).toBeVisible();
+  await expect(page.getByText("No account is required. Nothing is uploaded.")).toBeVisible();
+
+  const enter = page.getByRole("button", { name: "Enter the observatory" });
+  await expect(enter).toBeDisabled();
+
+  await page.getByText("I understand this is a", { exact: false }).click();
+  await expect(enter).toBeEnabled();
+
+  await enter.click();
+  await expect(page.getByRole("button", { name: "I have chosen" })).toBeVisible();
+  await expect(page.getByText("An illusion, not mind reading.", { exact: true })).toBeVisible();
+});
+
+test("a full no-camera show reaches a reveal or an honest miss", async ({ page }) => {
+  await page.goto("/");
+  await page.getByText("I understand this is a", { exact: false }).click();
+  await page.getByRole("button", { name: "Enter the observatory" }).click();
+
+  await expect(page.locator("canvas, .flat-stage").first()).toBeVisible();
+  await page.getByRole("button", { name: "I have chosen" }).click();
+  await playToEnd(page);
+
+  await expect(page.getByRole("button", { name: "Begin again" })).toBeVisible();
+  await expect(page.getByText("There is no penalty for misleading me.", { exact: false })).toHaveCount(0);
+});
+
+test("the toy effect runs through the same shell", async ({ page }) => {
+  await page.goto("/");
+  await page.getByText("I understand this is a", { exact: false }).click();
+  await page.getByText("Ember Words", { exact: true }).click();
+  await page.getByRole("button", { name: "Enter the observatory" }).click();
+
+  await expect(page.getByText("Ember Words", { exact: true }).first()).toBeVisible();
+  await page.getByRole("button", { name: "I have chosen" }).click();
+  await expect(page.locator("button.choice").first()).toBeVisible();
+  await expect(page.locator("canvas, .flat-stage").first()).toBeVisible();
+});
+
+test("camera denial is handled without breaking the show", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        getUserMedia: () =>
+          Promise.reject(new DOMException("Permission denied by test", "NotAllowedError"))
+      }
+    });
+  });
+
+  await page.goto("/");
+  await page.getByText("I understand this is a", { exact: false }).click();
+  await page.getByText("Camera lab opt-in (optional).").click();
+  await page.getByRole("button", { name: "Enter the observatory" }).click();
+  await page.getByRole("button", { name: /Camera lab/ }).click();
+
+  await expect(page.getByText("CLOSED", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Open camera lab" }).click();
+  await expect(page.getByRole("alert")).toContainText("show works without it");
+  await expect(page.getByText("Camera is off.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Stop camera" })).toHaveCount(0);
+});
+
+test("desktop and mobile screenshots are captured for inspection", async ({ page }) => {
+  await page.goto("/");
+  await page.screenshot({ path: "docs/screenshots/consent-desktop.png", fullPage: true });
+
+  await page.getByText("I understand this is a", { exact: false }).click();
+  await page.getByRole("button", { name: "Enter the observatory" }).click();
+  await page.waitForTimeout(1400);
+  await page.screenshot({ path: "docs/screenshots/stage-desktop.png" });
+  await page.getByRole("button", { name: "I have chosen" }).click();
+  await answerThreeOfDiamonds(page);
+  await expect(page.getByText("The reveal", { exact: true })).toBeVisible();
+  await page.screenshot({ path: "docs/screenshots/reveal-desktop.png" });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.screenshot({ path: "docs/screenshots/consent-mobile.png", fullPage: true });
+  await page.getByText("I understand this is a", { exact: false }).click();
+  await page.getByRole("button", { name: "Enter the observatory" }).click();
+  await page.waitForTimeout(1400);
+  await page.screenshot({ path: "docs/screenshots/stage-mobile.png" });
+});

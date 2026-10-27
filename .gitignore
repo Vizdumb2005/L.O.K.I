@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+apps/web/public/models/
+apps/web/public/wasm/
+apps/web/public/mediapipe/
+data/raw/

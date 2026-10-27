@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@loki/effect-api": ["packages/effect-api/src/index.ts"],
+      "@loki/engine": ["packages/engine/src/index.ts"],
+      "@loki/perception": ["packages/perception/src/index.ts"],
+      "@loki/showrunner": ["packages/showrunner/src/index.ts"],
+      "@loki/sim": ["packages/sim/src/index.ts"],
+      "@loki/effect-card": ["effects/card/src/index.ts"],
+      "@loki/effect-example": ["effects/_example/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/**/*.ts",
+    "effects/**/*.ts",
+    "apps/web/src/**/*.ts",
+    "apps/web/src/**/*.tsx",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "apps/web/vite.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "eslint.config.js"
+  ],
+  "exclude": ["node_modules", "dist", "apps/web/dist", "test-results", "playwright-report"]
+}

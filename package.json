@@ -1,0 +1,44 @@
+{
+  "name": "loki-v3",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A consent-based performance engine for digital mentalism. An illusion, not mind reading.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "effects/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "vite --config apps/web/vite.config.ts",
+    "build": "vite build --config apps/web/vite.config.ts",
+    "preview": "vite preview --config apps/web/vite.config.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:core": "vitest run packages effects/_example",
+    "test:e2e": "playwright test",
+    "eval": "tsx scripts/run-eval.ts",
+    "eval:report": "tsx scripts/make-report.ts",
+    "verify:isolation": "node scripts/verify-core-isolation.mjs",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run verify:isolation",
+    "fetch:gaze-assets": "node scripts/fetch-gaze-assets.mjs",
+    "llm:proxy": "tsx scripts/llm-proxy.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.10.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "eslint": "9.39.5",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "7.3.7",
+    "vitest": "3.2.7"
+  }
+}
