@@ -25,7 +25,7 @@ stage is the documented degradation path, not a mock-up.*
   the stage; the core knows none of them.
 - A **measured prototype**: 33,000 seeded simulator runs, 95% intervals, calibration, and
   ablations. The shipping card gate passes at a nominal 10% answer-error condition.
-  Results confirmed on a held-out seed (99999). 73 unit/property tests. Verified in a
+  Results confirmed on a held-out seed (99999). 82 unit/property tests. Verified in a
   real browser (BrowserOS neo / Chromium 155): consent, card show, toy effect, and
   camera denial all pass.
 - **Local by default**: no account, analytics, database, or upload. The default build
@@ -62,9 +62,9 @@ npm run build
 npm run verify        # all of the above + core-isolation check
 npm run eval          # deterministic 33,000-run evaluation
 npm run eval:report   # docs/eval-report.md + docs/calibration.svg
-npm run eval:heldout  # held-out seed check (verifies generalization)
+npm run eval:heldout  # held-out seed check (simulator seed robustness)
 npm run verify:provenance  # catches stale committed artifacts
-npm run test:e2e      # Playwright behavioral tests (4 tests)
+npm run test:e2e      # Playwright: 9 behavioral tests + screenshot capture
 npm run verify:all    # everything above + e2e
 ```
 
@@ -114,28 +114,31 @@ the folder. A lint rule rejects concrete-effect imports from `packages/**`.
 
 From `data/eval-results.json` (seed `20261027`, 1,000 runs per cell, 33 cells):
 
-| Condition | Commits | Wrong | Correct among commits | Wrong, all runs | Gate |
-|---|---:|---:|---:|---:|---|
-| Card, 0% answer error | 923 / 1000 | 0 | 923 / 923 | 0.0% | pass |
-| Card, 10% (shipping) | 517 / 1000 | 8 | 509 / 517 | 0.8% | **pass** |
-| Card, 15% | 356 / 1000 | 15 | 341 / 356 | 1.5% | pass |
-| Card, 30% | 181 / 1000 | 65 | 116 / 181 | 5.1% | fail |
+| Condition | Commits | Wrong | Correct | Wrong / all runs |
+|---|---|---|---|---|
+| Card, 10% (shipping) | 496 / 1000 | 6 | 490 | 0.6% |
+| Ember Words, 10% (toy only) | 739 / 1000 | 20 | 719 | 2.0% |
 
-The shipping gate is **<3% wrong-confident reveals over all runs** and **<10% over
-committed runs**, using the upper 95% interval. At 10% error the intervals are
-[0.4%, 1.6%] and [0.8%, 3.0%]. Brier is 0.192; ECE is 0.026.
+The card shipping gate passes both 95% upper-bound tests (<3% wrong over all runs,
+<10% over commits). Brier is 0.196; ECE is 0.038.
+These are synthetic spectators, not people. Human participants: **0**.
 
-Hard elimination was tested as an ablation and dropped: it commits on every run (1,000/1,000)
-and is wrong on 47.9%. Gaze-on simulation looks better mechanically but is **not human evidence**;
-gaze stays off. The force prior shifts sampling but is not evidence that a force works;
-it stays off. Full tables, intervals and the calibration plot are in
-[docs/eval-report.md](docs/eval-report.md).
+The observation-noise audit corrected a model bug: uniform noise is over answer/channel
+values, not hypotheses. This changed the earlier 517/509/8 result to
+496/490/6 (commits/correct/wrong). All 33 cells and the report were regenerated;
+historical artifacts remain under `data/provenance/`.
 
-The shipping gate also passes on a held-out seed (99999): 495 commits, 12 wrong
-(1.2% of all runs). Findings generalize beyond the primary seed.
+The held-out seed (99999) now gives 483 commits and 11 wrong, passing both
+simulation gates. That checks seed robustness within the same simulator, not human
+accuracy. `verify:provenance` reproduces every metric of all 33 cells, not a subset.
 
-**These are synthetic spectators, not people. Human participants: 0.** No real-world
-accuracy claim is supported.
+**Toy update:** Ember now asks three objective spelling questions with balanced, distinct
+partitions. Its unchanged 0.85 threshold permits all four truthful paths to reveal;
+all single-answer flips abstain. Two flips can imitate another word and yield a wrong
+reveal. The held-out toy run gives 769 commits, 738 correct and 31 wrong out of 1,000.
+This does **not** pass the card shipping target and is not a human accuracy claim.
+The independent-error simulator does not capture correlated spelling mistakes.
+See [the generated evaluation report](docs/eval-report.md) for intervals and stress cells.
 
 ## Effects
 
@@ -149,7 +152,7 @@ a card.
 
 ### Ember Words (plugin proof)
 
-Four words, three binary questions, `tau = 0.85`, max 3 probes. It runs through the same
+Four English words, three binary spelling questions, `tau = 0.85`, max 3 probes. It runs through the same
 session, belief, recovery, simulator, and UI as the card effect. It is deliberately small
 and is not a shipping accuracy claim.
 
@@ -208,7 +211,7 @@ effects/card/           The Twelve
 effects/_example/       Ember Words
 data/eval-results.json  machine-readable evaluation
 docs/                   research, ethics, design, lessons, eval, demo, screenshots
-scripts/                eval, report, isolation, LLM proxy, asset fetch, neo MCP client
+scripts/                eval, report, isolation, LLM proxy, asset fetch
 tests/e2e/              Playwright flows and screenshots
 ```
 
@@ -239,3 +242,10 @@ tests/e2e/              Playwright flows and screenshots
 
 MIT. See [LICENSE](LICENSE). MediaPipe assets fetched by the optional script retain their
 own licenses.
+### Local browser-testing tools
+
+BrowserOS/MCP access is an optional developer setup, not a LOKI dependency. Keep its
+configuration and clients outside this repository. Removing accidentally committed
+copies does not revoke or reconfigure the user's browser access. The portable browser
+test suite uses Playwright (`npm run test:e2e`); neither the app nor CI requires MCP.
+Earlier manual browser-test entries remain historical reports, not fresh verification.

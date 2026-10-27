@@ -405,3 +405,51 @@ describe("patter safety", () => {
     expect(failed.reason).toBe("network");
   });
 });
+describe("audit regressions", () => {
+  it("never uses an unsafe template as its own fallback", async () => {
+    const result = await rewritePatter({ beat: "build", tone: "intimate", allowedClaims: [],
+      template: "I can read your mind" }, {
+      endpoint: "/api/patter", fetchImpl: async () => { throw new Error("offline"); }
+    });
+    expect(result.line).not.toContain("read your mind");
+    expect(result.line).toBe("This is an illusion. The choice is yours.");
+  });
+
+  it("keeps a completed reveal in the exported log after the curtain", () => {
+    const session = new PerformanceSession(makeEffect());
+    session.begin(); session.chosen(); session.answer("yes"); session.answer("yes");
+    expect(session.phaseName).toBe("build");
+    session.advance();
+    const revealed = session.exportLog().revealed;
+    expect(revealed?.id).toBe("a");
+    session.advance(); session.advance();
+    expect(session.phaseName).toBe("done");
+    expect(session.exportLog().revealed).toEqual(revealed);
+  });
+});
+
+
+describe("patter response provenance", () => {
+  it("preserves an explicit server fallback rather than claiming LLM generation", async () => {
+    const result = await rewritePatter(
+      { beat: "build", tone: "intimate", allowedClaims: [], template: "The room is quiet." },
+      { endpoint: "/api/patter", fetchImpl: async () => new Response(JSON.stringify({
+        line: "The choice is yours.", source: "template", reason: "no-key"
+      }), { status: 200 }) }
+    );
+    expect(result).toEqual({ line: "The choice is yours.", source: "template", reason: "no-key" });
+  });
+  it("keeps legacy rewrites and rejects unknown or malformed provenance", async () => {
+    const payload = { beat: "build", tone: "intimate" as const, allowedClaims: [], template: "The room is quiet." };
+    for (const data of [null, [], { line: "A quiet choice.", source: "unknown" }, { line: "I read your mind.", source: "template" }]) {
+      const result = await rewritePatter(payload, { endpoint: "/api/patter", fetchImpl: async () => new Response(JSON.stringify(data)) });
+      expect(result.source).toBe("template");
+      expect(result.line).toBe(payload.template);
+    }
+    for (const data of [{ line: "A quiet choice." }, { line: "A quiet choice.", source: "llm" }]) {
+      const result = await rewritePatter(payload, { endpoint: "/api/patter", fetchImpl: async () => new Response(JSON.stringify(data)) });
+      expect(result).toEqual({ line: "A quiet choice.", source: "llm" });
+    }
+  });
+
+});

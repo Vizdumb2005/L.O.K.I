@@ -34,7 +34,7 @@ export async function rewritePatter(
   payload: PatterPayload,
   options: PatterRewriteOptions
 ): Promise<{ line: string; source: "template" | "llm"; reason?: string }> {
-  const fallback = sanitizeLine(payload.template, payload.template);
+  const fallback = sanitizeLine(payload.template, "This is an illusion. The choice is yours.");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 1200);
   const doFetch = options.fetchImpl ?? fetch;
@@ -46,15 +46,30 @@ export async function rewritePatter(
       signal: controller.signal
     });
     if (!res.ok) return { line: fallback, source: "template", reason: `http-${res.status}` };
-    const data = (await res.json()) as { line?: unknown };
-    if (typeof data.line !== "string") {
+    let data: unknown;
+    try {
+      data = await res.json();
+    } catch {
       return { line: fallback, source: "template", reason: "bad-json" };
     }
-    const safe = sanitizeLine(data.line, fallback);
-    if (safe === fallback && data.line.trim() !== fallback) {
+    if (typeof data !== "object" || data === null || Array.isArray(data) || typeof (data as { line?: unknown }).line !== "string") {
+      return { line: fallback, source: "template", reason: "bad-json" };
+    }
+    const { line, source, reason } = data as { line: string; source?: unknown; reason?: unknown };
+    if (source !== undefined && source !== "template" && source !== "llm") {
+      return { line: fallback, source: "template", reason: "bad-source" };
+    }
+    const safe = sanitizeLine(line, fallback);
+    if (safe === fallback && line.trim() !== fallback) {
       return { line: fallback, source: "template", reason: "rejected" };
     }
-    return { line: safe, source: "llm" };
+    const result = { line: safe, source: source === "template" ? "template" : "llm" } as {
+      line: string;
+      source: "template" | "llm";
+      reason?: string;
+    };
+    if (typeof reason === "string") result.reason = reason;
+    return result;
   } catch (error) {
     return {
       line: fallback,

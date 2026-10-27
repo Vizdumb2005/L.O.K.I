@@ -71,7 +71,13 @@ export function createBelief(
   _config: BeliefConfig
 ): BeliefState {
   if (hypotheses.length < 2) throw new Error("belief needs at least two hypotheses");
-  const values = hypotheses.map((h) => prior[h.id] ?? 0);
+  if (new Set(hypotheses.map(h => h.id)).size !== hypotheses.length) {
+    throw new Error("belief hypothesis ids must be unique");
+  }
+  const values = hypotheses.map((h) => prior[h.id]);
+  if (values.some(p => !Number.isFinite(p) || p! < 0)) {
+    throw new Error("prior must contain a finite non-negative mass for every hypothesis");
+  }
   const sum = values.reduce((a, b) => a + b, 0);
   if (!(sum > 0)) throw new Error("prior must have positive mass");
   const normalized = values.map((v) => v / sum);
@@ -184,15 +190,15 @@ export function answerLikelihoods(
   optionId: string,
   config: BeliefConfig
 ): number[] {
-  const K = Math.max(2, probe.options.length);
-  const N = state.hypotheses.length;
+  const K = probe.options.length;
+  if (K < 2) throw new Error(`probe ${probe.id} needs at least two options`);
   return state.hypotheses.map((h) => {
     const raw = Math.min(1, Math.max(0, probe.likelihood(h.id, optionId)));
     if (config.hardMode) return raw;
     const smoothed = raw * (1 - config.epsilon) + (1 - raw) * (config.epsilon / (K - 1));
     const mixed = config.useOutlier === false
       ? smoothed
-      : (1 - config.outlierWeight) * smoothed + config.outlierWeight / N;
+      : (1 - config.outlierWeight) * smoothed + config.outlierWeight / K;
     return mixed;
   });
 }
@@ -205,13 +211,17 @@ export function applyAnswer(
   at: number,
   reliability = 1
 ): UpdateResult {
+  if (probe.options.length < 2) throw new Error(`probe ${probe.id} needs at least two options`);
   if (!probe.options.some((o) => o.id === optionId)) {
     throw new Error(`unknown option ${optionId} for probe ${probe.id}`);
   }
+  if (!Number.isFinite(reliability) || !Number.isFinite(at)) {
+    throw new Error("answer reliability and timestamp must be finite");
+  }
   const raw = answerLikelihoods(state, probe, optionId, config);
-  const N = state.hypotheses.length;
+  const K = probe.options.length;
   const rel = Math.min(1, Math.max(0, reliability));
-  const likelihood = raw.map((p) => rel * p + (1 - rel) / N);
+  const likelihood = raw.map((p) => rel * p + (1 - rel) / K);
   const evidence: Evidence = {
     channel: "answer",
     value: optionId,
@@ -230,6 +240,12 @@ export function applyChannelEvidence(
   evidence: Evidence,
   config: BeliefConfig
 ): UpdateResult {
+  if (evidence.channel !== binding.channel || !binding.values.includes(evidence.value)) {
+    throw new Error("channel evidence does not match its binding alphabet");
+  }
+  if (!Number.isFinite(evidence.reliability) || !Number.isFinite(evidence.at)) {
+    throw new Error("channel reliability and timestamp must be finite");
+  }
   if (evidence.reliability < binding.minReliability) {
     const record: EvidenceRecord = {
       evidence,
@@ -247,7 +263,6 @@ export function applyChannelEvidence(
       collapsed: false
     };
   }
-  const N = state.hypotheses.length;
   const V = Math.max(2, binding.values.length);
   const rel = Math.min(1, Math.max(0, evidence.reliability));
   const base = state.hypotheses.map((h) => {
@@ -256,10 +271,10 @@ export function applyChannelEvidence(
     const withReliability = rel * raw + (1 - rel) / V;
     return config.useOutlier === false
       ? withReliability
-      : (1 - config.outlierWeight) * withReliability + config.outlierWeight / N;
+      : (1 - config.outlierWeight) * withReliability + config.outlierWeight / V;
   });
   const w = Math.min(1, Math.max(0, binding.weight));
-  const likelihood = base.map((p) => w * p + (1 - w) / N);
+  const likelihood = base.map((p) => w * p + (1 - w) / V);
   const sum = likelihood.reduce((a, b) => a + b, 0);
   const collapsed = config.hardMode === true && !(sum > 0);
   return finalize(state, likelihood, evidence, config, false, collapsed);

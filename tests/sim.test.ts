@@ -50,7 +50,10 @@ describe("simulator", () => {
     const cell = runCell(spec({ effect: exampleEffect, runs: 80, answerError: 0.05 }));
     expect(cell.effectId).toBe("ember-words");
     expect(cell.n).toBe(80);
+    // Balanced spelling probes commit on consistent evidence and miss on ambiguity.
     expect(cell.commits).toBeGreaterThan(0);
+    expect(cell.misses).toBeGreaterThan(0);
+    expect(cell.correct + cell.wrong).toBe(cell.commits);
   });
 
   it("injects gaze only when enabled and uses the effect's zone binding", () => {

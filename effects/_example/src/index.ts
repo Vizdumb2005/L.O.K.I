@@ -10,22 +10,21 @@ type Word = Hypothesis & {
   id: string;
   label: string;
   glyph: string;
-  sky: boolean;
-  warm: boolean;
-  round: boolean;
 };
 
 /**
  * A tiny second effect that proves the plugin contract. Four words are
- * separated by three designed binary questions; no core code knows about
- * words, and the same session/simulator harness runs it unchanged.
+ * separated by three designed questions about their spelling; no core code
+ * knows about words, and the same session/simulator harness runs it unchanged.
  */
 const WORDS: Word[] = [
-  { id: "sun", label: "Sun", glyph: "☀", sky: true, warm: true, round: true },
-  { id: "moon", label: "Moon", glyph: "☾", sky: true, warm: false, round: true },
-  { id: "comet", label: "Comet", glyph: "☄", sky: true, warm: true, round: false },
-  { id: "flower", label: "Flower", glyph: "✿", sky: false, warm: true, round: true }
+  { id: "sun", label: "Sun", glyph: "☀" },
+  { id: "moon", label: "Moon", glyph: "☾" },
+  { id: "comet", label: "Comet", glyph: "☄" },
+  { id: "flower", label: "Flower", glyph: "✿" }
 ];
+
+const letters = (word: Word): string => word.label.toLowerCase();
 
 const BY_ID = new Map(WORDS.map((w) => [w.id, w]));
 
@@ -53,15 +52,15 @@ function probe(
 }
 
 const PROBES: Probe[] = [
-  probe("sky", "Does it belong to the sky?", 0.1, (w) => w.sky),
-  probe("warm", "Does it feel warm?", 0.14, (w) => w.warm),
-  probe("round", "Is its shape round?", 0.14, (w) => w.round)
+  probe("ends-n", "Does the word end in the letter n?", 0.1, (w) => letters(w).endsWith("n")),
+  probe("has-m", "Does the word contain the letter m?", 0.14, (w) => letters(w).includes("m")),
+  probe("odd-length", "Does the word have an odd number of letters?", 0.14, (w) => letters(w).length % 2 === 1)
 ];
 
 export const exampleEffect: Effect = {
   id: "ember-words",
   name: "Ember Words",
-  tagline: "Four words, three questions, one small illusion.",
+  tagline: "Four words, three spelling questions, one small illusion.",
   config: {
     maxProbes: 3,
     commitThreshold: 0.85,
@@ -82,7 +81,7 @@ export const exampleEffect: Effect = {
       {
         id: "words-invite",
         kind: "invite",
-        line: "A short mentalism illusion. Not mind reading. Three questions, then a guess."
+        line: "A spelling-based mentalism illusion, not mind reading. Three questions, then a guess."
       },
       { id: "words-think", kind: "think", line: "Choose one word from the four. Keep it to yourself." },
       { id: "words-build", kind: "build", line: "The word is taking shape." },

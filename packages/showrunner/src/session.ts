@@ -389,7 +389,7 @@ export class PerformanceSession {
         posterior: o.posterior
       })),
       finalPhase: this.phase,
-      revealed: this.revealCandidate && (this.phase === "reveal" || this.phase === "afterglow")
+      revealed: this.revealCandidate && ["reveal", "afterglow", "done"].includes(this.phase)
         ? { id: this.revealCandidate.hypothesis.id, confidence: this.revealCandidate.probability }
         : undefined,
       note: "Categorical evidence only. No camera frames, images, audio, or identity data."

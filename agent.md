@@ -142,3 +142,41 @@ only when they are evidence, and they must be inspected.
 A stranger can clone the repo, run `npm install && npm test && npm run build`, read the
 limits, run the simulator, and get the same numbers. The demo shows a hit and, if it
 happens, a graceful miss. No claim outruns the measurement.
+
+
+## Repository cleanup and audit (2026-10-27)
+
+User-requested scope: separate accidental BrowserOS/MCP installation files from the
+product, preserve external browser access, and fix verified defects without a redesign.
+Plan: remove only unused harness copies; ignore local installations; add camera
+cancellation regressions; audit fallback/validation/export boundaries; run local gates.
+The domain-neutral engine and effects remain intact. No paid calls or deployment.
+
+
+## Ember follow-through with OpenCode (2026-10-27)
+
+Use the verified free `opencode/deepseek-v4.1-flash-free` model, `max` reasoning variant,
+installed outside this repository. Keep provider configuration, credentials and generated
+coding-session logs outside git. Never switch to a paid or alternate model automatically.
+First milestone: redesign the tiny Ember probe set to carry enough distinguishable
+information under the corrected observation model. Preserve threshold 0.85, epsilon 0.10,
+outlier 0.06 and temperature 1. Test all four truth paths and noisy/contradictory paths
+through the shared engine. Use natural, unambiguous questions, not secret answers or
+simulator-specific shortcuts. Regenerate the complete evaluation and independent heldout
+results; report any tradeoff or abstention, with 0 human participants. No redesign, new
+effect, networked runtime dependency, camera activation, merge, deployment or paid calls.
+
+Milestone result: Ember uses three balanced spelling partitions (ends in n, contains m,
+odd length), preserving all safety parameters and maxProbes=3. All truthful and all
+single-flip paths are tested across three policies. Exhaustive answer patterns expose
+wrong reveals after two flips, rather than hiding them. See docs/development-2026-10-27.md.
+
+Current bounded accessibility work: keep silent choice accessible without asking users
+to click their chosen item. Use generic stage labels, not effect-specific imports.
+
+Milestone evidence: docs/accessibility-2026-10-27.md. Readable generic choice roster and
+height-aware grid framing verified with88unit/72isolated/11browser tests plus full
+provenance. No inference or creative-direction change.
+
+Current follow-on: test and correct optional patter fallback provenance using mocks only.
+Do not invoke the runtime keyed model or infer generation from a returned line alone.

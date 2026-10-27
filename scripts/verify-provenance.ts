@@ -1,152 +1,38 @@
 #!/usr/bin/env tsx
-/**
- * Provenance and regression check for committed evaluation artifacts.
- *
- * Verifies that data/eval-results.json is reproducible from the current code
- * and seed. Runs a fast subset (shipping + ablation cells) and compares
- * against the committed JSON, excluding the meta.createdAt timestamp.
- *
- * Usage: npm run verify:provenance
- * Exit 0 = pass, exit 1 = stale or mismatched artifacts.
- */
+// Full deterministic check: all cells, all metrics and seed/run metadata.
+// Timestamps are intentionally excluded. Historical originals are never overwritten.
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
-import { runCell } from "@loki/sim";
+import { isDeepStrictEqual } from "node:util";
+import { runCell, type CellMetrics } from "@loki/sim";
 import { cardEffect } from "@loki/effect-card";
-import { exampleEffect } from "@loki/effect-example";
-
-const RUNS = 1000;
-const SEED = 20261027;
-
-interface CellMetrics {
-  label: string;
-  commits: number;
-  wrong: number;
-  correct: number;
-  misses: number;
-  ece: number;
-  brier: number;
-  meanProbes: number;
-  meanConfidence: number;
-  meanRecoveries: number;
-}
-
-interface EvalFile {
-  meta: { createdAt: string; runsPerCell: number; seedBase: number; [key: string]: unknown };
-  cells: CellMetrics[];
-}
-
-// The cells to check (subset for speed: shipping + key ablations)
-const CHECK_CELLS = [
-  { label: "card / shipping / noise 0.1", effect: cardEffect, policy: "greedy" as const, answerError: 0.1, gaze: false, force: false },
-  { label: "example / shipping / noise 0.1", effect: exampleEffect, policy: "greedy" as const, answerError: 0.1, gaze: false, force: false },
-  { label: "ablation / soft + outlier", effect: cardEffect, policy: "greedy" as const, answerError: 0.15, gaze: false, force: false },
-  { label: "ablation / hard elimination", effect: cardEffect, policy: "greedy" as const, answerError: 0.15, gaze: false, force: false, hardMode: true, useOutlier: false },
-  { label: "ablation / no outlier", effect: cardEffect, policy: "greedy" as const, answerError: 0.15, gaze: false, force: false, useOutlier: false },
-  { label: "ablation / gaze on (simulated)", effect: cardEffect, policy: "greedy" as const, answerError: 0.15, gaze: true, force: false, gazeAccuracy: 0.65, gazeReliability: 0.65 },
-  { label: "ablation / force on (prior shift)", effect: cardEffect, policy: "greedy" as const, answerError: 0.15, gaze: false, force: true },
-  { label: "ablation / temperature 0.95", effect: { ...cardEffect, config: { ...cardEffect.config, temperature: 0.95 } }, policy: "greedy" as const, answerError: 0.15, gaze: false, force: false },
-  { label: "ablation / temperature 1.05", effect: { ...cardEffect, config: { ...cardEffect.config, temperature: 1.05 } }, policy: "greedy" as const, answerError: 0.15, gaze: false, force: false },
-];
+import { EVAL_SPECS, RUNS, SEED, NOISE, POLICIES } from "./eval-spec.js";
 
 async function main(): Promise<void> {
-  const committedPath = resolve("data/eval-results.json");
-  let committed: EvalFile;
-  try {
-    committed = JSON.parse(await readFile(committedPath, "utf8")) as EvalFile;
-  } catch {
-    console.error("FAIL: data/eval-results.json not found or invalid JSON");
-    process.exit(1);
+  const committed = JSON.parse(await readFile("data/eval-results.json", "utf8")) as {
+    meta: { seedBase: number; runsPerCell: number; humanParticipants: number; noiseLevels: number[]; policies: string[] };
+    cells: CellMetrics[];
+  };
+  if (committed.meta.seedBase !== SEED || committed.meta.runsPerCell !== RUNS ||
+      committed.meta.humanParticipants !== 0 ||
+      !isDeepStrictEqual(committed.meta.noiseLevels, [...NOISE]) ||
+      !isDeepStrictEqual(committed.meta.policies, [...POLICIES]) ||
+      committed.cells.length !== EVAL_SPECS.length) {
+    throw new Error("Evaluation metadata/cell count does not match the declared specification");
   }
-
-  console.log("Provenance check: committed eval-results.json");
-  console.log("  meta.createdAt:", committed.meta.createdAt);
-  console.log("  meta.seedBase:", committed.meta.seedBase);
-  console.log("  meta.runsPerCell:", committed.meta.runsPerCell);
-  console.log("  cells:", committed.cells.length);
-  console.log("");
-
-  let failures = 0;
-  for (const spec of CHECK_CELLS) {
-    const cell = runCell({
-      runs: RUNS,
-      seed: SEED,
-      gaze: spec.gaze,
-      force: spec.force,
-      label: spec.label,
-      effect: spec.effect,
-      policy: spec.policy,
-      answerError: spec.answerError,
-      gazeAccuracy: "gazeAccuracy" in spec ? spec.gazeAccuracy : undefined,
-      gazeReliability: "gazeReliability" in spec ? spec.gazeReliability : undefined,
-      hardMode: "hardMode" in spec ? spec.hardMode : undefined,
-      useOutlier: "useOutlier" in spec ? spec.useOutlier : undefined,
-    });
-
-    const committedCell = committed.cells.find((c) => c.label === spec.label);
-    if (!committedCell) {
-      console.error("FAIL: committed JSON missing cell: " + spec.label);
-      failures++;
-      continue;
+  for (const [index, spec] of EVAL_SPECS.entries()) {
+    const fresh = runCell(spec);
+    if (!isDeepStrictEqual(fresh, committed.cells[index])) {
+      throw new Error(`Stale, missing, reordered or changed cell: ${spec.label}. Run npm run eval and npm run eval:report.`);
     }
-
-    const fields: Array<[string, number, number]> = [
-      ["commits", cell.commits, committedCell.commits],
-      ["wrong", cell.wrong, committedCell.wrong],
-      ["correct", cell.correct, committedCell.correct],
-      ["ece", cell.ece, committedCell.ece],
-      ["brier", cell.brier, committedCell.brier],
-    ];
-
-    const diffs: string[] = [];
-    for (const [name, fresh, committedVal] of fields) {
-      if (fresh !== committedVal) {
-        diffs.push(name + ": fresh=" + fresh + " committed=" + committedVal);
-      }
-    }
-
-    if (diffs.length > 0) {
-      console.error("STALE: " + spec.label);
-      for (const d of diffs) console.error("  " + d);
-      failures++;
-    } else {
-      console.log("OK:    " + spec.label + " (commits=" + cell.commits + " wrong=" + cell.wrong + " ece=" + cell.ece.toFixed(6) + ")");
-    }
+    console.log(`OK: ${spec.label}`);
   }
-
-  console.log("");
-  if (failures > 0) {
-    console.error("FAIL: " + failures + " cell(s) are stale. Run 'npm run eval' to regenerate.");
-    process.exit(1);
+  const heldOut = runCell({ runs: RUNS, seed: 99999, effect: cardEffect, policy: "greedy",
+    answerError: 0.1, gaze: false, force: false, label: "held-out / card / shipping / noise 0.1" });
+  // Both gates are required. Zero commits cannot pass the conditional gate vacuously.
+  if (!(heldOut.wrongConfidentRateAll[1] < 0.03 && heldOut.commits > 0 && heldOut.wrongConfidentRateCommits[1] < 0.1)) {
+    throw new Error("Held-out shipping gate failed");
   }
-  // Held-out seed spot check: run the shipping cell with a different seed.
-  // The gate should still pass (< 3% wrong-confident over all runs).
-  console.log("");
-  console.log("Held-out seed spot check (seed 99999):");
-  const heldOut = runCell({
-    runs: 1000,
-    seed: 99999,
-    effect: cardEffect,
-    policy: "greedy",
-    answerError: 0.1,
-    gaze: false,
-    force: false,
-    label: "held-out / card / shipping / noise 0.1"
-  });
-  const heldOutGate = heldOut.wrong / heldOut.n < 0.03;
-  console.log("  commits=" + heldOut.commits + " wrong=" + heldOut.wrong + " wrongRate=" + (heldOut.wrong / heldOut.n * 100).toFixed(1) + "%");
-  console.log("  Gate (<3% wrong): " + (heldOutGate ? "PASS" : "FAIL"));
-  if (!heldOutGate) {
-    console.error("FAIL: held-out seed gate failed. The shipping configuration may not generalize.");
-    process.exit(1);
-  }
-  console.log("PASS: all " + CHECK_CELLS.length + " checked cells match the committed artifact.");
-  console.log("PASS: held-out seed shipping gate (<3% wrong).");
-  console.log("(This is a subset check. Run 'npm run eval' for the full 33-cell evaluation.)");
-  console.log("(Held-out seed check confirms the shipping gate generalizes beyond the primary seed.)");
+  console.log(`PASS: all ${EVAL_SPECS.length} complete cells match. Held-out: ${heldOut.commits} commits, ${heldOut.wrong} wrong.`);
+  console.log("Synthetic seed robustness only. No human or camera validation is established.");
 }
-
-main().catch((err) => {
-  console.error("FAIL:", err);
-  process.exit(1);
-});
+main().catch(error => { console.error("FAIL:", error); process.exitCode = 1; });

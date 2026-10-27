@@ -1,6 +1,6 @@
 # LOKI v3 — architecture
 
-Status: implemented and verified, 2026-10-27 (continuation round 2). Evidence reproducibility milestone complete; audit round in progress. See `docs/handoff.md`. Any evidence-backed change made during the build is
+Status: audit revision, 2026-10-27. Current evidence and limits are in docs/audit-2026-10-27.md. See `docs/handoff.md`. Any evidence-backed change made during the build is
 recorded in `docs/lessons.md` and reflected here.
 
 ## 1. Shape
@@ -140,7 +140,7 @@ Contracts are runtime-validated (`validateEffect`): unique IDs, complete priors,
 stochastic likelihoods, non-degenerate probes, stage coverage, required beats, sane config.
 The same validator is run in each effect's test.
 
-The contract was exercised by the tiny `Ember Words` effect (8 glyphs, 3 attribute probes,
+The contract was exercised by the tiny `Ember Words` effect (4 words, 3 attribute probes,
 one reveal) before the card effect was polished. It changed two things: (1) `stage()` must
 cover every hypothesis or the generic renderer breaks; (2) `revealLine` needs the item and
 confidence, not just a string, so a second effect can phrase its own reveal. No card concept
@@ -166,7 +166,7 @@ For probe `q`, chosen option `a`, item `h`:
 ```
 raw = q.likelihood(h, a)                       // effect truth table, [0,1]
 smoothed = raw*(1-eps) + (1-raw)*eps/(K-1)     // K answer options
-mixed = (1-w)*smoothed + w*(1/N)               // outlier/uniform over items
+mixed = (1-w)*smoothed + w*(1/K)               // uniform over answer options
 p(obs|h) = mixed
 ```
 
@@ -359,3 +359,44 @@ This is the real proof, not a README claim.
 - **Deadline:** scope is cut aggressively; no extra effects.
 - **Ethics:** mentalism can deceive. Consent, framing, and no diagnosis claims are
   non-negotiable.
+
+## Repository cleanup and audit (2026-10-27)
+
+User-requested scope: separate accidental BrowserOS/MCP installation files from the
+product, preserve external browser access, and fix verified defects without a redesign.
+Plan: remove only unused harness copies; ignore local installations; add camera
+cancellation regressions; audit fallback/validation/export boundaries; run local gates.
+The domain-neutral engine and effects remain intact. No paid calls or deployment.
+
+
+## Ember follow-through with OpenCode (2026-10-27)
+
+Use the verified free `opencode/deepseek-v4.1-flash-free` model, `max` reasoning variant,
+installed outside this repository. Keep provider configuration, credentials and generated
+coding-session logs outside git. Never switch to a paid or alternate model automatically.
+First milestone: redesign the tiny Ember probe set to carry enough distinguishable
+information under the corrected observation model. Preserve threshold 0.85, epsilon 0.10,
+outlier 0.06 and temperature 1. Test all four truth paths and noisy/contradictory paths
+through the shared engine. Use natural, unambiguous questions, not secret answers or
+simulator-specific shortcuts. Regenerate the complete evaluation and independent heldout
+results; report any tradeoff or abstention, with 0 human participants. No redesign, new
+effect, networked runtime dependency, camera activation, merge, deployment or paid calls.
+
+Milestone result: Ember uses three balanced spelling partitions (ends in n, contains m,
+odd length), preserving all safety parameters and maxProbes=3. All truthful and all
+single-flip paths are tested across three policies. Exhaustive answer patterns expose
+wrong reveals after two flips, rather than hiding them. See docs/development-2026-10-27.md.
+
+Silent-choice accessibility: while `view.phase === "think"`, presentation also exposes
+the generic `StageSpec.items` as a semantic HTML list. The spectator chooses privately;
+there is no item click handler, selected state or disclosure to the engine. The decorative
+3D stage remains aria-hidden. Hide the roster after choosing so it cannot expose a
+candidate or alter the reveal choreography.
+
+Milestone evidence: docs/accessibility-2026-10-27.md. Readable generic choice roster and
+height-aware grid framing verified with88unit/72isolated/11browser tests plus full
+provenance. No inference or creative-direction change.
+
+Patter response provenance: explicit `source: "template"` from the proxy must remain
+source=template in the client. Only validated LLM responses or supported legacy line-only
+responses count as rewrites. This metadata must not change the belief/reveal state.

@@ -1,6 +1,17 @@
+# Current audit status (2026-10-27)
+
+Base inspected: `c54bfde5ec74d4761098742a2678eb1877d5171f`, not the initial commit.
+See [audit-2026-10-27.md](audit-2026-10-27.md) for current fixes, regenerated metrics,
+verification and limits. This branch separates accidental browser harness files while
+preserving external browser access. The old `1/N` mixture assessment below was wrong:
+noise is uniform over observation values. Historical rounds below are retained as a log,
+not current proof. The old artifact/code timing explanation was plausible, not proven.
+
+---
+
 # L.O.K.I — continuation handoff (2026-10-27, round 6 updated 22:15 IST)
 
-## Recovered state
+## Historical recovered state (continuation round 1)
 
 - **Repo**: https://github.com/Vizdumb2005/L.O.K.I.git
 - **Branch**: `main`
