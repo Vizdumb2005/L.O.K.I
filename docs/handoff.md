@@ -1,4 +1,4 @@
-# L.O.K.I — continuation handoff (2026-10-27, round 5 updated 21:25 IST)
+# L.O.K.I — continuation handoff (2026-10-27, round 6 updated 22:15 IST)
 
 ## Recovered state
 
@@ -326,6 +326,48 @@ d1816e3 Update handoff.md with round 2 audit test progress
 1. Evidence reproducibility: discrepancy investigated, artifacts regenerated,
    provenance check + held-out seed confirm generalization
 2. Audit risk areas: 15 tests added, CameraLab race fixed, e2e verified
+
+
+## Round 6: Real browser test via BrowserOS neo (2026-10-27, 22:15 IST)
+
+### BrowserOS neo setup
+- Skill `browseros-neo` installed via `npx skills add browseros-ai/browseros --agent '*' -y`
+- MCP server: `http://127.0.0.1:9010/mcp` (BrowserOS neo v0.0.80)
+- Client module: `scripts/neo.mjs` — reusable MCP client with 25 tools
+- Browser: Chromium 155 (BrowserOS neo, user's real browser with live accounts)
+
+### Browser test results — ALL PASS
+
+**Test 1: Card effect (The Twelve) — full no-camera show**
+- Consent screen: renders correctly with disclaimers, checkboxes, effect selection
+- Checked consent, selected card effect, clicked enter
+- Stage loaded: "The Twelve" / "Choose in silence"
+- Clicked "I have chosen" → 6 questions answered (Yes) → recovery triggered
+- Final result: **"The honest miss"** — "You beat me. The card stays yours."
+- The miss path works correctly in a real browser
+
+**Test 2: Toy effect (Ember Words)**
+- Selected Ember Words, entered show
+- Stage: "Choose one word from the four. Keep it to yourself."
+- Answered 3 questions (Yes) → contradiction detected
+- Recovery: "Two words are overlapping. Give me one clean answer."
+- Recovery path works correctly in a real browser
+
+**Test 3: Camera denial (no opt-in)**
+- Entered show without camera opt-in
+- Camera lab button found but clicking it did not navigate to lab
+- Page stayed on "The Twelve" — camera gate is closed as designed
+
+### Verification (all gates remain green)
+| Gate | Result |
+|---|---|
+| lint | PASS |
+| typecheck | PASS |
+| unit tests | PASS (73 tests) |
+| build | PASS |
+| verify:provenance | PASS |
+| Playwright e2e | PASS (4/4) |
+| BrowserOS neo real browser | PASS (card, toy, camera denial) |
 
 ## Operating limits
 
