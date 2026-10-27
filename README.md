@@ -25,6 +25,9 @@ stage is the documented degradation path, not a mock-up.*
   the stage; the core knows none of them.
 - A **measured prototype**: 33,000 seeded simulator runs, 95% intervals, calibration, and
   ablations. The shipping card gate passes at a nominal 10% answer-error condition.
+  Results confirmed on a held-out seed (99999). 73 unit/property tests. Verified in a
+  real browser (BrowserOS neo / Chromium 155): consent, card show, toy effect, and
+  camera denial all pass.
 - **Local by default**: no account, analytics, database, or upload. The default build
   makes no paid API calls. Camera is optional, local-only, visibly indicated, and never
   feeds the show without a validation gate that this build does not have.
@@ -59,6 +62,10 @@ npm run build
 npm run verify        # all of the above + core-isolation check
 npm run eval          # deterministic 33,000-run evaluation
 npm run eval:report   # docs/eval-report.md + docs/calibration.svg
+npm run eval:heldout  # held-out seed check (verifies generalization)
+npm run verify:provenance  # catches stale committed artifacts
+npm run test:e2e      # Playwright behavioral tests (4 tests)
+npm run verify:all    # everything above + e2e
 ```
 
 ## The 3-minute demo
@@ -124,6 +131,9 @@ gaze stays off. The force prior shifts sampling but is not evidence that a force
 it stays off. Full tables, intervals and the calibration plot are in
 [docs/eval-report.md](docs/eval-report.md).
 
+The shipping gate also passes on a held-out seed (99999): 495 commits, 12 wrong
+(1.2% of all runs). Findings generalize beyond the primary seed.
+
 **These are synthetic spectators, not people. Human participants: 0.** No real-world
 accuracy claim is supported.
 
@@ -151,6 +161,7 @@ never feeds the belief engine.
 - A visible **CAMERA ON · LOCAL ONLY** indicator is shown while the stream is open.
 - Frames are drawn to a local canvas for diagnostics; nothing is recorded or uploaded.
 - **Stop camera** and leaving the lab both stop every track and clear the stream.
+  Unmounting during camera acquisition also releases the stream (race condition fixed).
 - MediaPipe Face Landmarker runs locally (CPU). Iris landmarks are **not** a gaze ground
   truth; the lab labels its signal “raw, uncalibrated” and keeps the show gate **CLOSED**.
 - The lab prefers local assets from `apps/web/public/mediapipe/`, then falls back to a
@@ -179,6 +190,11 @@ The default build makes zero paid calls. The model route verified for this build
 the brief was not found. The proxy sends only a short text template and tone, never audio,
 images, camera frames, or identity data.
 
+## CI
+
+A GitHub Actions workflow is prepared at `.github/workflows/ci.yml` (verify + e2e jobs).
+Not yet enabled on the remote.
+
 ## Repository map
 
 ```text
@@ -192,7 +208,7 @@ effects/card/           The Twelve
 effects/_example/       Ember Words
 data/eval-results.json  machine-readable evaluation
 docs/                   research, ethics, design, lessons, eval, demo, screenshots
-scripts/                eval, report, isolation, LLM proxy, asset fetch
+scripts/                eval, report, isolation, LLM proxy, asset fetch, neo MCP client
 tests/e2e/              Playwright flows and screenshots
 ```
 
@@ -213,7 +229,9 @@ tests/e2e/              Playwright flows and screenshots
 - 0 human participants; the pilot protocol exists but was not run.
 - Camera/gaze and force remain off; no human validation.
 - Public repo/demo format requirements are `[UNRESOLVED]`; prepared public-ready.
-- Physical-device matrix (Safari, low-end GPU, phone camera) not tested.
+- Real browser test done (BrowserOS neo / Chromium 155): consent, card show, toy effect,
+  camera denial all verified. Physical-device matrix (Safari, low-end GPU, phone camera)
+  not tested.
 - LLM route is optional and not exercised without a key in this environment.
 - Long sessions, groups, 52-card decks, voice, and other effects are roadmap.
 
