@@ -396,3 +396,7 @@ candidate or alter the reveal choreography.
 Milestone evidence: docs/accessibility-2026-10-27.md. Readable generic choice roster and
 height-aware grid framing verified with88unit/72isolated/11browser tests plus full
 provenance. No inference or creative-direction change.
+
+Patter response provenance: explicit `source: "template"` from the proxy must remain
+source=template in the client. Only validated LLM responses or supported legacy line-only
+responses count as rewrites. This metadata must not change the belief/reveal state.

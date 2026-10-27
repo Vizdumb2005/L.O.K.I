@@ -427,3 +427,29 @@ describe("audit regressions", () => {
     expect(session.exportLog().revealed).toEqual(revealed);
   });
 });
+
+
+describe("patter response provenance", () => {
+  it("preserves an explicit server fallback rather than claiming LLM generation", async () => {
+    const result = await rewritePatter(
+      { beat: "build", tone: "intimate", allowedClaims: [], template: "The room is quiet." },
+      { endpoint: "/api/patter", fetchImpl: async () => new Response(JSON.stringify({
+        line: "The choice is yours.", source: "template", reason: "no-key"
+      }), { status: 200 }) }
+    );
+    expect(result).toEqual({ line: "The choice is yours.", source: "template", reason: "no-key" });
+  });
+  it("keeps legacy rewrites and rejects unknown or malformed provenance", async () => {
+    const payload = { beat: "build", tone: "intimate" as const, allowedClaims: [], template: "The room is quiet." };
+    for (const data of [null, [], { line: "A quiet choice.", source: "unknown" }, { line: "I read your mind.", source: "template" }]) {
+      const result = await rewritePatter(payload, { endpoint: "/api/patter", fetchImpl: async () => new Response(JSON.stringify(data)) });
+      expect(result.source).toBe("template");
+      expect(result.line).toBe(payload.template);
+    }
+    for (const data of [{ line: "A quiet choice." }, { line: "A quiet choice.", source: "llm" }]) {
+      const result = await rewritePatter(payload, { endpoint: "/api/patter", fetchImpl: async () => new Response(JSON.stringify(data)) });
+      expect(result).toEqual({ line: "A quiet choice.", source: "llm" });
+    }
+  });
+
+});

@@ -41,3 +41,19 @@ steps reported cost 0. No paid fallback, billing, runtime model or credential ex
 - No real screen-reader/device test, Safari or physical camera validation. This establishes
   accessible semantics and browser layout, not a complete accessibility conformance claim.
 - 0 human participants. Existing simulation/Ember limitations from PR #2 remain unchanged.
+
+## Follow-on: truthful optional patter provenance
+
+A mocked response reproduced a client defect: a proxy reply explicitly marked
+`source: "template", reason: "no-key"` was returned as `source: "llm"`, causing the
+UI to claim proxy generation when it was using an offline fallback. The client now
+preserves explicit safe source/reason fields, rejects unknown source values and
+malformed/null payloads, and retains legacy line-only endpoint compatibility.
+Unsafe lines still fall back. OpenCode's same separate free/max route produced the
+initial correction; independent tests cover explicit fallback, generated/legacy,
+unknown/malformed and unsafe cases. No actual runtime model endpoint was called.
+
+The new regression fails on the old client and passes on the corrected client.
+Updated local gates: 90 unit tests, 74 isolated-core tests, 11 browser tests and full
+33-cell provenance pass. No inference/effect/evaluation changes. This is a separate
+small commit on the existing PR #3, not another inclusive pull request.

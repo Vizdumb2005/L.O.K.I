@@ -220,3 +220,10 @@ change, paid calls, merge or deploy. This follows the provisional Ember mileston
 Milestone evidence: docs/accessibility-2026-10-27.md. Readable generic choice roster and
 height-aware grid framing verified with88unit/72isolated/11browser tests plus full
 provenance. No inference or creative-direction change.
+
+## Patter provenance correction
+
+The optional rewrite client ignores a proxy's explicit template/fallback source and
+reports LLM generation. Reproduce with a mocked no-key fallback, then preserve source
+and fallback reason. Legacy line-only endpoints stay compatible. No runtime model call,
+spend or inference change. Continue PR3 with a separate small commit, not another PR.

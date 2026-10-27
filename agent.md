@@ -177,3 +177,6 @@ to click their chosen item. Use generic stage labels, not effect-specific import
 Milestone evidence: docs/accessibility-2026-10-27.md. Readable generic choice roster and
 height-aware grid framing verified with88unit/72isolated/11browser tests plus full
 provenance. No inference or creative-direction change.
+
+Current follow-on: test and correct optional patter fallback provenance using mocks only.
+Do not invoke the runtime keyed model or infer generation from a returned line alone.
