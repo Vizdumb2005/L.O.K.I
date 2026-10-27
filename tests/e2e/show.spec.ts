@@ -186,18 +186,21 @@ test("Ember spelling probes reveal Sun at desktop and mobile widths", async ({ p
     await page.getByText("Ember Words", { exact: true }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
     await page.getByRole("button", { name: "I have chosen" }).click();
-    for (let i = 0; i < 3; i++) {
+    // Truthful answers for Sun. The policy may commit before the third question.
+    const sun: Record<string, string> = {
+      "Does the word end in the letter n?": "Yes",
+      "Does the word contain the letter m?": "No",
+      "Does the word have an odd number of letters?": "Yes",
+      "Which letter does the word start with: S, M, C or F?": "S",
+      "How many letters does the word have: 3, 4, 5 or 6?": "3"
+    };
+    const reveal = page.getByRole("button", { name: "Reveal it" });
+    for (let i = 0; i < 3 && !(await reveal.isVisible().catch(() => false)); i++) {
       await expect(page.locator("button.choice").first()).toBeVisible();
-      const prompts = [
-        "Does the word end in the letter n?",
-        "Does the word contain the letter m?",
-        "Does the word have an odd number of letters?"
-      ];
       // displayLine updates in an effect: wait for a complete current probe caption.
-      await expect(page.locator("#line-heading")).toHaveText(new RegExp(`^(${prompts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})$`));
+      await expect.poll(async () => Object.keys(sun).includes((await page.locator("#line-heading").innerText()).trim())).toBe(true);
       const prompt = (await page.locator("#line-heading").innerText()).trim();
-      const answer = prompt === "Does the word contain the letter m?" ? "No" : "Yes";
-      await page.locator("button.choice").filter({ hasText: new RegExp(`^\\s*\\d+\\s*${answer}\\s*$`) }).click();
+      await page.locator("button.choice").filter({ hasText: new RegExp(`^\\s*\\d+\\s*${sun[prompt]}\\s*$`) }).click();
       await expect(page.locator("#line-heading")).not.toHaveText(prompt);
     }
     await page.getByRole("button", { name: "Reveal it" }).click();

@@ -240,3 +240,7 @@ Static build of the web app deploys from `main` with `.github/workflows/pages.ym
 https://vizdumb2005.github.io/L.O.K.I/ . No server: the optional `/api/patter` proxy is
 absent there, so the show uses its built-in template lines (labelled as such). Camera
 lab falls back to the public MediaPipe CDN. Free only; no paid hosting or secrets.
+
+## Ember multi-option probes
+
+Add 4-way first-letter and letter-count probes; thresholds unchanged. See docs/ember-multiway-2026-10-28.md. Needs human testing.

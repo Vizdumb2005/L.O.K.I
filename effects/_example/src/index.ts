@@ -51,10 +51,54 @@ function probe(
   };
 }
 
+function choiceProbe(
+  id: string,
+  prompt: string,
+  cost: number,
+  options: Probe["options"],
+  answer: (word: Word) => string
+): Probe {
+  return {
+    id,
+    prompt,
+    cost,
+    options,
+    likelihood: (itemId, optionId) => {
+      const word = BY_ID.get(itemId);
+      if (!word) return 0;
+      return answer(word) === optionId ? 1 : 0;
+    }
+  };
+}
+
 const PROBES: Probe[] = [
   probe("ends-n", "Does the word end in the letter n?", 0.1, (w) => letters(w).endsWith("n")),
   probe("has-m", "Does the word contain the letter m?", 0.14, (w) => letters(w).includes("m")),
-  probe("odd-length", "Does the word have an odd number of letters?", 0.14, (w) => letters(w).length % 2 === 1)
+  probe("odd-length", "Does the word have an odd number of letters?", 0.14, (w) => letters(w).length % 2 === 1),
+  choiceProbe(
+    "first-letter",
+    "Which letter does the word start with: S, M, C or F?",
+    0.18,
+    [
+      { id: "s", label: "S" },
+      { id: "m", label: "M" },
+      { id: "c", label: "C" },
+      { id: "f", label: "F" }
+    ],
+    (w) => letters(w)[0]!
+  ),
+  choiceProbe(
+    "letter-count",
+    "How many letters does the word have: 3, 4, 5 or 6?",
+    0.18,
+    [
+      { id: "3", label: "3" },
+      { id: "4", label: "4" },
+      { id: "5", label: "5" },
+      { id: "6", label: "6" }
+    ],
+    (w) => String(letters(w).length)
+  )
 ];
 
 export const exampleEffect: Effect = {
