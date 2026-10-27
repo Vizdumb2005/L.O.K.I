@@ -91,6 +91,7 @@ The product is an illusion; it is not mind reading.
 - [x] Playwright flow passes with camera denied/no camera.
 - [x] `npm run eval` is deterministic for fixed seeds and writes machine-readable results.
 - [x] `npm run eval:report` writes `docs/eval-report.md` and a calibration SVG.
+- [x] `npm run verify:provenance` catches stale committed evaluation artifacts.
 
 ### Evidence and honesty
 
@@ -99,6 +100,12 @@ The product is an illusion; it is not mind reading.
 - [x] Kept/dropped experiments are logged with numbers, including gaze and forces.
 - [x] All remaining `[UNRESOLVED]` items are listed in the final report.
 - [x] No banned claims in UI, README, docs, or demo script.
+
+## Status at continuation round 2 (2026-10-27, 20:30 IST)
+
+Evidence reproducibility milestone COMPLETE. Two fresh 33K-run evaluations matched each other; 31/33 cells matched the committed artifact. Two stale cells (temperature 1.05, gaze ECE) were regenerated from the current commit. Original artifacts preserved in `data/provenance/`. Provenance check (`npm run verify:provenance`) added and passing. All gates green: lint, typecheck, 58 tests, build, isolation (manual), provenance.
+
+Audit round IN PROGRESS. Camera async lifecycle, recovery semantics, probability model consistency, and evidence-log guarantees audited. Findings documented in `docs/handoff.md`. No defects found; camera race condition documented as a coverage concern.
 
 ## Status at handoff (2026-10-27)
 

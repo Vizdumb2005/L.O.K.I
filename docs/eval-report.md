@@ -4,7 +4,7 @@
 This report measures a synthetic answer model, not people. It is evidence about the
 implementation's behavior under controlled noise, not proof of real-world accuracy.
 
-**Generated:** 2026-10-27T09:58:40.871Z · **Runs per cell:** 1000 ·
+**Generated:** 2026-10-27T14:42:33.600Z · **Runs per cell:** 1000 ·
 **Seed base:** 20261027 · **Cells:** 33 ·
 **Total runs:** 33000
 
@@ -93,10 +93,10 @@ condition), 1,000 runs each.
 | Soft likelihoods + outlier mixture | 356 / 1000 (35.6%) | 15 | 95.8% [93.2%, 97.4%] | 1.5% [0.9%, 2.5%] | 0.372 [0.336, 0.407] | 0.067 | 6.73 [6.70, 6.75] |  Shipping math. Kept as the reference. |
 | Hard elimination | 1000 / 1000 (100.0%) | 479 | 52.1% [49.0%, 55.2%] | 47.9% [44.8%, 51.0%] | 0.958 [0.896, 1.020] | 0.479 | 3.60 [3.57, 3.63] |  Dropped. Confidently wrong on half of all runs. |
 | No outlier mixture | 411 / 1000 (41.1%) | 20 | 95.1% [92.6%, 96.8%] | 2.0% [1.3%, 3.1%] | 0.375 [0.339, 0.412] | 0.074 | 6.58 [6.55, 6.62] |  Dropped. More wrong reveals and worse calibration. |
-| Gaze on (simulated) | 604 / 1000 (60.4%) | 13 | 97.8% [96.4%, 98.7%] | 1.3% [0.8%, 2.2%] | 0.215 [0.187, 0.243] | 0.024 | 5.77 [5.68, 5.86] |  Lab only. Mechanical upper bound, not human evidence. |
+| Gaze on (simulated) | 604 / 1000 (60.4%) | 13 | 97.8% [96.4%, 98.7%] | 1.3% [0.8%, 2.2%] | 0.215 [0.187, 0.243] | 0.023 | 5.77 [5.68, 5.86] |  Lab only. Mechanical upper bound, not human evidence. |
 | Force on (prior shift) | 381 / 1000 (38.1%) | 18 | 95.3% [92.7%, 97.0%] | 1.8% [1.1%, 2.8%] | 0.364 [0.328, 0.400] | 0.053 | 6.59 [6.55, 6.64] |  Default off. Modest simulated effect, no human evidence. |
 | Temperature 0.95 | 465 / 1000 (46.5%) | 38 | 91.8% [89.0%, 94.0%] | 3.8% [2.8%, 5.2%] | 0.416 [0.375, 0.457] | 0.117 | 6.31 [6.26, 6.36] |  Dropped. Overconfident and more wrong commits. |
-| Temperature 1.05 | 247 / 1000 (24.7%) | 14 | 94.3% [90.7%, 96.6%] | 1.4% [0.8%, 2.3%] | 0.367 [0.335, 0.399] | 0.029 | 6.86 [6.84, 6.88] |  Dropped. Fewer commits without a clear accuracy gain. |
+| Temperature 1.05 | 215 / 1000 (21.5%) | 12 | 94.4% [90.5%, 96.8%] | 1.2% [0.7%, 2.1%] | 0.366 [0.335, 0.398] | 0.022 | 6.86 [6.84, 6.88] |  Dropped. Fewer commits without a clear accuracy gain. |
 
 Interpretation:
 

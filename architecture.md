@@ -1,6 +1,6 @@
 # LOKI v3 — architecture
 
-Status: pre-code design, 2026-10-27. Any evidence-backed change made during the build is
+Status: implemented and verified, 2026-10-27 (continuation round 2). Evidence reproducibility milestone complete; audit round in progress. See `docs/handoff.md`. Any evidence-backed change made during the build is
 recorded in `docs/lessons.md` and reflected here.
 
 ## 1. Shape

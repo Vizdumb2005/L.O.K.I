@@ -25,7 +25,8 @@
     "verify:isolation": "node scripts/verify-core-isolation.mjs",
     "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run verify:isolation",
     "fetch:gaze-assets": "node scripts/fetch-gaze-assets.mjs",
-    "llm:proxy": "tsx scripts/llm-proxy.ts"
+    "llm:proxy": "tsx scripts/llm-proxy.ts",
+    "verify:provenance": "tsx scripts/verify-provenance.ts"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

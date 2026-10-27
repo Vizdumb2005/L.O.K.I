@@ -136,7 +136,7 @@ unvalidated prior. The code path remains for tests and future research.
 | Gaze in show | Simulated only; no human calibration; 4.17°–13.6° literature | Lab only |
 | Force default-on | Prior shift only; no human evidence | Off |
 | Temperature 0.95 | 465 commits, 38 wrong (8.2% of commits) | Rejected |
-| Temperature 1.05 | 247 commits, 14 wrong; fewer commits, no accuracy gain | Rejected |
+| Temperature 1.05 | 215 commits, 12 wrong; fewer commits, no accuracy gain | Rejected |
 | 52-card deck | Probe length, gaze resolution, scope | Roadmap |
 | Voice input | Permissions/noise without proof value | Roadmap |
 
