@@ -208,3 +208,15 @@ Milestone result: Ember uses three balanced spelling partitions (ends in n, cont
 odd length), preserving all safety parameters and maxProbes=3. All truthful and all
 single-flip paths are tested across three policies. Exhaustive answer patterns expose
 wrong reveals after two flips, rather than hiding them. See docs/development-2026-10-27.md.
+
+## Silent-choice accessibility milestone
+
+The decorative stage is aria-hidden and its labels are tiny on mobile. Add an HTML
+roster of available items during the think phase only: generic stage items, readable
+labels, no selection controls, no captured choice. Preserve stage art and inference.
+Test keyboard/screen-reader semantics plus card/word mobile layout. No creative direction
+change, paid calls, merge or deploy. This follows the provisional Ember milestone.
+
+Milestone evidence: docs/accessibility-2026-10-27.md. Readable generic choice roster and
+height-aware grid framing verified with88unit/72isolated/11browser tests plus full
+provenance. No inference or creative-direction change.

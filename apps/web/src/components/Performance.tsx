@@ -179,6 +179,23 @@ export function Performance({
         )}
       </section>
 
+      {view.phase === "think" && (
+        <section className="silent-choices" aria-labelledby="silent-choices-heading">
+          <h2 id="silent-choices-heading">Choose privately</h2>
+          <p>Hold one in mind. Do not tap or say which one.</p>
+          <ul className="silent-choice-list" role="list" aria-label={`${view.stage.title} items`}>
+            {view.stage.items.map((item) => (
+              <li key={item.hypothesisId} className="silent-choice">
+                <span className="silent-choice-glyph" aria-hidden="true">
+                  {item.glyph ?? "·"}
+                </span>
+                <span className="silent-choice-label">{item.label}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className={`panel panel-${view.phase}`} aria-labelledby="line-heading">
         <div className="panel-copy">
           <p className="eyebrow">{view.stage.title}</p>

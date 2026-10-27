@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PerspectiveCamera, Vector3 } from "three";
-import { cardTargetPosition } from "./stage-layout.js";
+import { cardTargetPosition, stageGridScale } from "./stage-layout.js";
 
 describe("3D reveal framing", () => {
   it("centers a revealed item regardless of its shuffled slot", () => {
@@ -32,6 +32,29 @@ describe("3D reveal framing", () => {
               expect(Math.abs(corner.x)).toBeLessThan(0.96);
               expect(Math.abs(corner.y)).toBeLessThan(0.96);
             }
+          }
+        }
+      }
+    }
+  });
+});
+
+
+describe("grid framing", () => {
+  it("keeps all four-by-three grid corners visible in short desktop and mobile stages", () => {
+    for (const width of [336, 900, 1280]) {
+      for (const height of [300, 500]) {
+        const camera = new PerspectiveCamera(37, width / height, 0.1, 40);
+        camera.position.set(0, 1.1, 9.6);
+        camera.lookAt(0, 0.2, 0);
+        camera.updateMatrixWorld();
+        const worldHeight = 2 * Math.tan(37 * Math.PI / 360) * camera.position.distanceTo(new Vector3(0, 0.2, 0));
+        const scale = stageGridScale(width, worldHeight, 3);
+        for (const x of [-2.37 - 0.65, 2.37 + 0.65]) {
+          for (const y of [-1.63 - 0.9, 2.33 + 0.9]) {
+            const corner = new Vector3(x * scale, y * scale + 0.05, 0).project(camera);
+            expect(Math.abs(corner.x)).toBeLessThan(0.96);
+            expect(Math.abs(corner.y)).toBeLessThan(0.96);
           }
         }
       }

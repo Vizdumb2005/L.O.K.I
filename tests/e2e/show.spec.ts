@@ -203,3 +203,29 @@ test("Ember spelling probes reveal Sun at desktop and mobile widths", async ({ p
     await expect(page.locator("canvas, .flat-stage").first()).toBeVisible();
   }
 });
+
+test("silent choice exposes readable generic labels without capturing a selection", async ({ page }) => {
+  for (const effect of [{ name: "The Twelve", count: 12 }, { name: "Ember Words", count: 4 }]) {
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.goto("/");
+    await page.getByText("I understand this is a", { exact: false }).click();
+    await page.getByText(effect.name, { exact: true }).click();
+    await page.getByRole("button", { name: "Enter the observatory" }).click();
+    const roster = page.getByRole("region", { name: "Choose privately" });
+    await expect(roster).toBeVisible();
+    await expect(roster.getByRole("listitem")).toHaveCount(effect.count);
+    await expect(roster.getByRole("button")).toHaveCount(0);
+    await expect(roster.getByRole("radio")).toHaveCount(0);
+    const labels = await roster.getByRole("listitem").evaluateAll(items => items.map(item => ({
+      text: item.textContent?.trim(),
+      font: parseFloat(getComputedStyle(item).fontSize),
+      fits: item.scrollWidth <= item.clientWidth,
+      selectable: item.hasAttribute("tabindex") || item.hasAttribute("aria-selected")
+    })));
+    expect(labels.every(label => Boolean(label.text) && label.font >= 16 && label.fits && !label.selectable)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByRole("button", { name: "I have chosen" }).click();
+    await expect(roster).toHaveCount(0);
+    await expect(page.locator("button.choice").first()).toBeVisible();
+  }
+});

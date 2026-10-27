@@ -170,3 +170,10 @@ Milestone result: Ember uses three balanced spelling partitions (ends in n, cont
 odd length), preserving all safety parameters and maxProbes=3. All truthful and all
 single-flip paths are tested across three policies. Exhaustive answer patterns expose
 wrong reveals after two flips, rather than hiding them. See docs/development-2026-10-27.md.
+
+Current bounded accessibility work: keep silent choice accessible without asking users
+to click their chosen item. Use generic stage labels, not effect-specific imports.
+
+Milestone evidence: docs/accessibility-2026-10-27.md. Readable generic choice roster and
+height-aware grid framing verified with88unit/72isolated/11browser tests plus full
+provenance. No inference or creative-direction change.

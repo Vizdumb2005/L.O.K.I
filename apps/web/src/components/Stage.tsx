@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Effect } from "@loki/effect-api";
 import type { SessionView } from "@loki/showrunner";
-import { cardTargetPosition } from "./stage-layout.js";
+import { cardTargetPosition, stageGridScale } from "./stage-layout.js";
 
 const GOLD = "#d8b877";
 const INK = "#16231f";
@@ -167,8 +167,9 @@ function Scene({ view, reducedMotion }: SceneProps) {
   const stage = view.stage;
   const columns = Math.max(1, stage.columns);
   const rows = Math.max(1, Math.ceil(stage.items.length / columns));
-  const { size } = useThree();
-  const scale = Math.min(1.06, Math.max(0.56, size.width / 980));
+  const { size, viewport, camera } = useThree();
+  const worldHeight = viewport.getCurrentViewport(camera, new THREE.Vector3(0, 0.2, 0)).height;
+  const scale = stageGridScale(size.width, worldHeight, rows);
   const revealed = view.reveal?.id;
   const revealPulse = useRef(0);
   const ring = useRef<THREE.Group>(null);
@@ -189,8 +190,9 @@ function Scene({ view, reducedMotion }: SceneProps) {
     if (!reducedMotion) {
       camera.position.x = Math.sin(t * 0.085) * 0.28;
       camera.position.y = 1.05 + Math.sin(t * 0.11) * 0.08;
-      camera.lookAt(0, 0.2, 0);
     }
+    // Reduced motion freezes drift, not the framing direction.
+    camera.lookAt(0, 0.2, 0);
     if (ring.current) {
       const pulse = 1 + Math.sin(t * 0.9) * 0.012 + revealPulse.current * 0.04;
       ring.current.scale.setScalar(pulse);

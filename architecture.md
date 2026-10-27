@@ -386,3 +386,13 @@ Milestone result: Ember uses three balanced spelling partitions (ends in n, cont
 odd length), preserving all safety parameters and maxProbes=3. All truthful and all
 single-flip paths are tested across three policies. Exhaustive answer patterns expose
 wrong reveals after two flips, rather than hiding them. See docs/development-2026-10-27.md.
+
+Silent-choice accessibility: while `view.phase === "think"`, presentation also exposes
+the generic `StageSpec.items` as a semantic HTML list. The spectator chooses privately;
+there is no item click handler, selected state or disclosure to the engine. The decorative
+3D stage remains aria-hidden. Hide the roster after choosing so it cannot expose a
+candidate or alter the reveal choreography.
+
+Milestone evidence: docs/accessibility-2026-10-27.md. Readable generic choice roster and
+height-aware grid framing verified with88unit/72isolated/11browser tests plus full
+provenance. No inference or creative-direction change.
