@@ -227,3 +227,10 @@ The optional rewrite client ignores a proxy's explicit template/fallback source 
 reports LLM generation. Reproduce with a mocked no-key fallback, then preserve source
 and fallback reason. Legacy line-only endpoints stay compatible. No runtime model call,
 spend or inference change. Continue PR3 with a separate small commit, not another PR.
+
+## Free static deployment (GitHub Pages)
+
+Static build of the web app deploys from `main` with `.github/workflows/pages.yml` to
+https://vizdumb2005.github.io/L.O.K.I/ . No server: the optional `/api/patter` proxy is
+absent there, so the show uses its built-in template lines (labelled as such). Camera
+lab falls back to the public MediaPipe CDN. Free only; no paid hosting or secrets.

@@ -7,6 +7,8 @@ const root = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   root,
+  // GitHub Pages serves from /<repo>/; the deploy workflow sets LOKI_BASE.
+  base: process.env.LOKI_BASE ?? "/",
   plugins: [react()],
   server: {
     port: 4173,
