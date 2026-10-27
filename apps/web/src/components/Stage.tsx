@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Effect } from "@loki/effect-api";
 import type { SessionView } from "@loki/showrunner";
+import { cardTargetPosition } from "./stage-layout.js";
 
 const GOLD = "#d8b877";
 const INK = "#16231f";
@@ -112,13 +113,12 @@ function Card({
     const node = group.current;
     if (!node) return;
     const t = clock.getElapsedTime();
-    const lift = highlighted ? 1 : 0;
-    const targetZ = base.z + lift * (2.1 + revealPulse * 0.15);
-    const targetY = base.y + (reducedMotion ? 0 : Math.sin(t * 0.6 + index * 0.9) * 0.055) + lift * 0.25;
+    const drift = reducedMotion ? 0 : Math.sin(t * 0.6 + index * 0.9) * 0.055;
+    const target = cardTargetPosition(base, highlighted, drift, revealPulse);
     const targetScale = highlighted ? 1.18 : dimmed ? 0.94 : 1;
-    node.position.x += (base.x - node.position.x) * 0.08;
-    node.position.y += (targetY - node.position.y) * 0.08;
-    node.position.z += (targetZ - node.position.z) * 0.08;
+    node.position.x += (target.x - node.position.x) * 0.08;
+    node.position.y += (target.y - node.position.y) * 0.08;
+    node.position.z += (target.z - node.position.z) * 0.08;
     node.rotation.x += ((highlighted ? -0.04 : 0.05) - node.rotation.x) * 0.06;
     node.rotation.y += ((highlighted ? 0 : (col - (columns - 1) / 2) * 0.07) - node.rotation.y) * 0.06;
     node.scale.setScalar(node.scale.x + (targetScale - node.scale.x) * 0.08);

@@ -43,7 +43,11 @@ explicitly covered, not hidden. All 96 word/policy/answer-pattern combinations a
 checked across greedy, median and fixed policies. Partition shape and the unchanged
 safety settings have separate regression assertions.
 
-No core, card, camera or presentation architecture changed. Threshold 0.85, epsilon
+No inference core, card effect or camera code changed. A visual review caught an existing
+3D framing bug: revealing a top-row item enlarged it in that slot and clipped it against
+the canvas. The shared renderer now brings the selected item to the stage center before
+its perspective lift. Two layout regressions cover all shuffled slots and projected
+corner bounds at desktop/mobile sizes, with and without reduced motion. Threshold 0.85, epsilon
 0.10, outlier mixture 0.06, temperature 1 and the three-question budget remain unchanged.
 The toy is now plainly described as a spelling-based illusion/plugin proof. It does
 not improve the theatrical card effect or establish human performance.
@@ -69,10 +73,12 @@ remain CAUTION (the hard-elimination ablation varies by 40 wrong counts).
 
 ## Verification and limits
 
-- Lint/typecheck/build, 85 unit tests and 72 isolated-core tests pass.
+- Lint/typecheck/build, 87 unit tests and 72 isolated-core tests pass.
 - All 33 complete provenance cells reproduce.
 - Ten browser behavioral tests pass, including all five camera lifecycle regressions.
-- Visual review covers the updated Ember flow at desktop/mobile widths, not a physical device.
+- Desktop/mobile reveal pixels were inspected after the framing correction; the selected
+  card is fully within the canvas. Small card labels on mobile remain hard to read, while
+  the main reveal caption is readable. This is not physical-device validation.
 - 0 human participants. No physical camera, Safari or real-device 3D validation.
 - Optional runtime LLM patter was not called. The coding model is separate from the app.
 - Existing large-bundle warning remains. No paid calls, confidence tuning, deployment,

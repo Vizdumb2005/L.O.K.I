@@ -6,7 +6,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   test: {
-    include: ["packages/**/*.test.ts", "effects/**/*.test.ts", "tests/**/*.test.ts"],
+    include: ["packages/**/*.test.ts", "effects/**/*.test.ts", "tests/**/*.test.ts", "apps/**/*.test.ts"],
     environment: "node",
     testTimeout: 20_000,
     hookTimeout: 20_000,
