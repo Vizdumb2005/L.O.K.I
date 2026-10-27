@@ -76,6 +76,8 @@ remain CAUTION (the hard-elimination ablation varies by 40 wrong counts).
 - Lint/typecheck/build, 87 unit tests and 72 isolated-core tests pass.
 - All 33 complete provenance cells reproduce.
 - Ten browser behavioral tests pass, including all five camera lifecycle regressions.
+  The new flow initially raced the effect-updated caption; its answer selection now waits
+  for a complete probe caption rather than treating transient text as a question.
 - Desktop/mobile reveal pixels were inspected after the framing correction; the selected
   card is fully within the canvas. Small card labels on mobile remain hard to read, while
   the main reveal caption is readable. This is not physical-device validation.

@@ -186,8 +186,15 @@ test("Ember spelling probes reveal Sun at desktop and mobile widths", async ({ p
     await page.getByRole("button", { name: "I have chosen" }).click();
     for (let i = 0; i < 3; i++) {
       await expect(page.locator("button.choice").first()).toBeVisible();
+      const prompts = [
+        "Does the word end in the letter n?",
+        "Does the word contain the letter m?",
+        "Does the word have an odd number of letters?"
+      ];
+      // displayLine updates in an effect: wait for a complete current probe caption.
+      await expect(page.locator("#line-heading")).toHaveText(new RegExp(`^(${prompts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})$`));
       const prompt = (await page.locator("#line-heading").innerText()).trim();
-      const answer = prompt.includes("letter m") ? "No" : "Yes";
+      const answer = prompt === "Does the word contain the letter m?" ? "No" : "Yes";
       await page.locator("button.choice").filter({ hasText: new RegExp(`^\\s*\\d+\\s*${answer}\\s*$`) }).click();
       await expect(page.locator("#line-heading")).not.toHaveText(prompt);
     }
