@@ -248,3 +248,7 @@ Add 4-way first-letter and letter-count probes; thresholds unchanged. See docs/e
 ## Pilot readiness
 
 See docs/pilot-readiness-2026-10-28.md for what is finished and what needs humans/devices.
+
+## Keyboard answer shortcuts
+
+Number keys must answer even when an answer button has focus (found by Blitz, reproduced, fixed; e2e test added).

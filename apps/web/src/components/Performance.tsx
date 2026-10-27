@@ -93,8 +93,12 @@ export function Performance({
     if (!view) return;
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (target?.closest("button, a, input, textarea, select")) return;
+      // Text-entry controls keep their keys. Buttons keep Space/Enter (native activation), but
+      // answer shortcuts (digits, Y) never activate a button, so they must still work when an
+      // answer button has focus (keyboard-only users land on one).
+      if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
       if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const onControl = Boolean(target?.closest("button, a"));
       if (view.phase === "probe" && view.options) {
         const index = Number(event.key) - 1;
         const option =
@@ -105,6 +109,7 @@ export function Performance({
         }
         return;
       }
+      if (onControl) return;
       if ([" ", "Enter"].includes(event.key)) {
         event.preventDefault();
         if (view.phase === "afterglow" || view.phase === "done") restart();
@@ -243,7 +248,7 @@ export function Performance({
       </section>
 
       <p className="sr-only">
-        Keyboard: press 1 or 2 to answer, Space or Enter to continue. The stage is decorative.
+        Keyboard: press a number key (1 to the number of choices) to answer, Space or Enter to continue. The stage is decorative.
       </p>
       {error && <p className="error">{error}</p>}
       <footer className="perf-footer">
