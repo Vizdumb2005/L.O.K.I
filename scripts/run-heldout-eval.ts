@@ -19,8 +19,8 @@ const HELD_OUT_SEED = 99999;
 const CELLS: Array<{ label: string; spec: Omit<CellSpec, "runs" | "seed" | "label"> }> = [
   { label: "card / shipping / noise 0.1", spec: { effect: cardEffect, policy: "greedy", answerError: 0.1, gaze: false, force: false } },
   { label: "example / shipping / noise 0.1", spec: { effect: exampleEffect, policy: "greedy", answerError: 0.1, gaze: false, force: false } },
-  { label: "card / greedy / noise 0.15", spec: { effect: cardEffect, policy: "greedy", answerError: 0.15, gaze: false, force: false } },
-  { label: "card / greedy / noise 0.3", spec: { effect: cardEffect, policy: "greedy", answerError: 0.3, gaze: false, force: false } },
+  { label: "card-twelve / greedy / noise 0.15", spec: { effect: cardEffect, policy: "greedy", answerError: 0.15, gaze: false, force: false } },
+  { label: "card-twelve / greedy / noise 0.3", spec: { effect: cardEffect, policy: "greedy", answerError: 0.3, gaze: false, force: false } },
   { label: "ablation / hard elimination", spec: { effect: cardEffect, policy: "greedy", answerError: 0.15, gaze: false, force: false, hardMode: true, useOutlier: false } },
   { label: "ablation / temperature 1.05", spec: { effect: { ...cardEffect, config: { ...cardEffect.config, temperature: 1.05 } }, policy: "greedy", answerError: 0.15, gaze: false, force: false } },
   { label: "ablation / gaze on (simulated)", spec: { effect: cardEffect, policy: "greedy", answerError: 0.15, gaze: true, force: false, gazeAccuracy: 0.65, gazeReliability: 0.65 } },
@@ -90,15 +90,17 @@ async function main(): Promise<void> {
   console.log("Max wrong count difference: " + maxWrongDiff);
 
   const shipping = rows.find(r => r.label.includes("shipping") && r.label.includes("card"))!;
-  const gatePass = shipping.heldOutWrong / RUNS < 0.03;
+  const shippingCell = heldOutCells.find(c => c.label === "card / shipping / noise 0.1")!;
+  const gatePass = shippingCell.commits > 0 && shippingCell.wrongConfidentRateAll[1] < 0.03 &&
+    shippingCell.wrongConfidentRateCommits[1] < 0.1;
   console.log("");
-  console.log("Shipping cell held-out gate (<3% wrong, all runs): " + (gatePass ? "PASS" : "FAIL") + " (" + (shipping.heldOutWrong / RUNS * 100).toFixed(1) + "% wrong)");
+  console.log("Shipping cell held-out gates (<3% all runs, <10% committed): " + (gatePass ? "PASS" : "FAIL") + " (" + (shipping.heldOutWrong / RUNS * 100).toFixed(1) + "% wrong)");
 
   const assessment = maxCommitDiff < 0.15 && maxWrongDiff <= 15 ? "PASS" : "CAUTION";
   if (assessment === "PASS") {
     console.log("");
     console.log("ASSESSMENT: PASS — held-out seed produces results in a similar range.");
-    console.log("The simulator findings generalize beyond the primary seed.");
+    console.log("This checks seed robustness within the same simulator, not human generalization.");
   } else {
     console.log("");
     console.log("ASSESSMENT: CAUTION — held-out seed differs more than expected.");
@@ -125,6 +127,7 @@ async function main(): Promise<void> {
   await writeFile(target, JSON.stringify(output, null, 2) + "\n");
   console.log("");
   console.log("Saved to " + target);
+  if (!gatePass) process.exitCode = 1;
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

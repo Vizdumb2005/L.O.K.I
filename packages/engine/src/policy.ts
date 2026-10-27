@@ -41,7 +41,9 @@ export function expectedPosteriorEntropy(
     });
     const predictive = prior.reduce((sum, ph, i) => sum + ph * likelihood[i]!, 0);
     if (!(predictive > 0)) continue;
-    const next = normalizeProbabilities(prior.map((ph, i) => ph * likelihood[i]!));
+    const untempered = normalizeProbabilities(prior.map((ph, i) => ph * likelihood[i]!));
+    const temperature = Math.max(0.5, config.temperature);
+    const next = normalizeProbabilities(untempered.map((p) => Math.pow(p, 1 / temperature)));
     expected += predictive * entropy(next);
   }
   return expected;

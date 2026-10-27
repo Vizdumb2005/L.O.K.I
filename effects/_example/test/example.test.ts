@@ -27,7 +27,7 @@ describe("toy effect", () => {
     expect(exampleEffect.probes()).toHaveLength(3);
   });
 
-  it("runs through the same session and simulator harness", () => {
+  it("uses the same harness and abstains when three noisy probes are insufficient", () => {
     let t = 0;
     const session = new PerformanceSession(exampleEffect, { seed: 5, now: () => (t += 100) });
     session.begin();
@@ -43,9 +43,9 @@ describe("toy effect", () => {
       }
       break;
     }
-    expect(session.phaseName).toBe("build");
-    session.advance();
-    expect(session.snapshot().reveal?.id).toBe("comet");
+    expect(session.phaseName).toBe("miss");
+    expect(session.snapshot().reveal).toBeUndefined();
+    expect(session.internal().confidence).toBeLessThan(exampleEffect.config.commitThreshold);
 
     const result = runOne({
       effect: exampleEffect,
@@ -61,7 +61,8 @@ describe("toy effect", () => {
       trueId: "comet"
     });
     expect(result.trueId).toBe("comet");
-    expect(result.committed).toBe(true);
-    expect(result.correct).toBe(true);
+    expect(result.committed).toBe(false);
+    expect(result.wrongConfident).toBe(false);
+    expect(result.phase).toBe("miss");
   });
 });

@@ -131,7 +131,7 @@ implementation's behavior under controlled noise, not proof of real-world accura
 
 The shipping run uses 1,000 seeded synthetic spectators, each answering with a 10%
 per-question error probability. Runs are paired by seed across policies. Intervals are
-95% Wilson intervals for proportions; Brier intervals are seeded bootstrap intervals.
+95% Wilson intervals for proportions; Brier and mean-probe intervals use a normal approximation to the sample mean.
 
 **Shipping result (card / greedy / 10% answer error):**
 
@@ -163,8 +163,8 @@ justify a guaranteed-accuracy claim.
 
 ## 2. Card effect by policy
 
-At 15% answer error (a stress condition), greedy and median coincide on this probe bank;
-the fixed probe order often exhausts its budget without reaching τ.
+At 15% answer error (a stress condition), compare the policies directly in the table below; the fixed probe order often
+exhausts its budget without reaching τ.
 
 | Policy | Commits | Wrong | Committed accuracy | Wrong, all runs | Brier | ECE | Mean probes |
 |---|---|---|---|---|---|---|---|
@@ -214,9 +214,11 @@ shipping effect and was not tuned for the same accuracy target.
 ${toyPolicies.map((c) => row(c.policy, c)).join("\n")}
 
 Toy shipping cell at 10% error: ${toy.commits} commits, ${toy.wrong} wrong,
-${pct(toy.correct / Math.max(1, toy.commits))} committed accuracy, Brier
+${toy.commits ? pct(toy.correct / toy.commits) : "N/A (no commits)"} committed accuracy, Brier
 ${num(toy.brier, 3)}. The lower performance is expected from a three-question toy and is
-reported as-is; the platform test is that it runs through the identical session,
+reported as-is. After correcting observation-noise normalization, this toy abstains
+on every evaluated run: three noisy probes do not reach its existing threshold. The
+threshold and noise model were not lowered to manufacture a reveal. The platform test is that it runs through the identical session,
 belief, recovery, and simulation code.
 
 ## 6. Calibration
@@ -245,9 +247,9 @@ No frames, audio, identity data, or embeddings are uploaded or stored.
 | Experiment | Decision | Evidence |
 |---|---|---|
 | Soft likelihoods + outlier mixture | **Kept** | Shipping gate passes; hard elimination fails badly. |
-| Contradiction recovery probe | **Kept** | Raises commit rate and avoids bluffing on surprise. |
+| Contradiction recovery probe | **Kept** | Recovery logic is tested; no isolated recovery ablation was run. |
 | Greedy probe selection | **Kept** | Best commit rate; simplest to explain and test. |
-| Median / bisection challenger | **Dropped from shipping** | No difference from greedy on this bank; optimality does not generalise to 2-D card hypotheses. |
+| Median / bisection challenger | **Dropped from shipping** | Compare measured trade-offs above; optimality does not generalise to 2-D card hypotheses. |
 | Fixed probe order | **Dropped from shipping** | Usually exhausts the budget without a commit. |
 | 30% answer-error operation | **Outside envelope** | Gate fails; reported as a stress result. |
 | Gaze in the show | **Dropped; lab only** | No human validation; browser gaze error is too large for item-level resolution. |

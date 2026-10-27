@@ -405,3 +405,25 @@ describe("patter safety", () => {
     expect(failed.reason).toBe("network");
   });
 });
+describe("audit regressions", () => {
+  it("never uses an unsafe template as its own fallback", async () => {
+    const result = await rewritePatter({ beat: "build", tone: "intimate", allowedClaims: [],
+      template: "I can read your mind" }, {
+      endpoint: "/api/patter", fetchImpl: async () => { throw new Error("offline"); }
+    });
+    expect(result.line).not.toContain("read your mind");
+    expect(result.line).toBe("This is an illusion. The choice is yours.");
+  });
+
+  it("keeps a completed reveal in the exported log after the curtain", () => {
+    const session = new PerformanceSession(makeEffect());
+    session.begin(); session.chosen(); session.answer("yes"); session.answer("yes");
+    expect(session.phaseName).toBe("build");
+    session.advance();
+    const revealed = session.exportLog().revealed;
+    expect(revealed?.id).toBe("a");
+    session.advance(); session.advance();
+    expect(session.phaseName).toBe("done");
+    expect(session.exportLog().revealed).toEqual(revealed);
+  });
+});

@@ -86,8 +86,11 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
   const lastVideoTimeRef = useRef(-1);
   const frameCounterRef = useRef({ count: 0, since: performance.now() });
   const aliveRef = useRef(true);
+  const generationRef = useRef(0);
+  const startingRef = useRef(false);
 
   const [cameraOn, setCameraOn] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [modelState, setModelState] = useState<ModelState>("idle");
   const [modelSource, setModelSource] = useState<"local" | "cdn" | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostics>(initialDiagnostics);
@@ -95,6 +98,9 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
   const [glasses, setGlasses] = useState(false);
 
   const stop = useCallback(() => {
+    generationRef.current += 1;
+    startingRef.current = false;
+    setStarting(false);
     cancelAnimationFrame(rafRef.current);
     rafRef.current = 0;
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -114,6 +120,8 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
     aliveRef.current = true;
     return () => {
       aliveRef.current = false;
+      generationRef.current += 1;
+      startingRef.current = false;
       cancelAnimationFrame(rafRef.current);
       streamRef.current?.getTracks().forEach((track) => track.stop());
       landmarkerRef.current?.close();
@@ -121,7 +129,11 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
   }, []);
 
   const start = useCallback(async () => {
-    if (!cameraOptIn) return;
+    if (!cameraOptIn || startingRef.current || streamRef.current) return;
+    const generation = ++generationRef.current;
+    const current = () => aliveRef.current && generationRef.current === generation;
+    startingRef.current = true;
+    setStarting(true);
     setError(null);
     setModelState("loading");
     try {
@@ -133,52 +145,49 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
         audio: false
       });
       // If the component unmounted while getUserMedia was pending, release the stream.
-      if (!aliveRef.current) {
+      if (!current()) {
         stream.getTracks().forEach((track) => track.stop());
         return;
       }
       streamRef.current = stream;
+      setCameraOn(true);
       // If a track ends externally (e.g. camera unplugged), stop the lab cleanly.
       stream.getTracks().forEach((track) => {
-        track.addEventListener("ended", () => stop());
+        track.addEventListener("ended", () => { if (current()) stop(); });
       });
       const video = videoRef.current;
       if (!video) throw new Error("The preview element is missing.");
       video.srcObject = stream;
       await video.play();
-      // If the component unmounted while video.play() was pending, release everything.
-      if (!aliveRef.current) {
+      // Stop, navigation and a newer attempt all invalidate this continuation.
+      if (!current()) {
         stream.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-        if (video) video.srcObject = null;
         return;
       }
-      setCameraOn(true);
 
       try {
         const loaded = await createFaceLandmarker();
-        if (!aliveRef.current) {
+        if (!current()) {
           loaded.landmarker.close();
-          // Also release the camera stream — the lab is being torn down.
-          streamRef.current?.getTracks().forEach((track) => track.stop());
-          streamRef.current = null;
-          if (videoRef.current) videoRef.current.srcObject = null;
           return;
         }
         landmarkerRef.current = loaded.landmarker;
         setModelSource(loaded.source);
         setModelState("ready");
       } catch {
-        if (aliveRef.current) setModelState("unavailable");
+        if (current()) setModelState("unavailable");
       }
 
+      if (!current()) return;
+      startingRef.current = false;
+      setStarting(false);
       const canvas = canvasRef.current;
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       const draw = () => {
-        if (!aliveRef.current) return;
+        if (!current()) return;
         const currentVideo = videoRef.current;
         if (!currentVideo || currentVideo.readyState < 2) {
           rafRef.current = requestAnimationFrame(draw);
@@ -260,6 +269,7 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
       };
       rafRef.current = requestAnimationFrame(draw);
     } catch (cause) {
+      if (!current()) return;
       stop();
       setError(
         cause instanceof Error
@@ -319,9 +329,10 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
                 <span className="lens" aria-hidden="true" />
                 <p>Camera is off.</p>
                 <p className="tiny">Nothing is captured until you choose to open it.</p>
-                <button type="button" className="primary" onClick={() => void start()}>
-                  Open camera lab
+                <button type="button" className="primary" disabled={starting} onClick={() => void start()}>
+                  {starting ? "Opening camera…" : "Open camera lab"}
                 </button>
+                {starting && <button type="button" className="chip" onClick={stop}>Cancel opening</button>}
               </div>
             )}
             {cameraOn && (

@@ -336,3 +336,63 @@ describe("probability model consistency audit", () => {
     expect(posterior(replayed)).toEqual(posterior(state));
   });
 });
+describe("observation-alphabet regression", () => {
+  it("answer noise sums to one across options, not hypotheses", () => {
+    for (const h of hypotheses) {
+      const i = hypotheses.indexOf(h);
+      const sum = probe.options.reduce((total, option) =>
+        total + answerLikelihoods(fresh(), probe, option.id, config)[i]!, 0);
+      expect(sum).toBeCloseTo(1, 12);
+    }
+  });
+
+  it("an uninformative probe has zero information gain", () => {
+    const uninformative = { ...probe, likelihood: () => 0.5 };
+    expect(informationGain(fresh(), uninformative, config)).toBeCloseTo(0, 12);
+  });
+
+  it("expected entropy matches actual tempered updates", () => {
+    const hot = { ...config, temperature: 1.5 };
+    const state = applyAnswer(fresh(), probe, "yes", config, 1).state;
+    const p = posterior(state);
+    let expected = 0;
+    for (const option of probe.options) {
+      const likelihood = answerLikelihoods(state, probe, option.id, hot);
+      const predictive = p.reduce((sum, mass, i) => sum + mass * likelihood[i]!, 0);
+      const updated = posterior(applyAnswer(state, probe, option.id, hot, 2).state);
+      expected += predictive * -updated.reduce((sum, mass) => sum + (mass ? mass * Math.log2(mass) : 0), 0);
+    }
+    expect(expectedPosteriorEntropy(state, probe, hot)).toBeCloseTo(expected, 12);
+  });
+
+  it("channel mixture predictive mass sums to one across values", () => {
+    const binding: ChannelBinding = {
+      channel: "signal", label: "Signal", weight: 0.6, minReliability: 0.2,
+      values: ["left", "right"],
+      likelihood: (item, obs) => obs.value === (item === "a" ? "left" : "right") ? 0.9 : 0.1
+    };
+    const predictive = binding.values.reduce((sum, value) => sum + applyChannelEvidence(fresh(), binding, {
+      channel: "signal", value, reliability: 0.7, at: 1
+    }, config).predictive, 0);
+    expect(predictive).toBeCloseTo(1, 12);
+  });
+});
+
+
+describe("belief input validation", () => {
+  it("rejects negative, missing or non-finite prior mass", () => {
+    const invalid: Record<string, number>[] = [{a: -1, b: 1, c: 1}, {a: NaN, b: 1, c: 1}, {a: 1, b: 0}];
+    for (const bad of invalid) {
+      expect(() => createBelief(hypotheses, bad, config)).toThrow(/prior/);
+    }
+  });
+  it("rejects non-finite answer reliability rather than poisoning the posterior", () => {
+    expect(() => applyAnswer(fresh(), probe, "yes", config, 1, NaN)).toThrow(/finite/);
+  });
+  it("rejects unknown categorical channel values", () => {
+    const binding: ChannelBinding = {channel: "signal", label: "Signal", weight: 0.5,
+      minReliability: 0.1, values: ["left", "right"], likelihood: () => 0.5};
+    expect(() => applyChannelEvidence(fresh(), binding, {channel: "signal", value: "unknown",
+      reliability: 0.8, at: 1}, config)).toThrow(/alphabet/);
+  });
+});

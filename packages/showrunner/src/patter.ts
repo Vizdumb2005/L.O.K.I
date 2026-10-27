@@ -34,7 +34,7 @@ export async function rewritePatter(
   payload: PatterPayload,
   options: PatterRewriteOptions
 ): Promise<{ line: string; source: "template" | "llm"; reason?: string }> {
-  const fallback = sanitizeLine(payload.template, payload.template);
+  const fallback = sanitizeLine(payload.template, "This is an illusion. The choice is yours.");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 1200);
   const doFetch = options.fetchImpl ?? fetch;
