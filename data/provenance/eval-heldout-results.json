@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "LOKI v3 held-out seed evaluation",
-    "createdAt": "2026-10-27T18:37:39.651Z",
+    "createdAt": "2026-10-27T19:06:30.925Z",
     "primarySeed": 20261027,
     "heldOutSeed": 99999,
     "runsPerCell": 1000,
@@ -20,12 +20,12 @@
     },
     {
       "label": "example / shipping / noise 0.1",
-      "primaryCommits": 739,
-      "heldOutCommits": 769,
-      "primaryWrong": 20,
-      "heldOutWrong": 31,
-      "commitDiffPct": 0.04059539918809202,
-      "wrongDiff": 11
+      "primaryCommits": 953,
+      "heldOutCommits": 958,
+      "primaryWrong": 2,
+      "heldOutWrong": 10,
+      "commitDiffPct": 0.005246589716684155,
+      "wrongDiff": 8
     },
     {
       "label": "card-twelve / greedy / noise 0.15",
@@ -85,12 +85,12 @@
     },
     {
       "label": "example / shipping / noise 0.1",
-      "commits": 769,
-      "wrong": 31,
-      "correct": 738,
-      "ece": 0.013093622338102965,
-      "brier": 0.2165697100928344,
-      "meanProbes": 3
+      "commits": 958,
+      "wrong": 10,
+      "correct": 948,
+      "ece": 0.002276495697448957,
+      "brier": 0.0445165123313175,
+      "meanProbes": 2.368
     },
     {
       "label": "card-twelve / greedy / noise 0.15",
