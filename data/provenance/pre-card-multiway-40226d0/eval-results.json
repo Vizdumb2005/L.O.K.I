@@ -1,0 +1,4187 @@
+{
+  "meta": {
+    "name": "LOKI v3 simulator evaluation",
+    "createdAt": "2026-10-27T17:24:15.963Z",
+    "runsPerCell": 1000,
+    "seedBase": 20261027,
+    "noiseLevels": [
+      0,
+      0.05,
+      0.15,
+      0.3
+    ],
+    "policies": [
+      "greedy",
+      "median",
+      "fixed"
+    ],
+    "humanParticipants": 0,
+    "notes": [
+      "All figures are from synthetic spectators, not humans.",
+      "Same per-run seed across policies keeps comparisons paired.",
+      "No camera frames are used or stored; gaze is a categorical zone simulation.",
+      "Ablation gaze-on is a mechanical upper bound, not evidence that webcam gaze works.",
+      "Ablation force-on shifts the sampled target prior; it is not evidence that a psychological force works."
+    ]
+  },
+  "cells": [
+    {
+      "label": "card-twelve / greedy / noise 0",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 923,
+      "misses": 77,
+      "correct": 923,
+      "wrong": 0,
+      "commitRate": [
+        0.9048104693818263,
+        0.9379520929393942
+      ],
+      "committedAccuracy": [
+        0.9958553226291993,
+        1
+      ],
+      "matchRateAll": [
+        0.9048104693818263,
+        0.9379520929393942
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        0,
+        0.004144677370800792
+      ],
+      "missRate": [
+        0.062047907060605895,
+        0.09518953061817373
+      ],
+      "meanProbes": 6.573,
+      "meanProbesCI": [
+        6.542326975931227,
+        6.603673024068774
+      ],
+      "meanRecoveries": 0.573,
+      "meanConfidence": 0.9695322479766684,
+      "brier": 0.0014569477085306214,
+      "brierCI": [
+        0.0013983437386636027,
+        0.0015155516783976401
+      ],
+      "ece": 0.03046775202333163,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 1000,
+          "meanConfidence": 0.9695322479766684,
+          "accuracy": 1
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / greedy / noise 0.05",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.05,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 666,
+      "misses": 334,
+      "correct": 663,
+      "wrong": 3,
+      "commitRate": [
+        0.6361818350568,
+        0.6945476811259959
+      ],
+      "committedAccuracy": [
+        0.9868408744509777,
+        0.9984669044404325
+      ],
+      "matchRateAll": [
+        0.6331289213315938,
+        0.6916235554021153
+      ],
+      "wrongConfidentRateAll": [
+        0.0010207838811386186,
+        0.008783014053503173
+      ],
+      "wrongConfidentRateCommits": [
+        0.0015330955595675797,
+        0.013159125549022427
+      ],
+      "missRate": [
+        0.3054523188740042,
+        0.36381816494320013
+      ],
+      "meanProbes": 6.684,
+      "meanProbesCI": [
+        6.655170511368482,
+        6.7128294886315185
+      ],
+      "meanRecoveries": 0.684,
+      "meanConfidence": 0.8974496150477085,
+      "brier": 0.07545806413580106,
+      "brierCI": [
+        0.05988631116300383,
+        0.09102981710859828
+      ],
+      "ece": 0.06102345654388376,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 8,
+          "meanConfidence": 0.13399330211538568,
+          "accuracy": 0.25
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 15,
+          "meanConfidence": 0.2427381894696613,
+          "accuracy": 0.4
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 2,
+          "meanConfidence": 0.36826789789722114,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 3,
+          "meanConfidence": 0.42155603624163224,
+          "accuracy": 0.6666666666666666
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 26,
+          "meanConfidence": 0.5658042198104118,
+          "accuracy": 0.8076923076923077
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 35,
+          "meanConfidence": 0.6626297970032484,
+          "accuracy": 0.8285714285714286
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 67,
+          "meanConfidence": 0.7452945528894039,
+          "accuracy": 0.9552238805970149
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 102,
+          "meanConfidence": 0.8264449368052266,
+          "accuracy": 0.9215686274509803
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 742,
+          "meanConfidence": 0.9684640440381539,
+          "accuracy": 0.9959568733153639
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / greedy / noise 0.15",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 338,
+      "misses": 662,
+      "correct": 324,
+      "wrong": 14,
+      "commitRate": [
+        0.3093514451469222,
+        0.36788842460239773
+      ],
+      "committedAccuracy": [
+        0.9316840386849432,
+        0.9751691003973004
+      ],
+      "matchRateAll": [
+        0.2957148222722109,
+        0.35363219671470447
+      ],
+      "wrongConfidentRateAll": [
+        0.00835757513042392,
+        0.02336203411753566
+      ],
+      "wrongConfidentRateCommits": [
+        0.02483089960269954,
+        0.0683159613150568
+      ],
+      "missRate": [
+        0.6321115753976023,
+        0.6906485548530779
+      ],
+      "meanProbes": 6.827,
+      "meanProbesCI": [
+        6.803544691295104,
+        6.850455308704896
+      ],
+      "meanRecoveries": 0.827,
+      "meanConfidence": 0.7679408366446818,
+      "brier": 0.37196966181139096,
+      "brierCI": [
+        0.3378556056347909,
+        0.40608371798799103
+      ],
+      "ece": 0.03848605514939525,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 28,
+          "meanConfidence": 0.14658615051376195,
+          "accuracy": 0.21428571428571427
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 60,
+          "meanConfidence": 0.2462237676162153,
+          "accuracy": 0.25
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 11,
+          "meanConfidence": 0.36022073992265957,
+          "accuracy": 0.2727272727272727
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 25,
+          "meanConfidence": 0.4150571689097075,
+          "accuracy": 0.44
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 70,
+          "meanConfidence": 0.5639017607648589,
+          "accuracy": 0.6
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 99,
+          "meanConfidence": 0.6601441950863567,
+          "accuracy": 0.5252525252525253
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 127,
+          "meanConfidence": 0.7447500208433603,
+          "accuracy": 0.6535433070866141
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 183,
+          "meanConfidence": 0.8291478681142468,
+          "accuracy": 0.8087431693989071
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 397,
+          "meanConfidence": 0.9661950376129064,
+          "accuracy": 0.9571788413098237
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / greedy / noise 0.3",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.3,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 148,
+      "misses": 852,
+      "correct": 102,
+      "wrong": 46,
+      "commitRate": [
+        0.1273389886764658,
+        0.17135504929736503
+      ],
+      "committedAccuracy": [
+        0.6106317736646087,
+        0.7581739559097429
+      ],
+      "matchRateAll": [
+        0.08473913518484719,
+        0.12230696456965467
+      ],
+      "wrongConfidentRateAll": [
+        0.03466249276326498,
+        0.06081220394161907
+      ],
+      "wrongConfidentRateCommits": [
+        0.241826044090257,
+        0.38936822633539103
+      ],
+      "missRate": [
+        0.828644950702635,
+        0.8726610113235342
+      ],
+      "meanProbes": 6.914,
+      "meanProbesCI": [
+        6.896614480582183,
+        6.931385519417816
+      ],
+      "meanRecoveries": 0.914,
+      "meanConfidence": 0.674563774841969,
+      "brier": 0.9204645562775566,
+      "brierCI": [
+        0.8788038819319763,
+        0.9621252306231369
+      ],
+      "ece": 0.31956377484196735,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 41,
+          "meanConfidence": 0.14946415903645285,
+          "accuracy": 0.07317073170731707
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 137,
+          "meanConfidence": 0.24755264698517346,
+          "accuracy": 0.145985401459854
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 27,
+          "meanConfidence": 0.3659333832383887,
+          "accuracy": 0.25925925925925924
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 45,
+          "meanConfidence": 0.4171369837671973,
+          "accuracy": 0.2222222222222222
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 49,
+          "meanConfidence": 0.5767230015508235,
+          "accuracy": 0.30612244897959184
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 105,
+          "meanConfidence": 0.660776086396459,
+          "accuracy": 0.3142857142857143
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 155,
+          "meanConfidence": 0.7439905173864744,
+          "accuracy": 0.2838709677419355
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 235,
+          "meanConfidence": 0.8300030451870867,
+          "accuracy": 0.4085106382978723
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 206,
+          "meanConfidence": 0.9604830296410495,
+          "accuracy": 0.616504854368932
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / median / noise 0",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "median",
+      "answerError": 0,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 923,
+      "misses": 77,
+      "correct": 923,
+      "wrong": 0,
+      "commitRate": [
+        0.9048104693818263,
+        0.9379520929393942
+      ],
+      "committedAccuracy": [
+        0.9958553226291993,
+        1
+      ],
+      "matchRateAll": [
+        0.9048104693818263,
+        0.9379520929393942
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        0,
+        0.004144677370800792
+      ],
+      "missRate": [
+        0.062047907060605895,
+        0.09518953061817373
+      ],
+      "meanProbes": 6.573,
+      "meanProbesCI": [
+        6.542326975931227,
+        6.603673024068774
+      ],
+      "meanRecoveries": 0.573,
+      "meanConfidence": 0.9692893428895241,
+      "brier": 0.001470634726612739,
+      "brierCI": [
+        0.0014123110758955907,
+        0.0015289583773298871
+      ],
+      "ece": 0.030710657110475936,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 1000,
+          "meanConfidence": 0.9692893428895241,
+          "accuracy": 1
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / median / noise 0.05",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "median",
+      "answerError": 0.05,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 666,
+      "misses": 334,
+      "correct": 663,
+      "wrong": 3,
+      "commitRate": [
+        0.6361818350568,
+        0.6945476811259959
+      ],
+      "committedAccuracy": [
+        0.9868408744509777,
+        0.9984669044404325
+      ],
+      "matchRateAll": [
+        0.6331289213315938,
+        0.6916235554021153
+      ],
+      "wrongConfidentRateAll": [
+        0.0010207838811386186,
+        0.008783014053503173
+      ],
+      "wrongConfidentRateCommits": [
+        0.0015330955595675797,
+        0.013159125549022427
+      ],
+      "missRate": [
+        0.3054523188740042,
+        0.36381816494320013
+      ],
+      "meanProbes": 6.684,
+      "meanProbesCI": [
+        6.655170511368482,
+        6.7128294886315185
+      ],
+      "meanRecoveries": 0.684,
+      "meanConfidence": 0.8984879435672626,
+      "brier": 0.07587087415341565,
+      "brierCI": [
+        0.06014468396353679,
+        0.09159706434329451
+      ],
+      "ece": 0.05919477529395008,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 8,
+          "meanConfidence": 0.13399330211538568,
+          "accuracy": 0.25
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 14,
+          "meanConfidence": 0.23932547389608994,
+          "accuracy": 0.35714285714285715
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 1,
+          "meanConfidence": 0.34135943060498236,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 4,
+          "meanConfidence": 0.4272461240140387,
+          "accuracy": 0.75
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 26,
+          "meanConfidence": 0.5658042198104118,
+          "accuracy": 0.8076923076923077
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 35,
+          "meanConfidence": 0.6626297970032484,
+          "accuracy": 0.8285714285714286
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 68,
+          "meanConfidence": 0.7450382507759663,
+          "accuracy": 0.9411764705882353
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 96,
+          "meanConfidence": 0.8264685968854487,
+          "accuracy": 0.9166666666666666
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 748,
+          "meanConfidence": 0.9680595690176166,
+          "accuracy": 0.9959893048128342
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / median / noise 0.15",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "median",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 335,
+      "misses": 665,
+      "correct": 324,
+      "wrong": 11,
+      "commitRate": [
+        0.30642688114062866,
+        0.3648359491596046
+      ],
+      "committedAccuracy": [
+        0.9421679754250624,
+        0.9815678657832924
+      ],
+      "matchRateAll": [
+        0.2957148222722109,
+        0.35363219671470447
+      ],
+      "wrongConfidentRateAll": [
+        0.006153174098086638,
+        0.019589395700786275
+      ],
+      "wrongConfidentRateCommits": [
+        0.01843213421670766,
+        0.057832024574937545
+      ],
+      "missRate": [
+        0.6351640508403955,
+        0.6935731188593715
+      ],
+      "meanProbes": 6.829,
+      "meanProbesCI": [
+        6.805652484769675,
+        6.852347515230324
+      ],
+      "meanRecoveries": 0.829,
+      "meanConfidence": 0.7652670606313083,
+      "brier": 0.36877495767901625,
+      "brierCI": [
+        0.33503436854665114,
+        0.40251554681138135
+      ],
+      "ece": 0.03469323292598046,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 28,
+          "meanConfidence": 0.14658615051376195,
+          "accuracy": 0.21428571428571427
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 62,
+          "meanConfidence": 0.24784276598241112,
+          "accuracy": 0.24193548387096775
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 9,
+          "meanConfidence": 0.3524528231967039,
+          "accuracy": 0.3333333333333333
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 28,
+          "meanConfidence": 0.4181920851691593,
+          "accuracy": 0.4642857142857143
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 70,
+          "meanConfidence": 0.5639017607648589,
+          "accuracy": 0.6
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 99,
+          "meanConfidence": 0.6601441950863567,
+          "accuracy": 0.5252525252525253
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 139,
+          "meanConfidence": 0.7431087909774962,
+          "accuracy": 0.6690647482014388
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 168,
+          "meanConfidence": 0.8287500939848562,
+          "accuracy": 0.8154761904761905
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 397,
+          "meanConfidence": 0.9661597149372428,
+          "accuracy": 0.9596977329974811
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / median / noise 0.3",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "median",
+      "answerError": 0.3,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 149,
+      "misses": 851,
+      "correct": 102,
+      "wrong": 47,
+      "commitRate": [
+        0.12827436093693598,
+        0.1724120235199237
+      ],
+      "committedAccuracy": [
+        0.6061091754180948,
+        0.7537408314084116
+      ],
+      "matchRateAll": [
+        0.08473913518484719,
+        0.12230696456965467
+      ],
+      "wrongConfidentRateAll": [
+        0.0355271051063845,
+        0.06193993808152845
+      ],
+      "wrongConfidentRateCommits": [
+        0.24625916859158828,
+        0.39389082458190516
+      ],
+      "missRate": [
+        0.8275879764800763,
+        0.871725639063064
+      ],
+      "meanProbes": 6.913,
+      "meanProbesCI": [
+        6.895523262548791,
+        6.930476737451209
+      ],
+      "meanRecoveries": 0.913,
+      "meanConfidence": 0.6759363148634677,
+      "brier": 0.9210125922361896,
+      "brierCI": [
+        0.8792564106496996,
+        0.9627687738226796
+      ],
+      "ece": 0.3219363148634661,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 41,
+          "meanConfidence": 0.14946415903645285,
+          "accuracy": 0.07317073170731707
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 138,
+          "meanConfidence": 0.24660417410017935,
+          "accuracy": 0.13043478260869565
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 19,
+          "meanConfidence": 0.35362054873267457,
+          "accuracy": 0.2631578947368421
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 50,
+          "meanConfidence": 0.4212768742844441,
+          "accuracy": 0.26
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 49,
+          "meanConfidence": 0.5767230015508235,
+          "accuracy": 0.30612244897959184
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 105,
+          "meanConfidence": 0.660776086396459,
+          "accuracy": 0.3142857142857143
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 163,
+          "meanConfidence": 0.743058930357971,
+          "accuracy": 0.27607361963190186
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 218,
+          "meanConfidence": 0.8301092078818122,
+          "accuracy": 0.40825688073394495
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 217,
+          "meanConfidence": 0.9597739403815708,
+          "accuracy": 0.6129032258064516
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / fixed / noise 0",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "fixed",
+      "answerError": 0,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 0,
+      "misses": 1000,
+      "correct": 0,
+      "wrong": 0,
+      "commitRate": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "committedAccuracy": [
+        0,
+        1
+      ],
+      "matchRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        0,
+        1
+      ],
+      "missRate": [
+        0.996173241514445,
+        1
+      ],
+      "meanProbes": 7,
+      "meanProbesCI": [
+        7,
+        7
+      ],
+      "meanRecoveries": 1,
+      "meanConfidence": 0.8446715218513088,
+      "brier": 0.03895766429203201,
+      "brierCI": [
+        0.038833526064863844,
+        0.03908180251920018
+      ],
+      "ece": 0.15532847814869122,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 1000,
+          "meanConfidence": 0.8446715218513088,
+          "accuracy": 1
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / fixed / noise 0.05",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "fixed",
+      "answerError": 0.05,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 0,
+      "misses": 1000,
+      "correct": 0,
+      "wrong": 0,
+      "commitRate": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "committedAccuracy": [
+        0,
+        1
+      ],
+      "matchRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        0,
+        1
+      ],
+      "missRate": [
+        0.996173241514445,
+        1
+      ],
+      "meanProbes": 7,
+      "meanProbesCI": [
+        7,
+        7
+      ],
+      "meanRecoveries": 1,
+      "meanConfidence": 0.7699194759985052,
+      "brier": 0.20078493829546648,
+      "brierCI": [
+        0.17798295166270342,
+        0.22358692492822954
+      ],
+      "ece": 0.10509009514114132,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 8,
+          "meanConfidence": 0.20983652436994804,
+          "accuracy": 0.5
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 11,
+          "meanConfidence": 0.37315291356384656,
+          "accuracy": 0.5454545454545454
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 119,
+          "meanConfidence": 0.42440996277163284,
+          "accuracy": 0.35294117647058826
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 33,
+          "meanConfidence": 0.6693078635887962,
+          "accuracy": 0.8484848484848485
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 85,
+          "meanConfidence": 0.7428548718660996,
+          "accuracy": 0.8941176470588236
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 744,
+          "meanConfidence": 0.8446256620664951,
+          "accuracy": 0.9435483870967742
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / fixed / noise 0.15",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "fixed",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 0,
+      "misses": 1000,
+      "correct": 0,
+      "wrong": 0,
+      "commitRate": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "committedAccuracy": [
+        0,
+        1
+      ],
+      "matchRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        0,
+        1
+      ],
+      "missRate": [
+        0.996173241514445,
+        1
+      ],
+      "meanProbes": 7,
+      "meanProbesCI": [
+        7,
+        7
+      ],
+      "meanRecoveries": 1,
+      "meanConfidence": 0.6527967815034903,
+      "brier": 0.4982402365428393,
+      "brierCI": [
+        0.4654229784289028,
+        0.5310574946567758
+      ],
+      "ece": 0.05164605571594406,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 36,
+          "meanConfidence": 0.21042674704929068,
+          "accuracy": 0.2777777777777778
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 85,
+          "meanConfidence": 0.36887366309862735,
+          "accuracy": 0.32941176470588235
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 234,
+          "meanConfidence": 0.420929356495823,
+          "accuracy": 0.3333333333333333
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 64,
+          "meanConfidence": 0.6693078635887966,
+          "accuracy": 0.609375
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 179,
+          "meanConfidence": 0.7429877979246231,
+          "accuracy": 0.6759776536312849
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 402,
+          "meanConfidence": 0.8446247978311495,
+          "accuracy": 0.8208955223880597
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "label": "card-twelve / fixed / noise 0.3",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "fixed",
+      "answerError": 0.3,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 0,
+      "misses": 1000,
+      "correct": 0,
+      "wrong": 0,
+      "commitRate": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "committedAccuracy": [
+        0,
+        1
+      ],
+      "matchRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        0,
+        1
+      ],
+      "missRate": [
+        0.996173241514445,
+        1
+      ],
+      "meanProbes": 7,
+      "meanProbesCI": [
+        7,
+        7
+      ],
+      "meanRecoveries": 1,
+      "meanConfidence": 0.5475971465659474,
+      "brier": 0.9141750232715504,
+      "brierCI": [
+        0.8810173633932346,
+        0.9473326831498663
+      ],
+      "ece": 0.23859714656594577,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 106,
+          "meanConfidence": 0.20920175658273038,
+          "accuracy": 0.16037735849056603
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 195,
+          "meanConfidence": 0.36796812496359915,
+          "accuracy": 0.2153846153846154
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 242,
+          "meanConfidence": 0.4197705500286446,
+          "accuracy": 0.28512396694214875
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 85,
+          "meanConfidence": 0.669307863588797,
+          "accuracy": 0.36470588235294116
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 186,
+          "meanConfidence": 0.7423719959298123,
+          "accuracy": 0.3333333333333333
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 186,
+          "meanConfidence": 0.8446835658352133,
+          "accuracy": 0.4731182795698925
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        }
+      ]
+    },
+    {
+      "label": "ember-words / greedy / noise 0",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "greedy",
+      "answerError": 0,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 1000,
+      "misses": 0,
+      "correct": 1000,
+      "wrong": 0,
+      "commitRate": [
+        0.996173241514445,
+        1
+      ],
+      "committedAccuracy": [
+        0.996173241514445,
+        1
+      ],
+      "matchRateAll": [
+        0.996173241514445,
+        1
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "missRate": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0,
+      "meanConfidence": 0.9432971442057871,
+      "brier": 0.00428695180695629,
+      "brierCI": [
+        0.0042869518069562846,
+        0.004286951806956295
+      ],
+      "ece": 0.05670285579421286,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 1000,
+          "meanConfidence": 0.9432971442057871,
+          "accuracy": 1
+        }
+      ]
+    },
+    {
+      "label": "ember-words / greedy / noise 0.05",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "greedy",
+      "answerError": 0.05,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 856,
+      "misses": 144,
+      "correct": 850,
+      "wrong": 6,
+      "commitRate": [
+        0.8328762978702983,
+        0.8763990500879865
+      ],
+      "committedAccuracy": [
+        0.9847925923923775,
+        0.9967837102408763
+      ],
+      "matchRateAll": [
+        0.8265313415731996,
+        0.8707899274869118
+      ],
+      "wrongConfidentRateAll": [
+        0.0027526691418763745,
+        0.01302816824185209
+      ],
+      "wrongConfidentRateCommits": [
+        0.003216289759123689,
+        0.015207407607622618
+      ],
+      "missRate": [
+        0.1236009499120135,
+        0.16712370212970176
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.144,
+      "meanConfidence": 0.8551438886759125,
+      "brier": 0.11077083681070866,
+      "brierCI": [
+        0.09409010814482897,
+        0.12745156547658834
+      ],
+      "ece": 0.05385611132408497,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 144,
+          "meanConfidence": 0.33112175858164566,
+          "accuracy": 0.4097222222222222
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 856,
+          "meanConfidence": 0.9432971442057921,
+          "accuracy": 0.9929906542056075
+        }
+      ]
+    },
+    {
+      "label": "ember-words / greedy / noise 0.15",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 630,
+      "misses": 370,
+      "correct": 582,
+      "wrong": 48,
+      "commitRate": [
+        0.5996317181277412,
+        0.6593733246660144
+      ],
+      "committedAccuracy": [
+        0.9004281132645748,
+        0.9420538553235072
+      ],
+      "matchRateAll": [
+        0.5511729797517128,
+        0.612199431856656
+      ],
+      "wrongConfidentRateAll": [
+        0.036393301020807914,
+        0.06306608865013393
+      ],
+      "wrongConfidentRateCommits": [
+        0.05794614467649289,
+        0.09957188673542527
+      ],
+      "missRate": [
+        0.3406266753339855,
+        0.4003682818722588
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.37,
+      "meanConfidence": 0.7167922515248613,
+      "brier": 0.3400781192885502,
+      "brierCI": [
+        0.31115714699496555,
+        0.36899909158213484
+      ],
+      "ece": 0.023762150174447966,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 370,
+          "meanConfidence": 0.3311217585816453,
+          "accuracy": 0.3621621621621622
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 630,
+          "meanConfidence": 0.9432971442058043,
+          "accuracy": 0.9238095238095239
+        }
+      ]
+    },
+    {
+      "label": "ember-words / greedy / noise 0.3",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "greedy",
+      "answerError": 0.3,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 523,
+      "misses": 477,
+      "correct": 330,
+      "wrong": 193,
+      "commitRate": [
+        0.4920142012545935,
+        0.553809767855071
+      ],
+      "committedAccuracy": [
+        0.5888048199169369,
+        0.6712354591959997
+      ],
+      "matchRateAll": [
+        0.3015555405204304,
+        0.35974555736465835
+      ],
+      "wrongConfidentRateAll": [
+        0.16973301355427384,
+        0.21861661615585704
+      ],
+      "wrongConfidentRateCommits": [
+        0.3287645408040003,
+        0.4111951800830631
+      ],
+      "missRate": [
+        0.44619023214492903,
+        0.5079857987454065
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.477,
+      "meanConfidence": 0.6512894852630806,
+      "brier": 0.6972051985851456,
+      "brierCI": [
+        0.6566096457310592,
+        0.7378007514392321
+      ],
+      "ece": 0.17428948526308444,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 477,
+          "meanConfidence": 0.3311217585816452,
+          "accuracy": 0.3081761006289308
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 523,
+          "meanConfidence": 0.9432971442058119,
+          "accuracy": 0.6309751434034416
+        }
+      ]
+    },
+    {
+      "label": "ember-words / median / noise 0",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "median",
+      "answerError": 0,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 1000,
+      "misses": 0,
+      "correct": 1000,
+      "wrong": 0,
+      "commitRate": [
+        0.996173241514445,
+        1
+      ],
+      "committedAccuracy": [
+        0.996173241514445,
+        1
+      ],
+      "matchRateAll": [
+        0.996173241514445,
+        1
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "missRate": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0,
+      "meanConfidence": 0.9432971442057871,
+      "brier": 0.00428695180695629,
+      "brierCI": [
+        0.0042869518069562846,
+        0.004286951806956295
+      ],
+      "ece": 0.05670285579421286,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 1000,
+          "meanConfidence": 0.9432971442057871,
+          "accuracy": 1
+        }
+      ]
+    },
+    {
+      "label": "ember-words / median / noise 0.05",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "median",
+      "answerError": 0.05,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 856,
+      "misses": 144,
+      "correct": 850,
+      "wrong": 6,
+      "commitRate": [
+        0.8328762978702983,
+        0.8763990500879865
+      ],
+      "committedAccuracy": [
+        0.9847925923923775,
+        0.9967837102408763
+      ],
+      "matchRateAll": [
+        0.8265313415731996,
+        0.8707899274869118
+      ],
+      "wrongConfidentRateAll": [
+        0.0027526691418763745,
+        0.01302816824185209
+      ],
+      "wrongConfidentRateCommits": [
+        0.003216289759123689,
+        0.015207407607622618
+      ],
+      "missRate": [
+        0.1236009499120135,
+        0.16712370212970176
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.144,
+      "meanConfidence": 0.8551438886759125,
+      "brier": 0.11077083681070866,
+      "brierCI": [
+        0.09409010814482897,
+        0.12745156547658834
+      ],
+      "ece": 0.05385611132408497,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 144,
+          "meanConfidence": 0.33112175858164566,
+          "accuracy": 0.4097222222222222
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 856,
+          "meanConfidence": 0.9432971442057921,
+          "accuracy": 0.9929906542056075
+        }
+      ]
+    },
+    {
+      "label": "ember-words / median / noise 0.15",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "median",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 630,
+      "misses": 370,
+      "correct": 582,
+      "wrong": 48,
+      "commitRate": [
+        0.5996317181277412,
+        0.6593733246660144
+      ],
+      "committedAccuracy": [
+        0.9004281132645748,
+        0.9420538553235072
+      ],
+      "matchRateAll": [
+        0.5511729797517128,
+        0.612199431856656
+      ],
+      "wrongConfidentRateAll": [
+        0.036393301020807914,
+        0.06306608865013393
+      ],
+      "wrongConfidentRateCommits": [
+        0.05794614467649289,
+        0.09957188673542527
+      ],
+      "missRate": [
+        0.3406266753339855,
+        0.4003682818722588
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.37,
+      "meanConfidence": 0.7167922515248613,
+      "brier": 0.3400781192885502,
+      "brierCI": [
+        0.31115714699496555,
+        0.36899909158213484
+      ],
+      "ece": 0.023762150174447966,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 370,
+          "meanConfidence": 0.3311217585816453,
+          "accuracy": 0.3621621621621622
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 630,
+          "meanConfidence": 0.9432971442058043,
+          "accuracy": 0.9238095238095239
+        }
+      ]
+    },
+    {
+      "label": "ember-words / median / noise 0.3",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "median",
+      "answerError": 0.3,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 523,
+      "misses": 477,
+      "correct": 330,
+      "wrong": 193,
+      "commitRate": [
+        0.4920142012545935,
+        0.553809767855071
+      ],
+      "committedAccuracy": [
+        0.5888048199169369,
+        0.6712354591959997
+      ],
+      "matchRateAll": [
+        0.3015555405204304,
+        0.35974555736465835
+      ],
+      "wrongConfidentRateAll": [
+        0.16973301355427384,
+        0.21861661615585704
+      ],
+      "wrongConfidentRateCommits": [
+        0.3287645408040003,
+        0.4111951800830631
+      ],
+      "missRate": [
+        0.44619023214492903,
+        0.5079857987454065
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.477,
+      "meanConfidence": 0.6512894852630806,
+      "brier": 0.6972051985851456,
+      "brierCI": [
+        0.6566096457310592,
+        0.7378007514392321
+      ],
+      "ece": 0.17428948526308444,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 477,
+          "meanConfidence": 0.3311217585816452,
+          "accuracy": 0.3081761006289308
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 523,
+          "meanConfidence": 0.9432971442058119,
+          "accuracy": 0.6309751434034416
+        }
+      ]
+    },
+    {
+      "label": "ember-words / fixed / noise 0",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "fixed",
+      "answerError": 0,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 1000,
+      "misses": 0,
+      "correct": 1000,
+      "wrong": 0,
+      "commitRate": [
+        0.996173241514445,
+        1
+      ],
+      "committedAccuracy": [
+        0.996173241514445,
+        1
+      ],
+      "matchRateAll": [
+        0.996173241514445,
+        1
+      ],
+      "wrongConfidentRateAll": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "wrongConfidentRateCommits": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "missRate": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0,
+      "meanConfidence": 0.9432971442057871,
+      "brier": 0.00428695180695629,
+      "brierCI": [
+        0.0042869518069562846,
+        0.004286951806956295
+      ],
+      "ece": 0.05670285579421286,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 1000,
+          "meanConfidence": 0.9432971442057871,
+          "accuracy": 1
+        }
+      ]
+    },
+    {
+      "label": "ember-words / fixed / noise 0.05",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "fixed",
+      "answerError": 0.05,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 856,
+      "misses": 144,
+      "correct": 850,
+      "wrong": 6,
+      "commitRate": [
+        0.8328762978702983,
+        0.8763990500879865
+      ],
+      "committedAccuracy": [
+        0.9847925923923775,
+        0.9967837102408763
+      ],
+      "matchRateAll": [
+        0.8265313415731996,
+        0.8707899274869118
+      ],
+      "wrongConfidentRateAll": [
+        0.0027526691418763745,
+        0.01302816824185209
+      ],
+      "wrongConfidentRateCommits": [
+        0.003216289759123689,
+        0.015207407607622618
+      ],
+      "missRate": [
+        0.1236009499120135,
+        0.16712370212970176
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.144,
+      "meanConfidence": 0.8551438886759125,
+      "brier": 0.11077083681070866,
+      "brierCI": [
+        0.09409010814482897,
+        0.12745156547658834
+      ],
+      "ece": 0.05385611132408497,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 144,
+          "meanConfidence": 0.33112175858164566,
+          "accuracy": 0.4097222222222222
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 856,
+          "meanConfidence": 0.9432971442057921,
+          "accuracy": 0.9929906542056075
+        }
+      ]
+    },
+    {
+      "label": "ember-words / fixed / noise 0.15",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "fixed",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 630,
+      "misses": 370,
+      "correct": 582,
+      "wrong": 48,
+      "commitRate": [
+        0.5996317181277412,
+        0.6593733246660144
+      ],
+      "committedAccuracy": [
+        0.9004281132645748,
+        0.9420538553235072
+      ],
+      "matchRateAll": [
+        0.5511729797517128,
+        0.612199431856656
+      ],
+      "wrongConfidentRateAll": [
+        0.036393301020807914,
+        0.06306608865013393
+      ],
+      "wrongConfidentRateCommits": [
+        0.05794614467649289,
+        0.09957188673542527
+      ],
+      "missRate": [
+        0.3406266753339855,
+        0.4003682818722588
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.37,
+      "meanConfidence": 0.7167922515248613,
+      "brier": 0.3400781192885502,
+      "brierCI": [
+        0.31115714699496555,
+        0.36899909158213484
+      ],
+      "ece": 0.023762150174447966,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 370,
+          "meanConfidence": 0.3311217585816453,
+          "accuracy": 0.3621621621621622
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 630,
+          "meanConfidence": 0.9432971442058043,
+          "accuracy": 0.9238095238095239
+        }
+      ]
+    },
+    {
+      "label": "ember-words / fixed / noise 0.3",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "fixed",
+      "answerError": 0.3,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 523,
+      "misses": 477,
+      "correct": 330,
+      "wrong": 193,
+      "commitRate": [
+        0.4920142012545935,
+        0.553809767855071
+      ],
+      "committedAccuracy": [
+        0.5888048199169369,
+        0.6712354591959997
+      ],
+      "matchRateAll": [
+        0.3015555405204304,
+        0.35974555736465835
+      ],
+      "wrongConfidentRateAll": [
+        0.16973301355427384,
+        0.21861661615585704
+      ],
+      "wrongConfidentRateCommits": [
+        0.3287645408040003,
+        0.4111951800830631
+      ],
+      "missRate": [
+        0.44619023214492903,
+        0.5079857987454065
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.477,
+      "meanConfidence": 0.6512894852630806,
+      "brier": 0.6972051985851456,
+      "brierCI": [
+        0.6566096457310592,
+        0.7378007514392321
+      ],
+      "ece": 0.17428948526308444,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 477,
+          "meanConfidence": 0.3311217585816452,
+          "accuracy": 0.3081761006289308
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 523,
+          "meanConfidence": 0.9432971442058119,
+          "accuracy": 0.6309751434034416
+        }
+      ]
+    },
+    {
+      "label": "card / shipping / noise 0.1",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.1,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 496,
+      "misses": 504,
+      "correct": 490,
+      "wrong": 6,
+      "commitRate": [
+        0.46508589340292905,
+        0.5269447206649553
+      ],
+      "committedAccuracy": [
+        0.9738625639554966,
+        0.994444469122412
+      ],
+      "matchRateAll": [
+        0.45911403097425707,
+        0.520962504195454
+      ],
+      "wrongConfidentRateAll": [
+        0.0027526691418763745,
+        0.01302816824185209
+      ],
+      "wrongConfidentRateCommits": [
+        0.005555530877587915,
+        0.026137436044503394
+      ],
+      "missRate": [
+        0.4730552793350446,
+        0.5349141065970708
+      ],
+      "meanProbes": 6.764,
+      "meanProbesCI": [
+        6.7376689590991665,
+        6.790331040900834
+      ],
+      "meanRecoveries": 0.764,
+      "meanConfidence": 0.8369006226283139,
+      "brier": 0.19618536843041776,
+      "brierCI": [
+        0.17023248398478807,
+        0.22213825287604744
+      ],
+      "ece": 0.03795269131226621,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 13,
+          "meanConfidence": 0.14210141757938197,
+          "accuracy": 0.23076923076923078
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 33,
+          "meanConfidence": 0.2441295303142175,
+          "accuracy": 0.18181818181818182
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 4,
+          "meanConfidence": 0.3765879423410123,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 18,
+          "meanConfidence": 0.41933702753993557,
+          "accuracy": 0.3888888888888889
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 52,
+          "meanConfidence": 0.5664437995542165,
+          "accuracy": 0.7115384615384616
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 71,
+          "meanConfidence": 0.6593797775328921,
+          "accuracy": 0.647887323943662
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 91,
+          "meanConfidence": 0.7460707485081853,
+          "accuracy": 0.7912087912087912
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 150,
+          "meanConfidence": 0.8289003895771169,
+          "accuracy": 0.8933333333333333
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 568,
+          "meanConfidence": 0.9673311146159465,
+          "accuracy": 0.9859154929577465
+        }
+      ]
+    },
+    {
+      "label": "example / shipping / noise 0.1",
+      "effectId": "ember-words",
+      "effectName": "Ember Words",
+      "policy": "greedy",
+      "answerError": 0.1,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 739,
+      "misses": 261,
+      "correct": 719,
+      "wrong": 20,
+      "commitRate": [
+        0.7109019937060769,
+        0.7652688157378277
+      ],
+      "committedAccuracy": [
+        0.9585681246227074,
+        0.9824132808977988
+      ],
+      "matchRateAll": [
+        0.6903436580897934,
+        0.7459802216935335
+      ],
+      "wrongConfidentRateAll": [
+        0.012983682916415136,
+        0.030690005229717786
+      ],
+      "wrongConfidentRateCommits": [
+        0.017586719102201203,
+        0.04143187537729258
+      ],
+      "missRate": [
+        0.23473118426217232,
+        0.289098006293923
+      ],
+      "meanProbes": 3,
+      "meanProbesCI": [
+        3,
+        3
+      ],
+      "meanRecoveries": 0.261,
+      "meanConfidence": 0.78351936855789,
+      "brier": 0.2148081979539203,
+      "brierCI": [
+        0.19161794945092686,
+        0.23799844645691376
+      ],
+      "ece": 0.030480631442106203,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 261,
+          "meanConfidence": 0.3311217585816454,
+          "accuracy": 0.36398467432950193
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 739,
+          "meanConfidence": 0.9432971442057975,
+          "accuracy": 0.972936400541272
+        }
+      ]
+    },
+    {
+      "label": "ablation / soft + outlier",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 338,
+      "misses": 662,
+      "correct": 324,
+      "wrong": 14,
+      "commitRate": [
+        0.3093514451469222,
+        0.36788842460239773
+      ],
+      "committedAccuracy": [
+        0.9316840386849432,
+        0.9751691003973004
+      ],
+      "matchRateAll": [
+        0.2957148222722109,
+        0.35363219671470447
+      ],
+      "wrongConfidentRateAll": [
+        0.00835757513042392,
+        0.02336203411753566
+      ],
+      "wrongConfidentRateCommits": [
+        0.02483089960269954,
+        0.0683159613150568
+      ],
+      "missRate": [
+        0.6321115753976023,
+        0.6906485548530779
+      ],
+      "meanProbes": 6.827,
+      "meanProbesCI": [
+        6.803544691295104,
+        6.850455308704896
+      ],
+      "meanRecoveries": 0.827,
+      "meanConfidence": 0.7679408366446818,
+      "brier": 0.37196966181139096,
+      "brierCI": [
+        0.3378556056347909,
+        0.40608371798799103
+      ],
+      "ece": 0.03848605514939525,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 28,
+          "meanConfidence": 0.14658615051376195,
+          "accuracy": 0.21428571428571427
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 60,
+          "meanConfidence": 0.2462237676162153,
+          "accuracy": 0.25
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 11,
+          "meanConfidence": 0.36022073992265957,
+          "accuracy": 0.2727272727272727
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 25,
+          "meanConfidence": 0.4150571689097075,
+          "accuracy": 0.44
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 70,
+          "meanConfidence": 0.5639017607648589,
+          "accuracy": 0.6
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 99,
+          "meanConfidence": 0.6601441950863567,
+          "accuracy": 0.5252525252525253
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 127,
+          "meanConfidence": 0.7447500208433603,
+          "accuracy": 0.6535433070866141
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 183,
+          "meanConfidence": 0.8291478681142468,
+          "accuracy": 0.8087431693989071
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 397,
+          "meanConfidence": 0.9661950376129064,
+          "accuracy": 0.9571788413098237
+        }
+      ]
+    },
+    {
+      "label": "ablation / hard elimination",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": true,
+      "useOutlier": false,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 1000,
+      "misses": 0,
+      "correct": 521,
+      "wrong": 479,
+      "commitRate": [
+        0.996173241514445,
+        1
+      ],
+      "committedAccuracy": [
+        0.49001642660541767,
+        0.5518228495381892
+      ],
+      "matchRateAll": [
+        0.49001642660541767,
+        0.5518228495381892
+      ],
+      "wrongConfidentRateAll": [
+        0.4481771504618109,
+        0.5099835733945823
+      ],
+      "wrongConfidentRateCommits": [
+        0.4481771504618109,
+        0.5099835733945823
+      ],
+      "missRate": [
+        2.168404344971009e-19,
+        0.0038267584855551234
+      ],
+      "meanProbes": 3.596,
+      "meanProbesCI": [
+        3.5655715970121595,
+        3.6264284029878406
+      ],
+      "meanRecoveries": 0,
+      "meanConfidence": 1,
+      "brier": 0.958,
+      "brierCI": [
+        0.8960442011725874,
+        1.0199557988274126
+      ],
+      "ece": 0.479,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 1000,
+          "meanConfidence": 1,
+          "accuracy": 0.521
+        }
+      ]
+    },
+    {
+      "label": "ablation / no outlier",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": false,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 413,
+      "misses": 587,
+      "correct": 391,
+      "wrong": 22,
+      "commitRate": [
+        0.3828725319393248,
+        0.44379332403716176
+      ],
+      "committedAccuracy": [
+        0.9206665542758657,
+        0.9645620912719052
+      ],
+      "matchRateAll": [
+        0.36122774950463854,
+        0.4216064838452125
+      ],
+      "wrongConfidentRateAll": [
+        0.014572707764791058,
+        0.03308567334739963
+      ],
+      "wrongConfidentRateCommits": [
+        0.035437908728094825,
+        0.07933344572413423
+      ],
+      "missRate": [
+        0.5562066759628382,
+        0.6171274680606752
+      ],
+      "meanProbes": 6.582,
+      "meanProbesCI": [
+        6.546633559063646,
+        6.617366440936354
+      ],
+      "meanRecoveries": 0.623,
+      "meanConfidence": 0.8004694668530251,
+      "brier": 0.37650845279307493,
+      "brierCI": [
+        0.34002052307567276,
+        0.4129963825104771
+      ],
+      "ece": 0.07453207296359457,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 28,
+          "meanConfidence": 0.14942623727135812,
+          "accuracy": 0.32142857142857145
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 49,
+          "meanConfidence": 0.24997033396668808,
+          "accuracy": 0.32653061224489793
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 21,
+          "meanConfidence": 0.34931294174916805,
+          "accuracy": 0.42857142857142855
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 28,
+          "meanConfidence": 0.43665011662312525,
+          "accuracy": 0.4642857142857143
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 24,
+          "meanConfidence": 0.5822683706070285,
+          "accuracy": 0.6666666666666666
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 44,
+          "meanConfidence": 0.6525157585095955,
+          "accuracy": 0.5681818181818182
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 191,
+          "meanConfidence": 0.7511587128195598,
+          "accuracy": 0.581151832460733
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 167,
+          "meanConfidence": 0.8593805048647448,
+          "accuracy": 0.7964071856287425
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 448,
+          "meanConfidence": 0.9705406653413806,
+          "accuracy": 0.9375
+        }
+      ]
+    },
+    {
+      "label": "ablation / gaze on (simulated)",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": true,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 513,
+      "misses": 487,
+      "correct": 503,
+      "wrong": 10,
+      "commitRate": [
+        0.48203026873001686,
+        0.5438702355493588
+      ],
+      "committedAccuracy": [
+        0.9644929564237202,
+        0.9893778904021236
+      ],
+      "matchRateAll": [
+        0.4720586747142764,
+        0.5339183647348104
+      ],
+      "wrongConfidentRateAll": [
+        0.005440754445529249,
+        0.018309468870314774
+      ],
+      "wrongConfidentRateCommits": [
+        0.010622109597876371,
+        0.0355070435762798
+      ],
+      "missRate": [
+        0.45612976445064124,
+        0.5179697312699831
+      ],
+      "meanProbes": 6.08,
+      "meanProbesCI": [
+        6.000355705262076,
+        6.159644294737924
+      ],
+      "meanRecoveries": 0.64,
+      "meanConfidence": 0.8314559640081722,
+      "brier": 0.21711853679635013,
+      "brierCI": [
+        0.190418670434602,
+        0.24381840315809825
+      ],
+      "ece": 0.03494427032459932,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 1,
+          "meanConfidence": 0.19919470340976458,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 16,
+          "meanConfidence": 0.2720366671664184,
+          "accuracy": 0.25
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 23,
+          "meanConfidence": 0.34062917827334693,
+          "accuracy": 0.13043478260869565
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 69,
+          "meanConfidence": 0.447266085259508,
+          "accuracy": 0.4927536231884058
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 55,
+          "meanConfidence": 0.5384336611358025,
+          "accuracy": 0.45454545454545453
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 83,
+          "meanConfidence": 0.6512300251391359,
+          "accuracy": 0.7469879518072289
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 86,
+          "meanConfidence": 0.7482210078924647,
+          "accuracy": 0.8255813953488372
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 36,
+          "meanConfidence": 0.8527781479321382,
+          "accuracy": 0.8333333333333334
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 631,
+          "meanConfidence": 0.9659197911150237,
+          "accuracy": 0.9762282091917591
+        }
+      ]
+    },
+    {
+      "label": "ablation / force on (prior shift)",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": true,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 363,
+      "misses": 637,
+      "correct": 340,
+      "wrong": 23,
+      "commitRate": [
+        0.3337729626449257,
+        0.39327556918011636
+      ],
+      "committedAccuracy": [
+        0.9067218626557001,
+        0.957411654365734
+      ],
+      "matchRateAll": [
+        0.31130188230514194,
+        0.36992268041023574
+      ],
+      "wrongConfidentRateAll": [
+        0.015374276932992918,
+        0.03427645066222667
+      ],
+      "wrongConfidentRateCommits": [
+        0.042588345634265994,
+        0.09327813734429993
+      ],
+      "missRate": [
+        0.6067244308198836,
+        0.6662270373550743
+      ],
+      "meanProbes": 6.724,
+      "meanProbesCI": [
+        6.6871142183672365,
+        6.760885781632764
+      ],
+      "meanRecoveries": 0.801,
+      "meanConfidence": 0.7743838297286889,
+      "brier": 0.36446258512636776,
+      "brierCI": [
+        0.33062556253148534,
+        0.39829960772125017
+      ],
+      "ece": 0.03366836816055414,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 16,
+          "meanConfidence": 0.17036008101556602,
+          "accuracy": 0.1875
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 37,
+          "meanConfidence": 0.2532003143758841,
+          "accuracy": 0.2972972972972973
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 41,
+          "meanConfidence": 0.37051954915182933,
+          "accuracy": 0.2926829268292683
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 38,
+          "meanConfidence": 0.45430415410291647,
+          "accuracy": 0.47368421052631576
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 96,
+          "meanConfidence": 0.5595595375521483,
+          "accuracy": 0.4791666666666667
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 76,
+          "meanConfidence": 0.6355172606539824,
+          "accuracy": 0.618421052631579
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 109,
+          "meanConfidence": 0.7453035205436638,
+          "accuracy": 0.7431192660550459
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 152,
+          "meanConfidence": 0.8389056171954594,
+          "accuracy": 0.7960526315789473
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 435,
+          "meanConfidence": 0.9633701895671692,
+          "accuracy": 0.9356321839080459
+        }
+      ]
+    },
+    {
+      "label": "ablation / temperature 0.95",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 450,
+      "misses": 550,
+      "correct": 422,
+      "wrong": 28,
+      "commitRate": [
+        0.4194153840742968,
+        0.4809672917742588
+      ],
+      "committedAccuracy": [
+        0.9115416658704626,
+        0.9566029082806254
+      ],
+      "matchRateAll": [
+        0.3917453086472168,
+        0.4528516656765298
+      ],
+      "wrongConfidentRateAll": [
+        0.019442276812770925,
+        0.04017018319759311
+      ],
+      "wrongConfidentRateCommits": [
+        0.04339709171937457,
+        0.0884583341295375
+      ],
+      "missRate": [
+        0.5190327082257413,
+        0.5805846159257033
+      ],
+      "meanProbes": 6.404,
+      "meanProbesCI": [
+        6.356742290461462,
+        6.451257709538538
+      ],
+      "meanRecoveries": 0.574,
+      "meanConfidence": 0.8275168106148332,
+      "brier": 0.39460584436903273,
+      "brierCI": [
+        0.35570066371407105,
+        0.4335110250239944
+      ],
+      "ece": 0.08857416869353488,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 13,
+          "meanConfidence": 0.1254504226436905,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 10,
+          "meanConfidence": 0.24713209606482764,
+          "accuracy": 0.3
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 32,
+          "meanConfidence": 0.3436819317161173,
+          "accuracy": 0.1875
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 43,
+          "meanConfidence": 0.4520435429623894,
+          "accuracy": 0.3023255813953488
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 31,
+          "meanConfidence": 0.5836844351765583,
+          "accuracy": 0.41935483870967744
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 69,
+          "meanConfidence": 0.6692053320646116,
+          "accuracy": 0.6231884057971014
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 107,
+          "meanConfidence": 0.7485085383700104,
+          "accuracy": 0.719626168224299
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 174,
+          "meanConfidence": 0.8469021957282722,
+          "accuracy": 0.6781609195402298
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 521,
+          "meanConfidence": 0.9621077906569572,
+          "accuracy": 0.8963531669865643
+        }
+      ]
+    },
+    {
+      "label": "ablation / temperature 1.05",
+      "effectId": "card-twelve",
+      "effectName": "The Twelve",
+      "policy": "greedy",
+      "answerError": 0.15,
+      "gaze": false,
+      "force": false,
+      "hardMode": false,
+      "useOutlier": true,
+      "n": 1000,
+      "seed": 20261027,
+      "commits": 153,
+      "misses": 847,
+      "correct": 148,
+      "wrong": 5,
+      "commitRate": [
+        0.13201921562431126,
+        0.17663655476466403
+      ],
+      "committedAccuracy": [
+        0.9257867588179043,
+        0.9859619655004657
+      ],
+      "matchRateAll": [
+        0.1273389886764658,
+        0.17135504929736503
+      ],
+      "wrongConfidentRateAll": [
+        0.0021375355273244596,
+        0.011650955373375113
+      ],
+      "wrongConfidentRateCommits": [
+        0.01403803449953445,
+        0.07421324118209575
+      ],
+      "missRate": [
+        0.823363445235336,
+        0.8679807843756888
+      ],
+      "meanProbes": 7,
+      "meanProbesCI": [
+        7,
+        7
+      ],
+      "meanRecoveries": 1,
+      "meanConfidence": 0.7130756578065066,
+      "brier": 0.3702154235419554,
+      "brierCI": [
+        0.33993337513040556,
+        0.40049747195350527
+      ],
+      "ece": 0.03251865321219011,
+      "bins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 52,
+          "meanConfidence": 0.16072825596375942,
+          "accuracy": 0.1346153846153846
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 45,
+          "meanConfidence": 0.27024437447899613,
+          "accuracy": 0.37777777777777777
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 19,
+          "meanConfidence": 0.3488154554313113,
+          "accuracy": 0.42105263157894735
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 56,
+          "meanConfidence": 0.44361093344806096,
+          "accuracy": 0.39285714285714285
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 104,
+          "meanConfidence": 0.5586257108282922,
+          "accuracy": 0.5384615384615384
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 166,
+          "meanConfidence": 0.660173958289309,
+          "accuracy": 0.7048192771084337
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 151,
+          "meanConfidence": 0.7468537227896472,
+          "accuracy": 0.7615894039735099
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 88,
+          "meanConfidence": 0.857881986023981,
+          "accuracy": 0.9204545454545454
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 319,
+          "meanConfidence": 0.9565285511129689,
+          "accuracy": 0.9717868338557993
+        }
+      ]
+    }
+  ]
+}

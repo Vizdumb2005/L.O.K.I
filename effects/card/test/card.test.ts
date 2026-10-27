@@ -25,13 +25,25 @@ describe("card effect contract", () => {
     expect(() => validateEffect(cardEffect)).not.toThrow();
   });
 
-  it("has 12 cards, 20 probes and a 3x4 stage", () => {
+  it("has 12 cards, 22 probes and a 3x4 stage", () => {
     expect(CARDS).toHaveLength(12);
-    expect(CARD_PROBES).toHaveLength(20);
+    expect(CARD_PROBES).toHaveLength(22);
     expect(new Set(CARDS.map((c) => c.id)).size).toBe(12);
     expect(cardEffect.stage().columns).toBe(4);
     expect(cardEffect.stage().items).toHaveLength(12);
     expect(CARDS.some((c) => c.id === CARD_FORCE_TARGET)).toBe(true);
+  });
+
+  it("keeps every probe likelihood row-stochastic", () => {
+    for (const probe of CARD_PROBES) {
+      for (const card of CARDS) {
+        const total = probe.options.reduce(
+          (sum, option) => sum + probe.likelihood(card.id, option.id),
+          0
+        );
+        expect(total).toBeCloseTo(1, 12);
+      }
+    }
   });
 
   it("uses a uniform prior by default and a logged force shift when enabled", () => {

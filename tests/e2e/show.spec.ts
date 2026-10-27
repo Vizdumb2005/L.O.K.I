@@ -3,6 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 // Deterministic answers for the Three of Diamonds. Used only for the documentation
 // screenshot so the reveal shot is reproducible instead of depending on a miss.
 const THREE_OF_DIAMONDS: Record<string, string> = {
+  "Which suit is your card: Hearts, Diamonds or Spades?": "Diamonds",
+  "Which value: Ace, Two, Three or Four?": "Three",
   "Does your card's colour feel warm?": "Yes",
   "Is the suit a heart?": "No",
   "Is it a diamond?": "Yes",

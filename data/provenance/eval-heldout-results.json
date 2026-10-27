@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "LOKI v3 held-out seed evaluation",
-    "createdAt": "2026-10-27T17:24:21.923Z",
+    "createdAt": "2026-10-27T18:37:39.651Z",
     "primarySeed": 20261027,
     "heldOutSeed": 99999,
     "runsPerCell": 1000,
@@ -11,12 +11,12 @@
   "comparison": [
     {
       "label": "card / shipping / noise 0.1",
-      "primaryCommits": 496,
-      "heldOutCommits": 483,
-      "primaryWrong": 6,
-      "heldOutWrong": 11,
-      "commitDiffPct": 0.02620967741935484,
-      "wrongDiff": 5
+      "primaryCommits": 747,
+      "heldOutCommits": 754,
+      "primaryWrong": 13,
+      "heldOutWrong": 19,
+      "commitDiffPct": 0.009370816599732263,
+      "wrongDiff": 6
     },
     {
       "label": "example / shipping / noise 0.1",
@@ -29,59 +29,59 @@
     },
     {
       "label": "card-twelve / greedy / noise 0.15",
-      "primaryCommits": 338,
-      "heldOutCommits": 340,
-      "primaryWrong": 14,
-      "heldOutWrong": 16,
-      "commitDiffPct": 0.005917159763313609,
-      "wrongDiff": 2
+      "primaryCommits": 605,
+      "heldOutCommits": 638,
+      "primaryWrong": 30,
+      "heldOutWrong": 29,
+      "commitDiffPct": 0.05454545454545454,
+      "wrongDiff": 1
     },
     {
       "label": "card-twelve / greedy / noise 0.3",
-      "primaryCommits": 148,
-      "heldOutCommits": 151,
-      "primaryWrong": 46,
-      "heldOutWrong": 57,
-      "commitDiffPct": 0.02027027027027027,
-      "wrongDiff": 11
+      "primaryCommits": 382,
+      "heldOutCommits": 378,
+      "primaryWrong": 107,
+      "heldOutWrong": 82,
+      "commitDiffPct": 0.010471204188481676,
+      "wrongDiff": 25
     },
     {
       "label": "ablation / hard elimination",
       "primaryCommits": 1000,
       "heldOutCommits": 1000,
-      "primaryWrong": 479,
-      "heldOutWrong": 439,
+      "primaryWrong": 301,
+      "heldOutWrong": 282,
       "commitDiffPct": 0,
-      "wrongDiff": 40
+      "wrongDiff": 19
     },
     {
       "label": "ablation / temperature 1.05",
-      "primaryCommits": 153,
-      "heldOutCommits": 138,
-      "primaryWrong": 5,
-      "heldOutWrong": 4,
-      "commitDiffPct": 0.09803921568627451,
-      "wrongDiff": 1
+      "primaryCommits": 399,
+      "heldOutCommits": 431,
+      "primaryWrong": 9,
+      "heldOutWrong": 9,
+      "commitDiffPct": 0.08020050125313283,
+      "wrongDiff": 0
     },
     {
       "label": "ablation / gaze on (simulated)",
-      "primaryCommits": 513,
-      "heldOutCommits": 494,
-      "primaryWrong": 10,
-      "heldOutWrong": 10,
-      "commitDiffPct": 0.037037037037037035,
-      "wrongDiff": 0
+      "primaryCommits": 766,
+      "heldOutCommits": 750,
+      "primaryWrong": 15,
+      "heldOutWrong": 25,
+      "commitDiffPct": 0.020887728459530026,
+      "wrongDiff": 10
     }
   ],
   "heldOutCells": [
     {
       "label": "card / shipping / noise 0.1",
-      "commits": 483,
-      "wrong": 11,
-      "correct": 472,
-      "ece": 0.028926494626886304,
-      "brier": 0.2182546259934568,
-      "meanProbes": 6.759
+      "commits": 754,
+      "wrong": 19,
+      "correct": 735,
+      "ece": 0.02015572675903915,
+      "brier": 0.10794905391181762,
+      "meanProbes": 5.158
     },
     {
       "label": "example / shipping / noise 0.1",
@@ -94,48 +94,48 @@
     },
     {
       "label": "card-twelve / greedy / noise 0.15",
-      "commits": 340,
-      "wrong": 16,
-      "correct": 324,
-      "ece": 0.04594702352581231,
-      "brier": 0.3713020222495281,
-      "meanProbes": 6.825
+      "commits": 638,
+      "wrong": 29,
+      "correct": 609,
+      "ece": 0.03604230597953537,
+      "brier": 0.2054489880789082,
+      "meanProbes": 5.506
     },
     {
       "label": "card-twelve / greedy / noise 0.3",
-      "commits": 151,
-      "wrong": 57,
-      "correct": 94,
-      "ece": 0.30631124753850475,
-      "brier": 0.9057575385812685,
-      "meanProbes": 6.908
+      "commits": 378,
+      "wrong": 82,
+      "correct": 296,
+      "ece": 0.2231253715959627,
+      "brier": 0.6734846902037893,
+      "meanProbes": 6.149
     },
     {
       "label": "ablation / hard elimination",
       "commits": 1000,
-      "wrong": 439,
-      "correct": 561,
-      "ece": 0.43899999999999995,
-      "brier": 0.878,
-      "meanProbes": 3.635
+      "wrong": 282,
+      "correct": 718,
+      "ece": 0.28200000000000003,
+      "brier": 0.564,
+      "meanProbes": 2
     },
     {
       "label": "ablation / temperature 1.05",
-      "commits": 138,
-      "wrong": 4,
-      "correct": 134,
-      "ece": 0.03035919526325514,
-      "brier": 0.37500045051116243,
-      "meanProbes": 7
+      "commits": 431,
+      "wrong": 9,
+      "correct": 422,
+      "ece": 0.03473522953709516,
+      "brier": 0.20537797537931057,
+      "meanProbes": 6.223
     },
     {
       "label": "ablation / gaze on (simulated)",
-      "commits": 494,
-      "wrong": 10,
-      "correct": 484,
-      "ece": 0.021245867819948402,
-      "brier": 0.24498771777864203,
-      "meanProbes": 6.074
+      "commits": 750,
+      "wrong": 25,
+      "correct": 725,
+      "ece": 0.02063272387325745,
+      "brier": 0.1559688033353364,
+      "meanProbes": 4.771
     }
   ]
 }
