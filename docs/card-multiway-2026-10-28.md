@@ -29,3 +29,6 @@ numbers are not human accuracy. 0 human participants. No camera or device valida
 
 Visual check: mobile (390x844) question screen shows the 4-option value question with
 all choices readable.
+
+Reproduction: `npm run eval && npm run eval:report && npm run eval:heldout && npm run verify:provenance`
+(Node 22, `npm ci`). A clean checkout of main reproduced all 33 cells before this change.
