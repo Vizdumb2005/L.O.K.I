@@ -190,7 +190,8 @@ export function answerLikelihoods(
   optionId: string,
   config: BeliefConfig
 ): number[] {
-  const K = Math.max(2, probe.options.length);
+  const K = probe.options.length;
+  if (K < 2) throw new Error(`probe ${probe.id} needs at least two options`);
   return state.hypotheses.map((h) => {
     const raw = Math.min(1, Math.max(0, probe.likelihood(h.id, optionId)));
     if (config.hardMode) return raw;
@@ -210,6 +211,7 @@ export function applyAnswer(
   at: number,
   reliability = 1
 ): UpdateResult {
+  if (probe.options.length < 2) throw new Error(`probe ${probe.id} needs at least two options`);
   if (!probe.options.some((o) => o.id === optionId)) {
     throw new Error(`unknown option ${optionId} for probe ${probe.id}`);
   }

@@ -396,3 +396,13 @@ describe("belief input validation", () => {
       reliability: 0.8, at: 1}, config)).toThrow(/alphabet/);
   });
 });
+
+describe("probe alphabet boundary", () => {
+  it("rejects malformed zero/one-option probes in both direct update APIs", () => {
+    for (const options of [[], [{ id: "yes", label: "Yes" }]]) {
+      const malformed: Probe = { ...probe, options };
+      expect(() => answerLikelihoods(fresh(), malformed, "yes", config)).toThrow(/at least two/);
+      expect(() => applyAnswer(fresh(), malformed, "yes", config, 1)).toThrow(/at least two/);
+    }
+  });
+});

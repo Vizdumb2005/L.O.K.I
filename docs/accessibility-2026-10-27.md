@@ -57,3 +57,14 @@ The new regression fails on the old client and passes on the corrected client.
 Updated local gates: 90 unit tests, 74 isolated-core tests, 11 browser tests and full
 33-cell provenance pass. No inference/effect/evaluation changes. This is a separate
 small commit on the existing PR #3, not another inclusive pull request.
+
+## Merge-review boundary correction
+
+Kilo's older PR #1 review flagged inconsistent alphabet-size handling. The quoted
+zero-option division is blocked by unknown-option validation, and normal sessions
+already validate >=2options. Direct engine API calls with one-option probes were not
+explicitly rejected, however. Both likelihood and answer-update entry points now
+reject fewer than two options before calculation. The new boundary regression fails
+on the prior implementation and passes after. Valid effects' probabilities and all
+33 evaluation cells are unchanged. The merge still awaits fresh exact-head Kilo and
+CI; the user's conditional merge authorization, not the bot's recommendation, governs.
