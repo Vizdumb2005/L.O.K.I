@@ -72,6 +72,12 @@ const row = (label: string, c: Cell, extra = ""): string =>
 
 const shipping = cell("card / shipping / noise 0.1");
 const toy = cell("example / shipping / noise 0.1");
+const heldout = JSON.parse(await readFile(resolve("data/provenance/eval-heldout-results.json"), "utf8")) as {
+  heldOutCells: Array<{ label: string; wrong: number }>;
+  meta: { runsPerCell: number };
+};
+const heldoutToy = heldout.heldOutCells.find((c) => c.label === "example / shipping / noise 0.1");
+if (!heldoutToy) throw new Error("missing held-out toy cell");
 const noiseLevels = data.meta.noiseLevels;
 const policies = data.meta.policies;
 
@@ -215,11 +221,18 @@ ${toyPolicies.map((c) => row(c.policy, c)).join("\n")}
 
 Toy shipping cell at 10% error: ${toy.commits} commits, ${toy.wrong} wrong,
 ${toy.commits ? pct(toy.correct / toy.commits) : "N/A (no commits)"} committed accuracy, Brier
-${num(toy.brier, 3)}. The lower performance is expected from a three-question toy and is
-reported as-is. After correcting observation-noise normalization, this toy abstains
-on every evaluated run: three noisy probes do not reach its existing threshold. The
-threshold and noise model were not lowered to manufacture a reveal. The platform test is that it runs through the identical session,
-belief, recovery, and simulation code.
+${num(toy.brier, 3)}. The three probes now ask objective spelling properties: ends in n,
+contains m, and odd letter count. They form distinct balanced partitions whose truth
+codewords have pairwise Hamming distance two. All four truthful paths reveal; every
+single flipped answer abstains. Two flips can imitate another word and cause a wrong
+reveal. Threshold, noise, temperature and probe budget are unchanged.
+
+This is a spelling-puzzle plugin proof, not a shipping mentalism accuracy claim. The
+independent per-answer simulator cannot establish human calibration: spelling mistakes
+may be correlated. The held-out seed gives ${heldoutToy.wrong} wrong out of ${heldout.meta.runsPerCell} runs;
+its point error rate is ${pct(heldoutToy.wrong / heldout.meta.runsPerCell)} before interval uncertainty. Do not describe Ember as passing
+the card shipping gates. It runs through the identical session, belief, recovery and
+simulation code.
 
 ## 6. Calibration
 

@@ -3,7 +3,8 @@
 Earlier evaluation claims below describe the old math. The audit corrected noise from
 hypothesis count to observation-alphabet size and aligned policy entropy with update
 temperature. Current results: 496 card commits, 490 correct, 6 wrong per 1,000 synthetic
-runs. Ember abstains with its unchanged threshold. See `audit-2026-10-27.md` and the
+runs. The audit-stage Ember abstention is superseded by the spelling-probe follow-through
+recorded in `development-2026-10-27.md`. See `audit-2026-10-27.md` and the
 generated report for current evidence. Historical notes below are not current metrics.
 
 ---

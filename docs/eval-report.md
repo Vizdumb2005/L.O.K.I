@@ -4,7 +4,7 @@
 This report measures a synthetic answer model, not people. It is evidence about the
 implementation's behavior under controlled noise, not proof of real-world accuracy.
 
-**Generated:** 2026-10-27T17:05:08.897Z · **Runs per cell:** 1000 ·
+**Generated:** 2026-10-27T17:24:15.963Z · **Runs per cell:** 1000 ·
 **Seed base:** 20261027 · **Cells:** 33 ·
 **Total runs:** 33000
 
@@ -120,17 +120,24 @@ shipping effect and was not tuned for the same accuracy target.
 
 | Policy | Commits | Wrong | Committed accuracy | Wrong, all runs | Brier | ECE | Mean probes |
 |---|---|---|---|---|---|---|---|
-| greedy | 0 / 1000 (0.0%) | 0 | — | 0.0% [0.0%, 0.4%] | 0.453 [0.419, 0.488] | 0.054 | 3.00 [3.00, 3.00] |
-| median | 0 / 1000 (0.0%) | 0 | — | 0.0% [0.0%, 0.4%] | 0.454 [0.420, 0.489] | 0.060 | 3.00 [3.00, 3.00] |
-| fixed | 0 / 1000 (0.0%) | 0 | — | 0.0% [0.0%, 0.4%] | 0.454 [0.420, 0.489] | 0.060 | 3.00 [3.00, 3.00] |
+| greedy | 630 / 1000 (63.0%) | 48 | 92.4% [90.0%, 94.2%] | 4.8% [3.6%, 6.3%] | 0.340 [0.311, 0.369] | 0.024 | 3.00 [3.00, 3.00] |
+| median | 630 / 1000 (63.0%) | 48 | 92.4% [90.0%, 94.2%] | 4.8% [3.6%, 6.3%] | 0.340 [0.311, 0.369] | 0.024 | 3.00 [3.00, 3.00] |
+| fixed | 630 / 1000 (63.0%) | 48 | 92.4% [90.0%, 94.2%] | 4.8% [3.6%, 6.3%] | 0.340 [0.311, 0.369] | 0.024 | 3.00 [3.00, 3.00] |
 
-Toy shipping cell at 10% error: 0 commits, 0 wrong,
-N/A (no commits) committed accuracy, Brier
-0.322. The lower performance is expected from a three-question toy and is
-reported as-is. After correcting observation-noise normalization, this toy abstains
-on every evaluated run: three noisy probes do not reach its existing threshold. The
-threshold and noise model were not lowered to manufacture a reveal. The platform test is that it runs through the identical session,
-belief, recovery, and simulation code.
+Toy shipping cell at 10% error: 739 commits, 20 wrong,
+97.3% committed accuracy, Brier
+0.215. The three probes now ask objective spelling properties: ends in n,
+contains m, and odd letter count. They form distinct balanced partitions whose truth
+codewords have pairwise Hamming distance two. All four truthful paths reveal; every
+single flipped answer abstains. Two flips can imitate another word and cause a wrong
+reveal. Threshold, noise, temperature and probe budget are unchanged.
+
+This is a spelling-puzzle plugin proof, not a shipping mentalism accuracy claim. The
+independent per-answer simulator cannot establish human calibration: spelling mistakes
+may be correlated. The held-out seed gives 31 wrong out of 1000 runs;
+its point error rate is 3.1% before interval uncertainty. Do not describe Ember as passing
+the card shipping gates. It runs through the identical session, belief, recovery and
+simulation code.
 
 ## 6. Calibration
 

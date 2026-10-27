@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "LOKI v3 simulator evaluation",
-    "createdAt": "2026-10-27T17:05:08.897Z",
+    "createdAt": "2026-10-27T17:24:15.963Z",
     "runsPerCell": 1000,
     "seedBase": 20261027,
     "noiseLevels": [
@@ -1549,47 +1549,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
+      "commits": 1000,
+      "misses": 0,
+      "correct": 1000,
       "wrong": 0,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.996173241514445,
+        1
       ],
       "committedAccuracy": [
-        0,
+        0.996173241514445,
         1
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.996173241514445,
+        1
       ],
       "wrongConfidentRateAll": [
         2.168404344971009e-19,
         0.0038267584855551234
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        2.168404344971009e-19,
+        0.0038267584855551234
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        2.168404344971009e-19,
+        0.0038267584855551234
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.8112095472462494,
-      "brier": 0.05797145761725848,
+      "meanRecoveries": 0,
+      "meanConfidence": 0.9432971442057871,
+      "brier": 0.00428695180695629,
       "brierCI": [
-        0.05584606038933447,
-        0.060096854845182485
+        0.0042869518069562846,
+        0.004286951806956295
       ],
-      "ece": 0.18879045275376044,
+      "ece": 0.05670285579421286,
       "bins": [
         {
           "lower": 0,
@@ -1643,23 +1643,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 243,
-          "meanConfidence": 0.7019230769230761,
-          "accuracy": 1
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 757,
-          "meanConfidence": 0.8462909373235562,
-          "accuracy": 1
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 1000,
+          "meanConfidence": 0.9432971442057871,
+          "accuracy": 1
         }
       ]
     },
@@ -1675,47 +1675,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 856,
+      "misses": 144,
+      "correct": 850,
+      "wrong": 6,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.8328762978702983,
+        0.8763990500879865
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.9847925923923775,
+        0.9967837102408763
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.8265313415731996,
+        0.8707899274869118
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.0027526691418763745,
+        0.01302816824185209
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.003216289759123689,
+        0.015207407607622618
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.1236009499120135,
+        0.16712370212970176
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.7833956137665423,
-      "brier": 0.1963694422092766,
+      "meanRecoveries": 0.144,
+      "meanConfidence": 0.8551438886759125,
+      "brier": 0.11077083681070866,
       "brierCI": [
-        0.1730148532760952,
-        0.219724031142458
+        0.09409010814482897,
+        0.12745156547658834
       ],
-      "ece": 0.10324101414044669,
+      "ece": 0.05385611132408497,
       "bins": [
         {
           "lower": 0,
@@ -1741,16 +1741,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 1,
-          "meanConfidence": 0.3183139534883722,
-          "accuracy": 0
+          "count": 144,
+          "meanConfidence": 0.33112175858164566,
+          "accuracy": 0.4097222222222222
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 73,
-          "meanConfidence": 0.46262250173624514,
-          "accuracy": 0.4931506849315068
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -1769,23 +1769,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 238,
-          "meanConfidence": 0.7019230769230763,
-          "accuracy": 0.8529411764705882
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 688,
-          "meanConfidence": 0.8462909373235518,
-          "accuracy": 0.940406976744186
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 856,
+          "meanConfidence": 0.9432971442057921,
+          "accuracy": 0.9929906542056075
         }
       ]
     },
@@ -1801,47 +1801,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 630,
+      "misses": 370,
+      "correct": 582,
+      "wrong": 48,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.5996317181277412,
+        0.6593733246660144
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.9004281132645748,
+        0.9420538553235072
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.5511729797517128,
+        0.612199431856656
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.036393301020807914,
+        0.06306608865013393
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.05794614467649289,
+        0.09957188673542527
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.3406266753339855,
+        0.4003682818722588
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.7289567897152461,
-      "brier": 0.4534919877142648,
+      "meanRecoveries": 0.37,
+      "meanConfidence": 0.7167922515248613,
+      "brier": 0.3400781192885502,
       "brierCI": [
-        0.41905521635047416,
-        0.48792875907805544
+        0.31115714699496555,
+        0.36899909158213484
       ],
-      "ece": 0.053956789715232926,
+      "ece": 0.023762150174447966,
       "bins": [
         {
           "lower": 0,
@@ -1867,16 +1867,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 10,
-          "meanConfidence": 0.31831395348837216,
-          "accuracy": 0.2
+          "count": 370,
+          "meanConfidence": 0.3311217585816453,
+          "accuracy": 0.3621621621621622
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 201,
-          "meanConfidence": 0.46262250173624736,
-          "accuracy": 0.4527363184079602
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -1895,23 +1895,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 242,
-          "meanConfidence": 0.7019230769230761,
-          "accuracy": 0.5950413223140496
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 547,
-          "meanConfidence": 0.8462909373235449,
-          "accuracy": 0.8007312614259597
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 630,
+          "meanConfidence": 0.9432971442058043,
+          "accuracy": 0.9238095238095239
         }
       ]
     },
@@ -1927,47 +1927,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 523,
+      "misses": 477,
+      "correct": 330,
+      "wrong": 193,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.4920142012545935,
+        0.553809767855071
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.5888048199169369,
+        0.6712354591959997
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.3015555405204304,
+        0.35974555736465835
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.16973301355427384,
+        0.21861661615585704
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.3287645408040003,
+        0.4111951800830631
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.44619023214492903,
+        0.5079857987454065
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.6718351335981637,
-      "brier": 0.73994048394013,
+      "meanRecoveries": 0.477,
+      "meanConfidence": 0.6512894852630806,
+      "brier": 0.6972051985851456,
       "brierCI": [
-        0.7019488769504687,
-        0.7779320909297913
+        0.6566096457310592,
+        0.7378007514392321
       ],
-      "ece": 0.22083513359815415,
+      "ece": 0.17428948526308444,
       "bins": [
         {
           "lower": 0,
@@ -1993,16 +1993,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 67,
-          "meanConfidence": 0.31831395348837205,
-          "accuracy": 0.2537313432835821
+          "count": 477,
+          "meanConfidence": 0.3311217585816452,
+          "accuracy": 0.3081761006289308
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 288,
-          "meanConfidence": 0.46262250173624714,
-          "accuracy": 0.3611111111111111
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -2021,23 +2021,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 198,
-          "meanConfidence": 0.7019230769230783,
-          "accuracy": 0.398989898989899
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 447,
-          "meanConfidence": 0.8462909373235449,
-          "accuracy": 0.5615212527964206
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 523,
+          "meanConfidence": 0.9432971442058119,
+          "accuracy": 0.6309751434034416
         }
       ]
     },
@@ -2053,47 +2053,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
+      "commits": 1000,
+      "misses": 0,
+      "correct": 1000,
       "wrong": 0,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.996173241514445,
+        1
       ],
       "committedAccuracy": [
-        0,
+        0.996173241514445,
         1
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.996173241514445,
+        1
       ],
       "wrongConfidentRateAll": [
         2.168404344971009e-19,
         0.0038267584855551234
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        2.168404344971009e-19,
+        0.0038267584855551234
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        2.168404344971009e-19,
+        0.0038267584855551234
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.8112095472462494,
-      "brier": 0.05797145761725848,
+      "meanRecoveries": 0,
+      "meanConfidence": 0.9432971442057871,
+      "brier": 0.00428695180695629,
       "brierCI": [
-        0.05584606038933447,
-        0.060096854845182485
+        0.0042869518069562846,
+        0.004286951806956295
       ],
-      "ece": 0.18879045275376044,
+      "ece": 0.05670285579421286,
       "bins": [
         {
           "lower": 0,
@@ -2147,23 +2147,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 243,
-          "meanConfidence": 0.7019230769230761,
-          "accuracy": 1
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 757,
-          "meanConfidence": 0.8462909373235562,
-          "accuracy": 1
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 1000,
+          "meanConfidence": 0.9432971442057871,
+          "accuracy": 1
         }
       ]
     },
@@ -2179,47 +2179,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 856,
+      "misses": 144,
+      "correct": 850,
+      "wrong": 6,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.8328762978702983,
+        0.8763990500879865
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.9847925923923775,
+        0.9967837102408763
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.8265313415731996,
+        0.8707899274869118
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.0027526691418763745,
+        0.01302816824185209
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.003216289759123689,
+        0.015207407607622618
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.1236009499120135,
+        0.16712370212970176
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.7855986947766854,
-      "brier": 0.20311227211550606,
+      "meanRecoveries": 0.144,
+      "meanConfidence": 0.8551438886759125,
+      "brier": 0.11077083681070866,
       "brierCI": [
-        0.17893242048895805,
-        0.22729212374205407
+        0.09409010814482897,
+        0.12745156547658834
       ],
-      "ece": 0.09940130522332705,
+      "ece": 0.05385611132408497,
       "bins": [
         {
           "lower": 0,
@@ -2245,16 +2245,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 144,
+          "meanConfidence": 0.33112175858164566,
+          "accuracy": 0.4097222222222222
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 66,
-          "meanConfidence": 0.4626225017362451,
-          "accuracy": 0.5303030303030303
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -2273,23 +2273,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 245,
-          "meanConfidence": 0.701923076923076,
-          "accuracy": 0.8285714285714286
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 689,
-          "meanConfidence": 0.8462909373235518,
-          "accuracy": 0.9390420899854862
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 856,
+          "meanConfidence": 0.9432971442057921,
+          "accuracy": 0.9929906542056075
         }
       ]
     },
@@ -2305,47 +2305,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 630,
+      "misses": 370,
+      "correct": 582,
+      "wrong": 48,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.5996317181277412,
+        0.6593733246660144
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.9004281132645748,
+        0.9420538553235072
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.5511729797517128,
+        0.612199431856656
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.036393301020807914,
+        0.06306608865013393
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.05794614467649289,
+        0.09957188673542527
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.3406266753339855,
+        0.4003682818722588
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.7289074138817843,
-      "brier": 0.454096994142284,
+      "meanRecoveries": 0.37,
+      "meanConfidence": 0.7167922515248613,
+      "brier": 0.3400781192885502,
       "brierCI": [
-        0.41965978868153125,
-        0.48853419960303673
+        0.31115714699496555,
+        0.36899909158213484
       ],
-      "ece": 0.05990450690502716,
+      "ece": 0.023762150174447966,
       "bins": [
         {
           "lower": 0,
@@ -2371,16 +2371,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 11,
-          "meanConfidence": 0.31831395348837216,
-          "accuracy": 0.45454545454545453
+          "count": 370,
+          "meanConfidence": 0.3311217585816453,
+          "accuracy": 0.3621621621621622
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 199,
-          "meanConfidence": 0.46262250173624736,
-          "accuracy": 0.4271356783919598
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -2399,23 +2399,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 244,
-          "meanConfidence": 0.701923076923076,
-          "accuracy": 0.5901639344262295
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 546,
-          "meanConfidence": 0.8462909373235449,
-          "accuracy": 0.8021978021978022
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 630,
+          "meanConfidence": 0.9432971442058043,
+          "accuracy": 0.9238095238095239
         }
       ]
     },
@@ -2431,47 +2431,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 523,
+      "misses": 477,
+      "correct": 330,
+      "wrong": 193,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.4920142012545935,
+        0.553809767855071
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.5888048199169369,
+        0.6712354591959997
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.3015555405204304,
+        0.35974555736465835
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.16973301355427384,
+        0.21861661615585704
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.3287645408040003,
+        0.4111951800830631
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.44619023214492903,
+        0.5079857987454065
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.6778821809955381,
-      "brier": 0.7520632171972216,
+      "meanRecoveries": 0.477,
+      "meanConfidence": 0.6512894852630806,
+      "brier": 0.6972051985851456,
       "brierCI": [
-        0.7135606259630621,
-        0.790565808431381
+        0.6566096457310592,
+        0.7378007514392321
       ],
-      "ece": 0.23588218099552793,
+      "ece": 0.17428948526308444,
       "bins": [
         {
           "lower": 0,
@@ -2497,16 +2497,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 56,
-          "meanConfidence": 0.31831395348837227,
-          "accuracy": 0.23214285714285715
+          "count": 477,
+          "meanConfidence": 0.3311217585816452,
+          "accuracy": 0.3081761006289308
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 287,
-          "meanConfidence": 0.4626225017362472,
-          "accuracy": 0.34494773519163763
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -2525,23 +2525,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 199,
-          "meanConfidence": 0.7019230769230783,
-          "accuracy": 0.3969849246231156
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 458,
-          "meanConfidence": 0.8462909373235449,
-          "accuracy": 0.5480349344978166
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 523,
+          "meanConfidence": 0.9432971442058119,
+          "accuracy": 0.6309751434034416
         }
       ]
     },
@@ -2557,47 +2557,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
+      "commits": 1000,
+      "misses": 0,
+      "correct": 1000,
       "wrong": 0,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.996173241514445,
+        1
       ],
       "committedAccuracy": [
-        0,
+        0.996173241514445,
         1
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.996173241514445,
+        1
       ],
       "wrongConfidentRateAll": [
         2.168404344971009e-19,
         0.0038267584855551234
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        2.168404344971009e-19,
+        0.0038267584855551234
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        2.168404344971009e-19,
+        0.0038267584855551234
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.8112095472462494,
-      "brier": 0.05797145761725848,
+      "meanRecoveries": 0,
+      "meanConfidence": 0.9432971442057871,
+      "brier": 0.00428695180695629,
       "brierCI": [
-        0.05584606038933447,
-        0.060096854845182485
+        0.0042869518069562846,
+        0.004286951806956295
       ],
-      "ece": 0.18879045275376044,
+      "ece": 0.05670285579421286,
       "bins": [
         {
           "lower": 0,
@@ -2651,23 +2651,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 243,
-          "meanConfidence": 0.7019230769230761,
-          "accuracy": 1
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 757,
-          "meanConfidence": 0.8462909373235562,
-          "accuracy": 1
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 1000,
+          "meanConfidence": 0.9432971442057871,
+          "accuracy": 1
         }
       ]
     },
@@ -2683,47 +2683,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 856,
+      "misses": 144,
+      "correct": 850,
+      "wrong": 6,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.8328762978702983,
+        0.8763990500879865
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.9847925923923775,
+        0.9967837102408763
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.8265313415731996,
+        0.8707899274869118
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.0027526691418763745,
+        0.01302816824185209
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.003216289759123689,
+        0.015207407607622618
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.1236009499120135,
+        0.16712370212970176
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.7855986947766854,
-      "brier": 0.20311227211550606,
+      "meanRecoveries": 0.144,
+      "meanConfidence": 0.8551438886759125,
+      "brier": 0.11077083681070866,
       "brierCI": [
-        0.17893242048895805,
-        0.22729212374205407
+        0.09409010814482897,
+        0.12745156547658834
       ],
-      "ece": 0.09940130522332705,
+      "ece": 0.05385611132408497,
       "bins": [
         {
           "lower": 0,
@@ -2749,16 +2749,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 144,
+          "meanConfidence": 0.33112175858164566,
+          "accuracy": 0.4097222222222222
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 66,
-          "meanConfidence": 0.4626225017362451,
-          "accuracy": 0.5303030303030303
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -2777,23 +2777,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 245,
-          "meanConfidence": 0.701923076923076,
-          "accuracy": 0.8285714285714286
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 689,
-          "meanConfidence": 0.8462909373235518,
-          "accuracy": 0.9390420899854862
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 856,
+          "meanConfidence": 0.9432971442057921,
+          "accuracy": 0.9929906542056075
         }
       ]
     },
@@ -2809,47 +2809,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 630,
+      "misses": 370,
+      "correct": 582,
+      "wrong": 48,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.5996317181277412,
+        0.6593733246660144
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.9004281132645748,
+        0.9420538553235072
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.5511729797517128,
+        0.612199431856656
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.036393301020807914,
+        0.06306608865013393
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.05794614467649289,
+        0.09957188673542527
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.3406266753339855,
+        0.4003682818722588
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.7289074138817843,
-      "brier": 0.454096994142284,
+      "meanRecoveries": 0.37,
+      "meanConfidence": 0.7167922515248613,
+      "brier": 0.3400781192885502,
       "brierCI": [
-        0.41965978868153125,
-        0.48853419960303673
+        0.31115714699496555,
+        0.36899909158213484
       ],
-      "ece": 0.05990450690502716,
+      "ece": 0.023762150174447966,
       "bins": [
         {
           "lower": 0,
@@ -2875,16 +2875,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 11,
-          "meanConfidence": 0.31831395348837216,
-          "accuracy": 0.45454545454545453
+          "count": 370,
+          "meanConfidence": 0.3311217585816453,
+          "accuracy": 0.3621621621621622
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 199,
-          "meanConfidence": 0.46262250173624736,
-          "accuracy": 0.4271356783919598
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -2903,23 +2903,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 244,
-          "meanConfidence": 0.701923076923076,
-          "accuracy": 0.5901639344262295
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 546,
-          "meanConfidence": 0.8462909373235449,
-          "accuracy": 0.8021978021978022
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 630,
+          "meanConfidence": 0.9432971442058043,
+          "accuracy": 0.9238095238095239
         }
       ]
     },
@@ -2935,47 +2935,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 523,
+      "misses": 477,
+      "correct": 330,
+      "wrong": 193,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.4920142012545935,
+        0.553809767855071
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.5888048199169369,
+        0.6712354591959997
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.3015555405204304,
+        0.35974555736465835
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.16973301355427384,
+        0.21861661615585704
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.3287645408040003,
+        0.4111951800830631
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.44619023214492903,
+        0.5079857987454065
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.6778821809955381,
-      "brier": 0.7520632171972216,
+      "meanRecoveries": 0.477,
+      "meanConfidence": 0.6512894852630806,
+      "brier": 0.6972051985851456,
       "brierCI": [
-        0.7135606259630621,
-        0.790565808431381
+        0.6566096457310592,
+        0.7378007514392321
       ],
-      "ece": 0.23588218099552793,
+      "ece": 0.17428948526308444,
       "bins": [
         {
           "lower": 0,
@@ -3001,16 +3001,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 56,
-          "meanConfidence": 0.31831395348837227,
-          "accuracy": 0.23214285714285715
+          "count": 477,
+          "meanConfidence": 0.3311217585816452,
+          "accuracy": 0.3081761006289308
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 287,
-          "meanConfidence": 0.4626225017362472,
-          "accuracy": 0.34494773519163763
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -3029,23 +3029,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 199,
-          "meanConfidence": 0.7019230769230783,
-          "accuracy": 0.3969849246231156
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 458,
-          "meanConfidence": 0.8462909373235449,
-          "accuracy": 0.5480349344978166
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 523,
+          "meanConfidence": 0.9432971442058119,
+          "accuracy": 0.6309751434034416
         }
       ]
     },
@@ -3187,47 +3187,47 @@
       "useOutlier": true,
       "n": 1000,
       "seed": 20261027,
-      "commits": 0,
-      "misses": 1000,
-      "correct": 0,
-      "wrong": 0,
+      "commits": 739,
+      "misses": 261,
+      "correct": 719,
+      "wrong": 20,
       "commitRate": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.7109019937060769,
+        0.7652688157378277
       ],
       "committedAccuracy": [
-        0,
-        1
+        0.9585681246227074,
+        0.9824132808977988
       ],
       "matchRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.6903436580897934,
+        0.7459802216935335
       ],
       "wrongConfidentRateAll": [
-        2.168404344971009e-19,
-        0.0038267584855551234
+        0.012983682916415136,
+        0.030690005229717786
       ],
       "wrongConfidentRateCommits": [
-        0,
-        1
+        0.017586719102201203,
+        0.04143187537729258
       ],
       "missRate": [
-        0.996173241514445,
-        1
+        0.23473118426217232,
+        0.289098006293923
       ],
       "meanProbes": 3,
       "meanProbesCI": [
         3,
         3
       ],
-      "meanRecoveries": 1,
-      "meanConfidence": 0.7574923252483456,
-      "brier": 0.32179002272019713,
+      "meanRecoveries": 0.261,
+      "meanConfidence": 0.78351936855789,
+      "brier": 0.2148081979539203,
       "brierCI": [
-        0.29152656018313505,
-        0.3520534852572592
+        0.19161794945092686,
+        0.23799844645691376
       ],
-      "ece": 0.025823154744921892,
+      "ece": 0.030480631442106203,
       "bins": [
         {
           "lower": 0,
@@ -3253,16 +3253,16 @@
         {
           "lower": 0.3,
           "upper": 0.4,
-          "count": 5,
-          "meanConfidence": 0.3183139534883722,
-          "accuracy": 0
+          "count": 261,
+          "meanConfidence": 0.3311217585816454,
+          "accuracy": 0.36398467432950193
         },
         {
           "lower": 0.4,
           "upper": 0.5,
-          "count": 132,
-          "meanConfidence": 0.4626225017362467,
-          "accuracy": 0.4621212121212121
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.5,
@@ -3281,23 +3281,23 @@
         {
           "lower": 0.7,
           "upper": 0.8,
-          "count": 246,
-          "meanConfidence": 0.7019230769230759,
-          "accuracy": 0.7113821138211383
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.8,
           "upper": 0.9,
-          "count": 617,
-          "meanConfidence": 0.846290937323546,
-          "accuracy": 0.8816855753646677
+          "count": 0,
+          "meanConfidence": 0,
+          "accuracy": 0
         },
         {
           "lower": 0.9,
           "upper": 1,
-          "count": 0,
-          "meanConfidence": 0,
-          "accuracy": 0
+          "count": 739,
+          "meanConfidence": 0.9432971442057975,
+          "accuracy": 0.972936400541272
         }
       ]
     },

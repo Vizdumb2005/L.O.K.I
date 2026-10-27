@@ -117,7 +117,7 @@ From `data/eval-results.json` (seed `20261027`, 1,000 runs per cell, 33 cells):
 | Condition | Commits | Wrong | Correct | Wrong / all runs |
 |---|---|---|---|---|
 | Card, 10% (shipping) | 496 / 1000 | 6 | 490 | 0.6% |
-| Ember Words, 10% | 0 / 1000 | 0 | 0 | 0.0% (all abstentions) |
+| Ember Words, 10% (toy only) | 739 / 1000 | 20 | 719 | 2.0% |
 
 The card shipping gate passes both 95% upper-bound tests (<3% wrong over all runs,
 <10% over commits). Brier is 0.196; ECE is 0.038.
@@ -132,9 +132,12 @@ The held-out seed (99999) now gives 483 commits and 11 wrong, passing both
 simulation gates. That checks seed robustness within the same simulator, not human
 accuracy. `verify:provenance` reproduces every metric of all 33 cells, not a subset.
 
-**Toy limit:** Ember's three existing noisy questions no longer reach its unchanged 0.85
-threshold after the correction. It runs through the same generic contract and honestly
-abstains. It is not a ready-to-reveal performance. No threshold was lowered to hide this.
+**Toy update:** Ember now asks three objective spelling questions with balanced, distinct
+partitions. Its unchanged 0.85 threshold permits all four truthful paths to reveal;
+all single-answer flips abstain. Two flips can imitate another word and yield a wrong
+reveal. The held-out toy run gives 769 commits, 738 correct and 31 wrong out of 1,000.
+This does **not** pass the card shipping target and is not a human accuracy claim.
+The independent-error simulator does not capture correlated spelling mistakes.
 See [the generated evaluation report](docs/eval-report.md) for intervals and stress cells.
 
 ## Effects
@@ -149,7 +152,7 @@ a card.
 
 ### Ember Words (plugin proof)
 
-Four words, three binary questions, `tau = 0.85`, max 3 probes. It runs through the same
+Four English words, three binary spelling questions, `tau = 0.85`, max 3 probes. It runs through the same
 session, belief, recovery, simulator, and UI as the card effect. It is deliberately small
 and is not a shipping accuracy claim.
 
