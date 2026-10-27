@@ -12,3 +12,12 @@ apps/web/public/models/
 apps/web/public/wasm/
 apps/web/public/mediapipe/
 data/raw/
+
+# Local coding/browser harness installations are not application dependencies.
+.agents/
+.claude/
+agent/skills/
+data/skills/
+skills-lock.json
+scripts/neo.mjs
+scripts/neo-client.mjs

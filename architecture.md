@@ -1,6 +1,6 @@
 # LOKI v3 — architecture
 
-Status: implemented and verified, 2026-10-27 (continuation round 2). Evidence reproducibility milestone complete; audit round in progress. See `docs/handoff.md`. Any evidence-backed change made during the build is
+Status: audit revision, 2026-10-27. Current evidence and limits are in docs/audit-2026-10-27.md. See `docs/handoff.md`. Any evidence-backed change made during the build is
 recorded in `docs/lessons.md` and reflected here.
 
 ## 1. Shape
@@ -140,7 +140,7 @@ Contracts are runtime-validated (`validateEffect`): unique IDs, complete priors,
 stochastic likelihoods, non-degenerate probes, stage coverage, required beats, sane config.
 The same validator is run in each effect's test.
 
-The contract was exercised by the tiny `Ember Words` effect (8 glyphs, 3 attribute probes,
+The contract was exercised by the tiny `Ember Words` effect (4 words, 3 attribute probes,
 one reveal) before the card effect was polished. It changed two things: (1) `stage()` must
 cover every hypothesis or the generic renderer breaks; (2) `revealLine` needs the item and
 confidence, not just a string, so a second effect can phrase its own reveal. No card concept
@@ -166,7 +166,7 @@ For probe `q`, chosen option `a`, item `h`:
 ```
 raw = q.likelihood(h, a)                       // effect truth table, [0,1]
 smoothed = raw*(1-eps) + (1-raw)*eps/(K-1)     // K answer options
-mixed = (1-w)*smoothed + w*(1/N)               // outlier/uniform over items
+mixed = (1-w)*smoothed + w*(1/K)               // uniform over answer options
 p(obs|h) = mixed
 ```
 
@@ -359,3 +359,11 @@ This is the real proof, not a README claim.
 - **Deadline:** scope is cut aggressively; no extra effects.
 - **Ethics:** mentalism can deceive. Consent, framing, and no diagnosis claims are
   non-negotiable.
+
+## Repository cleanup and audit (2026-10-27)
+
+User-requested scope: separate accidental BrowserOS/MCP installation files from the
+product, preserve external browser access, and fix verified defects without a redesign.
+Plan: remove only unused harness copies; ignore local installations; add camera
+cancellation regressions; audit fallback/validation/export boundaries; run local gates.
+The domain-neutral engine and effects remain intact. No paid calls or deployment.

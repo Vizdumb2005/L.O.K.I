@@ -101,7 +101,7 @@ The product is an illusion; it is not mind reading.
 - [x] All remaining `[UNRESOLVED]` items are listed in the final report.
 - [x] No banned claims in UI, README, docs, or demo script.
 
-## Status at continuation rounds 1-5 (2026-10-27, 21:15 IST)
+## Historical status at continuation rounds 1-5 (2026-10-27, 21:15 IST)
 
 ### Milestone 1: Evidence reproducibility — COMPLETE
 Two fresh 33K-run evaluations matched each other; 31/33 cells matched the committed
@@ -113,7 +113,7 @@ generalization (shipping gate PASSES on seed 99999).
 ### Milestone 2: Audit risk areas — COMPLETE
 - Camera async lifecycle: race condition FIXED (aliveRef checks + track.onended)
 - Recovery semantics: 5 adversarial tests added, no defects found
-- Probability model: 9 consistency tests added, mathematically sound
+- Probability model: 9 consistency tests added, initial audit claim; superseded by observation-alphabet fix
 - Evidence-log guarantees: replay round-trip tests added, verified
 
 ### Verification status (all gates green)
@@ -133,7 +133,7 @@ generalization (shipping gate PASSES on seed 99999).
 - Real browser/device visual pass
 - Human pilot (0 participants)
 
-## Status at handoff (2026-10-27)
+## Historical status at handoff (2026-10-27)
 
 All acceptance boxes above are met by the implementation and the automated gates, with
 three evidence limits: no human participants (0), no physical camera/device validation,
@@ -172,3 +172,20 @@ A public-ready repository that a stranger can clone, install, test, evaluate, an
 offline; a working 3D show with an honest miss path; a reproducible evaluation with
 intervals; and a 3-minute demo script that shows both the magic and the honesty. No
 claims beyond what was measured.
+
+## Repository cleanup and audit (2026-10-27)
+
+User-requested scope: separate accidental BrowserOS/MCP installation files from the
+product, preserve external browser access, and fix verified defects without a redesign.
+Plan: remove only unused harness copies; ignore local installations; add camera
+cancellation regressions; audit fallback/validation/export boundaries; run local gates.
+The domain-neutral engine and effects remain intact. No paid calls or deployment.
+
+## Current audit result (2026-10-27)
+
+See `docs/audit-2026-10-27.md`. Cleanup and verified cancellation/inference/patter/export
+fixes are on the audit branch. 82 unit tests and 9 browser behavioral tests pass. Core
+isolation passes 69 tests. Full 33-cell provenance passes. Card is 496/490/6
+(commits/correct/wrong); held-out 483/472/11. Ember abstains after normalized noise:
+not all earlier acceptance claims remain valid. Human and physical-device validation
+remain open. No confidence threshold was relaxed to manufacture a successful reveal.

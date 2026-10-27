@@ -142,3 +142,12 @@ only when they are evidence, and they must be inspected.
 A stranger can clone the repo, run `npm install && npm test && npm run build`, read the
 limits, run the simulator, and get the same numbers. The demo shows a hit and, if it
 happens, a graceful miss. No claim outruns the measurement.
+
+
+## Repository cleanup and audit (2026-10-27)
+
+User-requested scope: separate accidental BrowserOS/MCP installation files from the
+product, preserve external browser access, and fix verified defects without a redesign.
+Plan: remove only unused harness copies; ignore local installations; add camera
+cancellation regressions; audit fallback/validation/export boundaries; run local gates.
+The domain-neutral engine and effects remain intact. No paid calls or deployment.
