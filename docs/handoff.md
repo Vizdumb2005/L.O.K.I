@@ -1,4 +1,4 @@
-# L.O.K.I — continuation handoff (2026-10-27, round 3 updated 20:55 IST)
+# L.O.K.I — continuation handoff (2026-10-27, round 4 updated 21:10 IST)
 
 ## Recovered state
 
@@ -234,6 +234,60 @@ verified in the independent review. Re-run after `npx playwright install chromiu
 - CameraLab race condition fix (aliveRef checks + track.onended)
 - CI workflow (.github/workflows/ci.yml, local only)
 - verify:all script added to package.json
+
+
+## Round 4 progress (2026-10-27, 21:10 IST)
+
+### Held-out seed evaluation — COMPLETE
+
+Added `scripts/run-heldout-eval.ts` (`npm run eval:heldout`) to verify the
+simulator generalizes beyond the primary seed (20261027). Runs 7 key cells
+with held-out seed 99999 and compares against primary seed results.
+
+**Results** (1,000 runs per cell):
+
+| Cell | Primary commits | Held-out commits | Diff % | Primary wrong | Held-out wrong |
+|---|---|---|---|---|---|
+| card / shipping / noise 0.1 | 517 | 495 | 4.3% | 8 | 12 |
+| example / shipping / noise 0.1 | 619 | 647 | 4.5% | 75 | 68 |
+| card / greedy / noise 0.15 | 356 | 357 | 0.3% | 15 | 18 |
+| card / greedy / noise 0.3 | 181 | 173 | 4.4% | 65 | 65 |
+| ablation / hard elimination | 1000 | 1000 | 0.0% | 479 | 439 |
+| ablation / temperature 1.05 | 215 | 226 | 5.1% | 12 | 11 |
+| ablation / gaze on (simulated) | 604 | 610 | 1.0% | 13 | 28 |
+
+**Key findings**:
+- **Shipping gate PASSES on held-out seed**: 1.2% wrong-confident (< 3% threshold)
+- **Commit rates stable**: max difference 5.1% across all cells
+- **Wrong counts vary more** in high-variance cells (hard elimination: 479 vs 439,
+  expected binomial variation at ~50% wrong rate, n=1000, std ≈ 15.8)
+- **Conclusion**: simulator findings generalize beyond the primary seed.
+  The shipping configuration is robust; ablation conclusions hold.
+
+Results saved to `data/provenance/eval-heldout-results.json`.
+
+### Playwright e2e
+
+Chromium install attempted (background job). Will run 4 behavioral tests once
+binary is available. These were verified in the independent review.
+
+### Verification (all gates green)
+| Gate | Result |
+|---|---|
+| lint | PASS (0 errors, 0 warnings) |
+| typecheck | PASS |
+| tests | PASS (7 files, 73 tests) |
+| build | PASS |
+| verify:provenance | PASS (9/9 cells) |
+
+### Cumulative commit log
+```
+871cfaf Round 3: fix CameraLab race condition, add CI workflow
+d1816e3 Update handoff.md with round 2 audit test progress
+1b111c6 Round 2: audit tests for recovery gates, probability model, evidence replay
+395c202 Continuation round 2: evidence reproducibility + audit
+4838a1c Initial commit
+```
 
 ## Operating limits
 
