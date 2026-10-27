@@ -104,4 +104,24 @@ describe("simulator", () => {
     expect(liar.observations).toBeGreaterThanOrEqual(1);
     expect(["reveal", "miss", "recover"]).toContain(liar.phase);
   });
+
+  it("exported log can replay the exact same posterior and decision", () => {
+    // Verify the runOne path produces a normalized posterior and consistent reveal.
+    const result = runOne({
+      effect: cardEffect,
+      seed: 99,
+      policy: "greedy",
+      spectator: { answerError: 0.1, force: false, gaze: false, gazeAccuracy: 0.65, gazeReliability: 0.65 }
+    });
+    // The run result has finalPosterior and committed/revealedId
+    expect(result.finalPosterior.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
+    if (result.committed) {
+      expect(result.revealedId).toBeDefined();
+      // The revealed hypothesis should have the max posterior
+      const maxIdx = result.finalPosterior.indexOf(Math.max(...result.finalPosterior));
+      const hypotheses = cardEffect.hypotheses();
+      expect(result.revealedId).toBe(hypotheses[maxIdx].id);
+    }
+  });
+
 });

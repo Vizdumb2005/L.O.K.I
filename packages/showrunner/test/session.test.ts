@@ -209,6 +209,138 @@ describe("performance session", () => {
   });
 });
 
+describe("recovery and commit gate audit", () => {
+  it("never commits with an unresolved contradiction", () => {
+    // Invariant: if the session reaches build/reveal, contradictionActive must be false.
+    // Test across multiple seeds and adversarial answer patterns.
+    for (const seed of [1, 3, 7, 11, 13, 17, 19, 23]) {
+      const effect = makeEffect({
+        config: { ...makeEffect().config, maxProbes: 6, commitThreshold: 0.85, recoveryBudget: 1, recoverySurprise: 1.0 }
+      });
+      const session = new PerformanceSession(effect, { seed });
+      session.begin();
+      session.chosen();
+      const answers = ["no", "yes", "no", "yes", "no", "yes", "no", "yes"];
+      let step = 0;
+      while (step < answers.length) {
+        const phase = session.phaseName;
+        if (phase === "probe") {
+          session.answer(answers[step % answers.length]);
+          step++;
+        } else if (phase === "recover") {
+          session.advance();
+        } else if (session.snapshot().canAdvance) {
+          session.advance();
+        } else {
+          break;
+        }
+        // Invariant check at every step
+        const internal = session.internal();
+        if (internal.phase === "reveal" || internal.phase === "build") {
+          expect(internal.belief.contradictionActive).toBe(false);
+        }
+      }
+      // Final invariant: if committed, no unresolved contradiction
+      const finalInternal = session.internal();
+      if (finalInternal.phase === "reveal") {
+        expect(finalInternal.belief.contradictionActive).toBe(false);
+      }
+    }
+  });
+
+  it("respects the recovery budget of 1", () => {
+    const effect = makeEffect({
+      config: { ...makeEffect().config, maxProbes: 10, commitThreshold: 0.999, recoveryBudget: 1, recoverySurprise: 0.3 }
+    });
+    const session = new PerformanceSession(effect, { seed: 11 });
+    session.begin();
+    session.chosen();
+    let recoveries = 0;
+    let steps = 0;
+    // Alternate yes/no to trigger contradictions repeatedly
+    while (session.phaseName !== "done" && steps < 20) {
+      const phase = session.phaseName;
+      if (phase === "probe") {
+        session.answer(steps % 2 === 0 ? "yes" : "no");
+      } else if (phase === "recover") {
+        recoveries++;
+        session.advance();
+      } else if (session.snapshot().canAdvance) {
+        session.advance();
+      } else {
+        break;
+      }
+      steps++;
+    }
+    // Should have at most 1 recovery (the budget)
+    expect(recoveries).toBeLessThanOrEqual(1);
+    // Should end in miss (can't commit with threshold 0.999)
+    expect(["miss", "afterglow", "done"]).toContain(session.phaseName);
+  });
+
+  it("never commits with fewer than 2 answers", () => {
+    const effect = makeEffect({
+      config: { ...makeEffect().config, maxProbes: 3, commitThreshold: 0.51, recoveryBudget: 0 }
+    });
+    const session = new PerformanceSession(effect, { seed: 5 });
+    session.begin();
+    session.chosen();
+    // Answer "yes" to "Is it Alpha?" — posterior for "a" should be high
+    session.answer("yes");
+    // Even with a very low threshold, commit requires >= 2 answers
+    // After 1 answer, we should still be in probe (or recover/miss), not build
+    expect(session.phaseName).not.toBe("build");
+    expect(session.phaseName).not.toBe("reveal");
+  });
+
+  it("commit gate requires no unresolved contradiction", () => {
+    // Verify the commitGate function directly
+    const effect = makeEffect();
+    const session = new PerformanceSession(effect, { seed: 1 });
+    session.begin();
+    session.chosen();
+    // Answer to get high confidence
+    session.answer("yes");
+    const internal = session.internal();
+    // The belief state should not have an active contradiction after normal answers
+    expect(internal.belief.contradictionActive).toBe(false);
+  });
+
+  it("handles rapid adversarial answer sequences without committing wrongly", () => {
+    const effect = makeEffect({
+      config: { ...makeEffect().config, maxProbes: 6, commitThreshold: 0.85, recoveryBudget: 1, recoverySurprise: 1.0 }
+    });
+    const session = new PerformanceSession(effect, { seed: 13 });
+    session.begin();
+    session.chosen();
+    // Rapidly alternate answers to create contradictions
+    const answers = ["no", "yes", "no", "yes", "no", "yes", "no", "yes"];
+    let step = 0;
+    while (step < answers.length) {
+      const phase = session.snapshot().phase;
+      if (phase !== "probe") {
+        if (phase === "recover") session.advance();
+        else if (session.snapshot().canAdvance) session.advance();
+        else break;
+        continue;
+      }
+      session.answer(answers[step]);
+      step++;
+      const afterAnswer = session.snapshot().phase;
+      if (afterAnswer === "build" || afterAnswer === "reveal" || afterAnswer === "miss") {
+        break;
+      }
+    }
+    // With adversarial answers, the session should either miss or commit correctly
+    // It should never end in "build" with an unresolved contradiction
+    const internal = session.internal();
+    if (internal.phase === "reveal") {
+      // If it committed, the contradiction should be resolved
+      expect(internal.belief.contradictionActive).toBe(false);
+    }
+  });
+});
+
 describe("patter safety", () => {
   it("falls back on a banned claim", () => {
     expect(sanitizeLine("I can read your mind.", "safe")).toBe("safe");

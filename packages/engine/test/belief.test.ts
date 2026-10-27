@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ChannelBinding, Hypothesis, Probe } from "@loki/effect-api";
 import {
+  answerLikelihoods,
   applyAnswer,
   applyChannelEvidence,
   bestHypothesis,
@@ -199,5 +200,139 @@ describe("calibration", () => {
     const t = fitTemperature(samples);
     expect(t).toBeGreaterThan(0);
     expect(t).toBeLessThanOrEqual(1.5);
+  });
+});
+
+describe("probability model consistency audit", () => {
+  it("temperature > 1 flattens the posterior (lower max, higher entropy)", () => {
+    const state1 = applyAnswer(fresh(), probe, "yes", config, 1).state;
+    const hotConfig = { ...config, temperature: 1.5 };
+    const stateHot = applyAnswer(fresh(hotConfig), probe, "yes", hotConfig, 1).state;
+    const p1 = posterior(state1);
+    const pHot = posterior(stateHot);
+    // Hot temperature should have lower max posterior
+    expect(Math.max(...pHot)).toBeLessThan(Math.max(...p1));
+    // Hot temperature should have higher entropy (more uniform)
+    const entropy1 = -p1.reduce((sum, p) => sum + (p > 0 ? p * Math.log2(p) : 0), 0);
+    const entropyHot = -pHot.reduce((sum, p) => sum + (p > 0 ? p * Math.log2(p) : 0), 0);
+    expect(entropyHot).toBeGreaterThan(entropy1);
+  });
+
+  it("temperature < 1 sharpens the posterior (higher max, lower entropy)", () => {
+    const state1 = applyAnswer(fresh(), probe, "yes", config, 1).state;
+    const coldConfig = { ...config, temperature: 0.7 };
+    const stateCold = applyAnswer(fresh(coldConfig), probe, "yes", coldConfig, 1).state;
+    const p1 = posterior(state1);
+    const pCold = posterior(stateCold);
+    expect(Math.max(...pCold)).toBeGreaterThan(Math.max(...p1));
+  });
+
+  it("temperature preserves normalization (posterior sums to 1)", () => {
+    for (const t of [0.5, 0.7, 1.0, 1.5, 2.0]) {
+      const tc = { ...config, temperature: t };
+      const state = applyAnswer(fresh(tc), probe, "yes", tc, 1).state;
+      const p = posterior(state);
+      expect(p.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
+    }
+  });
+
+  it("outlier mixture adds a uniform 1/N component", () => {
+    // With useOutlier=true and a deterministic probe, the non-target hypotheses
+    // should have probability >= outlierWeight / N
+    const N = hypotheses.length;
+    const minExpected = config.outlierWeight / N;
+    const state = applyAnswer(fresh(), probe, "yes", config, 1).state;
+    const p = posteriorMap(state);
+    // Hypothesis "b" and "c" are contradicted by "yes" to "Is it A?"
+    // but the outlier mixture keeps them above zero
+    expect(p.b).toBeGreaterThan(minExpected * 0.5);
+    expect(p.c).toBeGreaterThan(minExpected * 0.5);
+  });
+
+  it("reliability=0 gives a uniform posterior regardless of evidence", () => {
+    // With reliability 0, the likelihood becomes uniform 1/N
+    const state = applyAnswer(fresh(), probe, "yes", config, 1, 0).state;
+    const p = posterior(state);
+    // Should be close to uniform (the outlier mixture also adds uniform mass)
+    const uniform = 1 / hypotheses.length;
+    for (const prob of p) {
+      expect(Math.abs(prob - uniform)).toBeLessThan(0.15);
+    }
+  });
+
+  it("answer likelihoods are per-hypothesis (not a distribution over hypotheses)", () => {
+    // answerLikelihoods returns P(option | hypothesis) for each hypothesis
+    // The sum across hypotheses does NOT need to be 1
+    const state = fresh();
+    const likelihoods = answerLikelihoods(state, probe, "yes", config);
+    expect(likelihoods).toHaveLength(hypotheses.length);
+    // Each likelihood should be in [0, 1]
+    for (const l of likelihoods) {
+      expect(l).toBeGreaterThanOrEqual(0);
+      expect(l).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("channel evidence likelihoods are row-stochastic across values", () => {
+    const binding: ChannelBinding = {
+      channel: "gaze",
+      label: "zone",
+      weight: 0.6,
+      minReliability: 0.3,
+      values: ["left", "right", "center"],
+      likelihood: (item, obs) => {
+        // Deterministic: "a" -> left, "b" -> right, "c" -> center
+        const map: Record<string, string> = { a: "left", b: "right", c: "center" };
+        return obs.value === map[item] ? 1 : 0;
+      }
+    };
+    for (const h of hypotheses) {
+      let sum = 0;
+      for (const v of binding.values) {
+        sum += binding.likelihood(h.id, { channel: "gaze", value: v, reliability: 1, at: 0 });
+      }
+      expect(sum).toBeCloseTo(1, 10);
+    }
+  });
+
+  it("replay from categorical log reproduces the exact posterior", () => {
+    let state = fresh();
+    state = applyAnswer(state, probe, "yes", config, 1).state;
+    state = applyAnswer(state, probe, "no", config, 2).state;
+    state = applyAnswer(state, weakProbe, "yes", config, 3).state;
+    const replayed = replay({
+      hypotheses,
+      prior,
+      config,
+      probes: [probe, weakProbe],
+      channels: [],
+      observations: state.observations
+    });
+    expect(posterior(replayed)).toEqual(posterior(state));
+  });
+
+  it("replay with channel evidence reproduces the exact posterior", () => {
+    const binding: ChannelBinding = {
+      channel: "gaze",
+      label: "zone",
+      weight: 0.5,
+      minReliability: 0.3,
+      values: ["left", "right"],
+      likelihood: (item, obs) => (obs.value === (item === "a" ? "left" : "right") ? 0.9 : 0.1)
+    };
+    let state = fresh();
+    state = applyAnswer(state, probe, "yes", config, 1).state;
+    state = applyChannelEvidence(state, binding, {
+      channel: "gaze", value: "left", reliability: 0.8, at: 2
+    }, config).state;
+    const replayed = replay({
+      hypotheses,
+      prior,
+      config,
+      probes: [probe],
+      channels: [binding],
+      observations: state.observations
+    });
+    expect(posterior(replayed)).toEqual(posterior(state));
   });
 });
