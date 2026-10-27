@@ -234,3 +234,16 @@ test("silent choice exposes readable generic labels without capturing a selectio
     await expect(page.locator("button.choice").first()).toBeVisible();
   }
 });
+
+test("keyboard-only: number keys answer while an answer button has focus", async ({ page }) => {
+  await page.goto("/");
+  await page.getByText("I understand this is a", { exact: false }).click();
+  await page.getByRole("button", { name: "Enter the observatory" }).click();
+  await page.getByRole("button", { name: "I have chosen" }).click();
+  await expect(page.locator("button.choice").first()).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(page.locator("button.choice:focus")).toHaveCount(1);
+  const before = (await page.locator("#line-heading").innerText()).trim();
+  await page.keyboard.press("1");
+  await expect(page.locator("#line-heading")).not.toHaveText(before);
+});
