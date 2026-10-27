@@ -244,3 +244,7 @@ lab falls back to the public MediaPipe CDN. Free only; no paid hosting or secret
 ## Ember multi-option probes
 
 Add 4-way first-letter and letter-count probes; thresholds unchanged. See docs/ember-multiway-2026-10-28.md. Needs human testing.
+
+## Pilot readiness
+
+See docs/pilot-readiness-2026-10-28.md for what is finished and what needs humans/devices.
