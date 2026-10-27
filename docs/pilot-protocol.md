@@ -192,7 +192,7 @@ this build; the lab is a feasibility probe, not a treatment.
 ## 10. Ethics review and registration
 
 - `[UNRESOLVED]` No IRB/ethics-board approval was obtained because no human subjects were
-  run. A future pilot must obtain the appropriate review before recruitment.
+  run. Whether formal review is required depends on the site, institution and jurisdiction and is unverified here. Before recruitment, determine what applies and follow it; a predeclared protocol and informed consent are required regardless.
 - `[UNRESOLVED]` Pre-registration venue and timestamp. The analysis plan above should be
   registered before the first participant; deviations must be reported.
 - `[UNRESOLVED]` Local data-protection requirements (GDPR/UK GDPR or equivalent) for the
@@ -213,3 +213,33 @@ A wrong-confident rate above the shipping gate, or a cluster of comprehension fa
 would block a public show and trigger a fix-and-retest cycle. A miss rate that is too high
 for the format would be handled by changing the effect design or the probe budget, not by
 lowering the confidence gate after seeing the data.
+
+## 12. Addendum from checked literature review (2026-10-28)
+
+Source: a reviewed Gemini research pass; only primary-source abstracts were checked. It
+validates nothing about LOKI. No threshold, noise or likelihood changed because of it.
+
+1. **Denominators.** Report sessions started, completed, reveal, correct, wrong, abstain and
+   dropout per effect and condition. Ember (spelling-based) is piloted with the same
+   measures as the card effect; neither is pooled with the other.
+2. **Separate outcomes.** Record these separately, never as one score: correct reveal,
+   abstention, perceived freedom, enjoyment, comprehension of what the show is not doing,
+   and whether the participant could explain the method. Noticing a cue is not the same
+   as explaining the method.
+3. **No imported rates.** Published force or card-preference rates (for example Pailhes
+   and Kuhn 2020, Olson et al. 2012) are not LOKI priors and are not used for suit
+   confusion likelihoods. Misreading is observed on LOKI's own questions first.
+4. **Response time is logged, not interpreted.** It is never used to score honesty or
+   deception. Compare comprehension and error rates of the actual affirmative and negative
+   wordings instead.
+5. **Stress scenarios are labelled.** Scripted repeated mistakes, contradictions, skips and
+   deliberately misleading answers test resilience. They are compared with independent
+   random-noise simulation and are never reported as human error rates.
+6. **Gaze stays separate.** Any gaze study uses held-out targets not used in calibration,
+   one confusion matrix per device class and condition (glasses, lighting, head movement),
+   plus rejected samples, false activations and calibration drift. Disable criteria are
+   declared before data collection. Iris depth accuracy is not gaze accuracy. A completed
+   calibration sequence is not validation.
+7. **Review.** Research literature does not by itself require formal ethics review for every pilot. The applicable requirement is a site and jurisdiction question; section 10 stays open until checked.
+8. **Claims.** The consent copy ("an illusion, not mind reading, can be wrong, you can stop")
+   is a usability hypothesis, not a guarantee that framing prevents false belief.
