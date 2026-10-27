@@ -1,4 +1,4 @@
-# L.O.K.I — continuation handoff (2026-10-27, round 2)
+# L.O.K.I — continuation handoff (2026-10-27, round 2 updated 20:40 IST)
 
 ## Recovered state
 
@@ -143,6 +143,50 @@ value, probeId, reliability, at, surprise, and posterior.
 
 **Status**: Replay guarantee verified by existing test. No defect found.
 
+
+
+## Round 2 progress (2026-10-27, 20:40 IST)
+
+### Audit tests added (15 new tests, 58 -> 73 total)
+
+**Recovery and commit gate audit** (`packages/showrunner/test/session.test.ts`, +5 tests):
+- Never commits with an unresolved contradiction (8 seeds, adversarial answers)
+- Respects recovery budget of 1 (adversarial answer sequences)
+- Never commits with fewer than 2 answers (low threshold test)
+- Commit gate requires no unresolved contradiction (direct belief state check)
+- Handles rapid adversarial answer sequences without wrong commits
+
+**Probability model consistency** (`packages/engine/test/belief.test.ts`, +9 tests):
+- Temperature > 1 flattens posterior (lower max, higher entropy)
+- Temperature < 1 sharpens posterior (higher max)
+- Temperature preserves normalization across [0.5, 2.0]
+- Outlier mixture adds uniform 1/N component
+- Reliability=0 gives near-uniform posterior
+- Answer likelihoods are per-hypothesis (not a distribution)
+- Channel evidence likelihoods are row-stochastic
+- Replay from categorical log reproduces exact posterior (answers only)
+- Replay with channel evidence reproduces exact posterior
+
+**Evidence-log replay** (`tests/sim.test.ts`, +1 test):
+- runOne produces normalized posterior and consistent reveal
+
+**Camera lifecycle**: Documented race condition in CameraLab.tsx (stream leak if
+unmount during getUserMedia/video.play). Cannot test without React/jsdom environment.
+Recommended: add controlled fake-stream/deferred-promise tests when React testing
+infrastructure is available.
+
+### Verification (all gates green)
+| Gate | Result |
+|---|---|
+| lint | PASS (0 errors, 0 warnings) |
+| typecheck | PASS |
+| tests | PASS (7 files, 73 tests) |
+| build | PASS |
+| verify:provenance | PASS (9/9 cells) |
+
+### Test count progression
+- Baseline: 58 tests
+- After audit tests: 73 tests (+15: 5 session, 9 belief, 1 sim)
 
 ## Operating limits
 
