@@ -132,17 +132,37 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
         video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
         audio: false
       });
+      // If the component unmounted while getUserMedia was pending, release the stream.
+      if (!aliveRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
       streamRef.current = stream;
+      // If a track ends externally (e.g. camera unplugged), stop the lab cleanly.
+      stream.getTracks().forEach((track) => {
+        track.addEventListener("ended", () => stop());
+      });
       const video = videoRef.current;
       if (!video) throw new Error("The preview element is missing.");
       video.srcObject = stream;
       await video.play();
+      // If the component unmounted while video.play() was pending, release everything.
+      if (!aliveRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        if (video) video.srcObject = null;
+        return;
+      }
       setCameraOn(true);
 
       try {
         const loaded = await createFaceLandmarker();
         if (!aliveRef.current) {
           loaded.landmarker.close();
+          // Also release the camera stream — the lab is being torn down.
+          streamRef.current?.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+          if (videoRef.current) videoRef.current.srcObject = null;
           return;
         }
         landmarkerRef.current = loaded.landmarker;

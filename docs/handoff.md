@@ -1,4 +1,4 @@
-# L.O.K.I — continuation handoff (2026-10-27, round 2 updated 20:40 IST)
+# L.O.K.I — continuation handoff (2026-10-27, round 3 updated 20:55 IST)
 
 ## Recovered state
 
@@ -187,6 +187,53 @@ infrastructure is available.
 ### Test count progression
 - Baseline: 58 tests
 - After audit tests: 73 tests (+15: 5 session, 9 belief, 1 sim)
+
+
+## Round 3 progress (2026-10-27, 20:55 IST)
+
+### CameraLab race condition FIXED
+
+**Issue**: In `CameraLab.tsx start()`, if the component unmounted during
+`getUserMedia()` or `video.play()`, the acquired MediaStream leaked because
+`aliveRef` was only checked after `createFaceLandmarker()` resolved.
+
+**Fix applied** (`apps/web/src/components/CameraLab.tsx`):
+- After `getUserMedia()`: check `aliveRef.current`, stop tracks and return if unmounted
+- After `video.play()`: check `aliveRef.current`, stop tracks and return if unmounted
+- After `createFaceLandmarker()`: also release camera stream (was only closing landmarker)
+- Added `track.onended` handlers: calls `stop()` when a track ends externally
+  (e.g. camera unplugged, permission revoked)
+
+**Verification**: typecheck PASS, lint PASS, build PASS.
+React Testing Library not yet set up; controlled fake-stream tests deferred.
+
+### CI workflow added
+
+Created `.github/workflows/ci.yml` with two jobs:
+- `verify`: lint, typecheck, unit tests, build, isolation check, provenance check
+- `e2e`: Playwright behavioral tests (installs Chromium, runs 4 tests)
+
+**Not pushed.** Local file only. Enable on GitHub when ready.
+
+### Playwright e2e status
+
+Playwright Chromium binary not installed in this environment (download timed out).
+The 4 behavioral tests (consent, no-camera show, toy effect, camera denial) were
+verified in the independent review. Re-run after `npx playwright install chromium`.
+
+### Verification (all gates green)
+| Gate | Result |
+|---|---|
+| lint | PASS (0 errors, 0 warnings) |
+| typecheck | PASS |
+| tests | PASS (7 files, 73 tests) |
+| build | PASS |
+| verify:provenance | PASS (9/9 cells) |
+
+### Commits this round
+- CameraLab race condition fix (aliveRef checks + track.onended)
+- CI workflow (.github/workflows/ci.yml, local only)
+- verify:all script added to package.json
 
 ## Operating limits
 
