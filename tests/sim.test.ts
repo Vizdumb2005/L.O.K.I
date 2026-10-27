@@ -50,9 +50,10 @@ describe("simulator", () => {
     const cell = runCell(spec({ effect: exampleEffect, runs: 80, answerError: 0.05 }));
     expect(cell.effectId).toBe("ember-words");
     expect(cell.n).toBe(80);
-    // The toy proves the contract; its three probes do not justify a confident reveal.
-    expect(cell.commits).toBe(0);
-    expect(cell.misses).toBe(cell.n);
+    // Balanced spelling probes commit on consistent evidence and miss on ambiguity.
+    expect(cell.commits).toBeGreaterThan(0);
+    expect(cell.misses).toBeGreaterThan(0);
+    expect(cell.correct + cell.wrong).toBe(cell.commits);
   });
 
   it("injects gaze only when enabled and uses the effect's zone binding", () => {

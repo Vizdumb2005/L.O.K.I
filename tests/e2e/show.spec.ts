@@ -175,3 +175,24 @@ test("desktop and mobile screenshots are captured for inspection", async ({ page
   await page.waitForTimeout(1400);
   await page.screenshot({ path: "docs/screenshots/stage-mobile.png" });
 });
+
+test("Ember spelling probes reveal Sun at desktop and mobile widths", async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    await page.getByText("I understand this is a", { exact: false }).click();
+    await page.getByText("Ember Words", { exact: true }).click();
+    await page.getByRole("button", { name: "Enter the observatory" }).click();
+    await page.getByRole("button", { name: "I have chosen" }).click();
+    for (let i = 0; i < 3; i++) {
+      await expect(page.locator("button.choice").first()).toBeVisible();
+      const prompt = (await page.locator("#line-heading").innerText()).trim();
+      const answer = prompt.includes("letter m") ? "No" : "Yes";
+      await page.locator("button.choice").filter({ hasText: new RegExp(`^\\s*\\d+\\s*${answer}\\s*$`) }).click();
+      await expect(page.locator("#line-heading")).not.toHaveText(prompt);
+    }
+    await page.getByRole("button", { name: "Reveal it" }).click();
+    await expect(page.locator("#line-heading")).toHaveText("Your word was Sun.");
+    await expect(page.locator("canvas, .flat-stage").first()).toBeVisible();
+  }
+});

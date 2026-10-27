@@ -367,3 +367,22 @@ product, preserve external browser access, and fix verified defects without a re
 Plan: remove only unused harness copies; ignore local installations; add camera
 cancellation regressions; audit fallback/validation/export boundaries; run local gates.
 The domain-neutral engine and effects remain intact. No paid calls or deployment.
+
+
+## Ember follow-through with OpenCode (2026-10-27)
+
+Use the verified free `opencode/deepseek-v4.1-flash-free` model, `max` reasoning variant,
+installed outside this repository. Keep provider configuration, credentials and generated
+coding-session logs outside git. Never switch to a paid or alternate model automatically.
+First milestone: redesign the tiny Ember probe set to carry enough distinguishable
+information under the corrected observation model. Preserve threshold 0.85, epsilon 0.10,
+outlier 0.06 and temperature 1. Test all four truth paths and noisy/contradictory paths
+through the shared engine. Use natural, unambiguous questions, not secret answers or
+simulator-specific shortcuts. Regenerate the complete evaluation and independent heldout
+results; report any tradeoff or abstention, with 0 human participants. No redesign, new
+effect, networked runtime dependency, camera activation, merge, deployment or paid calls.
+
+Milestone result: Ember uses three balanced spelling partitions (ends in n, contains m,
+odd length), preserving all safety parameters and maxProbes=3. All truthful and all
+single-flip paths are tested across three policies. Exhaustive answer patterns expose
+wrong reveals after two flips, rather than hiding them. See docs/development-2026-10-27.md.
