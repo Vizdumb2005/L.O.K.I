@@ -1,4 +1,4 @@
-# L.O.K.I — continuation handoff (2026-10-27, round 4 updated 21:10 IST)
+# L.O.K.I — continuation handoff (2026-10-27, round 4 updated 21:15 IST)
 
 ## Recovered state
 
@@ -215,7 +215,7 @@ Created `.github/workflows/ci.yml` with two jobs:
 
 **Not pushed.** Local file only. Enable on GitHub when ready.
 
-### Playwright e2e status
+### Playwright e2e — ALL 4 PASSED status
 
 Playwright Chromium binary not installed in this environment (download timed out).
 The 4 behavioral tests (consent, no-camera show, toy effect, camera denial) were
@@ -268,8 +268,11 @@ Results saved to `data/provenance/eval-heldout-results.json`.
 
 ### Playwright e2e
 
-Chromium install attempted (background job). Will run 4 behavioral tests once
-binary is available. These were verified in the independent review.
+Chromium installed. All 4 behavioral tests PASS (25.0s):
+- consent gate explains the illusion and keeps the camera off (1.8s)
+- a full no-camera show reaches a reveal or an honest miss (14.0s)
+- the toy effect runs through the same shell (3.5s)
+- camera denial is handled without breaking the show (1.9s)
 
 ### Verification (all gates green)
 | Gate | Result |
@@ -279,6 +282,7 @@ binary is available. These were verified in the independent review.
 | tests | PASS (7 files, 73 tests) |
 | build | PASS |
 | verify:provenance | PASS (9/9 cells) |
+| Playwright e2e | PASS (4/4 behavioral tests, 25.0s) |
 
 ### Cumulative commit log
 ```
