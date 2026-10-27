@@ -119,8 +119,31 @@ async function main(): Promise<void> {
     console.error("FAIL: " + failures + " cell(s) are stale. Run 'npm run eval' to regenerate.");
     process.exit(1);
   }
+  // Held-out seed spot check: run the shipping cell with a different seed.
+  // The gate should still pass (< 3% wrong-confident over all runs).
+  console.log("");
+  console.log("Held-out seed spot check (seed 99999):");
+  const heldOut = runCell({
+    runs: 1000,
+    seed: 99999,
+    effect: cardEffect,
+    policy: "greedy",
+    answerError: 0.1,
+    gaze: false,
+    force: false,
+    label: "held-out / card / shipping / noise 0.1"
+  });
+  const heldOutGate = heldOut.wrong / heldOut.n < 0.03;
+  console.log("  commits=" + heldOut.commits + " wrong=" + heldOut.wrong + " wrongRate=" + (heldOut.wrong / heldOut.n * 100).toFixed(1) + "%");
+  console.log("  Gate (<3% wrong): " + (heldOutGate ? "PASS" : "FAIL"));
+  if (!heldOutGate) {
+    console.error("FAIL: held-out seed gate failed. The shipping configuration may not generalize.");
+    process.exit(1);
+  }
   console.log("PASS: all " + CHECK_CELLS.length + " checked cells match the committed artifact.");
+  console.log("PASS: held-out seed shipping gate (<3% wrong).");
   console.log("(This is a subset check. Run 'npm run eval' for the full 33-cell evaluation.)");
+  console.log("(Held-out seed check confirms the shipping gate generalizes beyond the primary seed.)");
 }
 
 main().catch((err) => {

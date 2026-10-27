@@ -1,4 +1,4 @@
-# L.O.K.I — continuation handoff (2026-10-27, round 4 updated 21:15 IST)
+# L.O.K.I — continuation handoff (2026-10-27, round 5 updated 21:25 IST)
 
 ## Recovered state
 
@@ -292,6 +292,40 @@ d1816e3 Update handoff.md with round 2 audit test progress
 395c202 Continuation round 2: evidence reproducibility + audit
 4838a1c Initial commit
 ```
+
+
+## Round 5 progress (2026-10-27, 21:25 IST)
+
+### Planning docs updated
+- `task.md`: comprehensive status reflecting all 4 rounds of work
+- `architecture.md`: status line current
+- `agent.md`: unchanged (rules still apply)
+
+### Provenance check extended
+- `scripts/verify-provenance.ts` now includes a held-out seed spot check
+- Runs shipping cell with seed 99999, verifies gate (<3% wrong)
+- Result: PASS (1.2% wrong on held-out seed)
+- Combined check: 9/9 committed cells match + held-out gate passes
+
+### README review
+- No stale numbers found (shipping 517/509/8, 33,000 runs all correct)
+- No references to old temperature 1.05 (247) or gaze ECE (0.0238)
+- Test count not hardcoded in README (refers to eval report)
+
+### Verification (all 6 gates green)
+| Gate | Result |
+|---|---|
+| lint | PASS (0 errors, 0 warnings) |
+| typecheck | PASS |
+| unit tests | PASS (7 files, 73 tests) |
+| build | PASS |
+| verify:provenance | PASS (9/9 cells + held-out seed gate) |
+| Playwright e2e | PASS (4/4 behavioral tests, 25.3s) |
+
+### Both explicit milestones COMPLETE
+1. Evidence reproducibility: discrepancy investigated, artifacts regenerated,
+   provenance check + held-out seed confirm generalization
+2. Audit risk areas: 15 tests added, CameraLab race fixed, e2e verified
 
 ## Operating limits
 

@@ -101,11 +101,37 @@ The product is an illusion; it is not mind reading.
 - [x] All remaining `[UNRESOLVED]` items are listed in the final report.
 - [x] No banned claims in UI, README, docs, or demo script.
 
-## Status at continuation round 2 (2026-10-27, 20:30 IST)
+## Status at continuation rounds 1-5 (2026-10-27, 21:15 IST)
 
-Evidence reproducibility milestone COMPLETE. Two fresh 33K-run evaluations matched each other; 31/33 cells matched the committed artifact. Two stale cells (temperature 1.05, gaze ECE) were regenerated from the current commit. Original artifacts preserved in `data/provenance/`. Provenance check (`npm run verify:provenance`) added and passing. All gates green: lint, typecheck, 58 tests, build, isolation (manual), provenance.
+### Milestone 1: Evidence reproducibility — COMPLETE
+Two fresh 33K-run evaluations matched each other; 31/33 cells matched the committed
+artifact. Two stale cells (temperature 1.05, gaze ECE) were regenerated from the
+current commit. Original artifacts preserved in `data/provenance/`. Provenance check
+(`npm run verify:provenance`) added and passing. Held-out seed evaluation confirms
+generalization (shipping gate PASSES on seed 99999).
 
-Audit round IN PROGRESS. Camera async lifecycle, recovery semantics, probability model consistency, and evidence-log guarantees audited. Findings documented in `docs/handoff.md`. No defects found; camera race condition documented as a coverage concern.
+### Milestone 2: Audit risk areas — COMPLETE
+- Camera async lifecycle: race condition FIXED (aliveRef checks + track.onended)
+- Recovery semantics: 5 adversarial tests added, no defects found
+- Probability model: 9 consistency tests added, mathematically sound
+- Evidence-log guarantees: replay round-trip tests added, verified
+
+### Verification status (all gates green)
+| Gate | Result |
+|---|---|
+| lint | PASS (0 errors, 0 warnings) |
+| typecheck | PASS |
+| unit tests | PASS (7 files, 73 tests) |
+| build | PASS |
+| core isolation | PASS (manual: typecheck + 46 core tests) |
+| verify:provenance | PASS (9/9 cells) |
+| Playwright e2e | PASS (4/4 behavioral tests, 25.0s) |
+| held-out seed eval | PASS (shipping gate 1.2% wrong) |
+
+### Remaining work
+- React Testing Library for CameraLab fake-stream tests
+- Real browser/device visual pass
+- Human pilot (0 participants)
 
 ## Status at handoff (2026-10-27)
 
