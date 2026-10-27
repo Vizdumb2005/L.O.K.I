@@ -228,6 +228,12 @@ reports LLM generation. Reproduce with a mocked no-key fallback, then preserve s
 and fallback reason. Legacy line-only endpoints stay compatible. No runtime model call,
 spend or inference change. Continue PR3 with a separate small commit, not another PR.
 
+## Card multi-option probes
+
+Add 3-way suit and 4-way value probes to raise the commit rate without touching thresholds.
+Evidence and tradeoff (more commits, more wrong reveals, gates still pass): see
+docs/card-multiway-2026-10-28.md. Needs human testing for correlated errors.
+
 ## Free static deployment (GitHub Pages)
 
 Static build of the web app deploys from `main` with `.github/workflows/pages.yml` to

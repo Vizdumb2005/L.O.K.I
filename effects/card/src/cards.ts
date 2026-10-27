@@ -64,7 +64,50 @@ function binaryProbe(
   };
 }
 
+function categoricalProbe(
+  id: string,
+  prompt: string,
+  cost: number,
+  options: Array<{ id: string; label: string }>,
+  category: (card: Card) => string
+): Probe {
+  return {
+    id,
+    prompt,
+    cost,
+    options,
+    likelihood: (itemId, optionId) => {
+      const card = CARD_BY_ID.get(itemId);
+      if (!card) return 0;
+      return category(card) === optionId ? 1 : 0;
+    }
+  };
+}
+
 export const CARD_PROBES: Probe[] = [
+  categoricalProbe(
+    "suit",
+    "Which suit is your card: Hearts, Diamonds or Spades?",
+    0.1,
+    [
+      { id: "h", label: "Hearts" },
+      { id: "d", label: "Diamonds" },
+      { id: "s", label: "Spades" }
+    ],
+    (c) => c.suit
+  ),
+  categoricalProbe(
+    "value",
+    "Which value: Ace, Two, Three or Four?",
+    0.1,
+    [
+      { id: "a", label: "Ace" },
+      { id: "2", label: "Two" },
+      { id: "3", label: "Three" },
+      { id: "4", label: "Four" }
+    ],
+    (c) => c.rank
+  ),
   binaryProbe("warm-colour", "Does your card's colour feel warm?", 0.1, (c) => c.red),
   binaryProbe("heart", "Is the suit a heart?", 0.12, (c) => c.suit === "h"),
   binaryProbe("diamond", "Is it a diamond?", 0.12, (c) => c.suit === "d"),
