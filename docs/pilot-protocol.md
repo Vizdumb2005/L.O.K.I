@@ -192,7 +192,7 @@ this build; the lab is a feasibility probe, not a treatment.
 ## 10. Ethics review and registration
 
 - `[UNRESOLVED]` No IRB/ethics-board approval was obtained because no human subjects were
-  run. A future pilot must obtain the appropriate review before recruitment.
+  run. Whether formal review is required depends on the site, institution and jurisdiction and is unverified here. Before recruitment, determine what applies and follow it; a predeclared protocol and informed consent are required regardless.
 - `[UNRESOLVED]` Pre-registration venue and timestamp. The analysis plan above should be
   registered before the first participant; deviations must be reported.
 - `[UNRESOLVED]` Local data-protection requirements (GDPR/UK GDPR or equivalent) for the
@@ -240,5 +240,6 @@ validates nothing about LOKI. No threshold, noise or likelihood changed because 
    plus rejected samples, false activations and calibration drift. Disable criteria are
    declared before data collection. Iris depth accuracy is not gaze accuracy. A completed
    calibration sequence is not validation.
-7. **Claims.** The consent copy ("an illusion, not mind reading, can be wrong, you can stop")
+7. **Review.** Research literature does not by itself require formal ethics review for every pilot. The applicable requirement is a site and jurisdiction question; section 10 stays open until checked.
+8. **Claims.** The consent copy ("an illusion, not mind reading, can be wrong, you can stop")
    is a usability hypothesis, not a guarantee that framing prevents false belief.
