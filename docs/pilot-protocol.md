@@ -88,8 +88,9 @@ screen is a UX gate, not a substitute for study consent.
 4. **Short break** (1 min). No performance talk; water offered.
 5. **Condition B** (4 min). Same procedure with the other condition. A different card is
    chosen to reduce memory effects.
-6. **Post-show form** (4 min). See measures. Complete it before the mechanism debrief so
-   that perceived accuracy is not anchored by the explanation.
+6. **Post-show form** (4 min). See measures. The per-run experience ratings are asked right
+   after each run (before the slip is opened); the rest of the form is completed before
+   the mechanism debrief so that perceived accuracy is not anchored by the explanation.
 7. **Debrief** (3 min). State plainly that the system did not read their mind. Explain the
    hypothesis space, the questions, and the confidence gate at the level they want. Offer
    the written explanation. Ask whether they want their data deleted.
@@ -97,12 +98,23 @@ screen is a UX gate, not a substitute for study consent.
 
 ### Measuring answer correctness without contaminating the run
 
-The participant writes their chosen card on a folded slip before the run and keeps it face
-down. After the reveal/miss, they turn the slip over and the facilitator records
-chosen card, revealed card (or miss), and whether the reveal was correct. The performer does
-not see the slip during the run. If a participant prefers not to write, they may point to
-the card on a printed sheet after the run; the choice is recorded the same way. No secret
-camera, eye tracker, or keystroke log is used to infer the choice.
+Before each run the participant writes their private choice (card or word) on a folded
+slip and keeps it face down. The facilitator does not see or discuss it until the
+participant has finished the experience ratings for that run (see
+`docs/pilot-script-2026-10-29.md`, section 3). Only then is the slip turned over and the
+facilitator records chosen item, revealed item (or miss) and correct / wrong / not
+attempted. The performer never sees the slip. If a participant prefers not to write, they
+may point to the item after the ratings; this is recorded as a different ground-truth
+method and is not equivalent to a prerecord. No secret camera, eye tracker or keystroke
+log is used to infer the choice.
+
+Script alignment (2026-10-29): the runner script governs run-level wording. Ratings and
+the "how do you think it worked?" question come before correctness is disclosed to the
+facilitator; the mechanism debrief comes last. If the participant asks for the explanation
+earlier, give it and log the timing deviation. The two conditions in section 5 are the two
+show effects (The Twelve, Ember Words) in a recorded order. The script's six ratings
+(responsiveness, felt liveness, suspense, freedom, enjoyment, clarity) are asked after each
+run in addition to the measures below, and are never combined into an accuracy score.
 
 ### Optional gaze lab
 
@@ -118,7 +130,8 @@ this build; the lab is a feasibility probe, not a treatment.
 - Chosen card and whether each answer was correct (self-report against the slip).
 - Number of probes used; recovery used; commit vs honest miss.
 - Revealed card, correct/wrong, and stated confidence.
-- Response time per question (client-side, no content).
+- Response time per question (client-side, no content). Descriptive only: never used to
+  infer or select the participant's choice, and not a measure of the performer's skill.
 
 **Calibration**
 
