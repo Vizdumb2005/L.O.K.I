@@ -54,3 +54,18 @@ test("flow: the same performer shell runs the Ember effect", async ({ page }) =>
   await page.keyboard.press("1");
   await expect(page.locator("#line-heading")).toContainText(new RegExp(first, "i"));
 });
+
+test("flow: focus follows the moment and is restored when leaving", async ({ page }) => {
+  await enter(page);
+  const inActions = () =>
+    page.evaluate(() => Boolean(document.activeElement?.closest(".panel-actions")));
+  await expect.poll(inActions).toBe(true);
+  await page.keyboard.press("1");
+  await expect.poll(inActions).toBe(true);
+  await playToPayoff(page);
+  await expect.poll(inActions).toBe(true);
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Enter the observatory" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("main");
+});

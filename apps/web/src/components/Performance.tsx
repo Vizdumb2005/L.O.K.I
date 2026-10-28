@@ -58,6 +58,7 @@ export function Performance({
   const [cueIndex, setCueIndex] = useState(0);
   const [patterSource, setPatterSource] = useState<"template" | "llm">("template");
   const primaryRef = useRef<HTMLButtonElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLParagraphElement>(null);
 
   const cues = view?.cues ?? [];
@@ -113,9 +114,15 @@ export function Performance({
 
   useEffect(() => {
     if (!view) return;
-    const timer = window.setTimeout(() => primaryRef.current?.focus({ preventScroll: true }), 140);
+    // Focus follows the moment: first answer in a question, the Skip/Continue control during pauses
+    // and payoffs, "Begin again" at the end. Keyboard and screen-reader users never get stranded
+    // on a removed element.
+    const timer = window.setTimeout(() => {
+      const target = actionsRef.current?.querySelector<HTMLButtonElement>("button.choice, button.primary, button.ghost");
+      (target ?? primaryRef.current)?.focus({ preventScroll: true });
+    }, 140);
     return () => window.clearTimeout(timer);
-  }, [view?.phase, view?.progress.answered]);
+  }, [view?.phase, view?.progress.answered, cuePending]);
 
   useEffect(() => {
     if (!view) return;
@@ -266,7 +273,7 @@ export function Performance({
           )}
         </div>
 
-        <div className="panel-actions" role="group" aria-label="Choices">
+        <div ref={actionsRef} className="panel-actions" role="group" aria-label="Choices">
           {isProbe && view.options?.map((option, index) => (
             <button
               key={option.id}

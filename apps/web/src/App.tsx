@@ -12,6 +12,7 @@ function prefersReducedMotion(): boolean {
 
 export function App() {
   const [entered, setEntered] = useState(false);
+  const [hasLeft, setHasLeft] = useState(false);
   const [screen, setScreen] = useState<Screen>("show");
   const [effectId, setEffectId] = useState<EffectId>("card-twelve");
   const [cameraOptIn, setCameraOptIn] = useState(false);
@@ -28,6 +29,7 @@ export function App() {
   };
 
   const leave = () => {
+    setHasLeft(true);
     setEntered(false);
     setScreen("show");
   };
@@ -97,7 +99,7 @@ export function App() {
         />
       ) : (
         <>
-          <Consent onEnter={enter} />
+          <Consent onEnter={enter} restoreFocus={hasLeft} />
           <footer className="site-footer">
             <span>LOKI v3 · consent-based performance engine</span>
             <span>

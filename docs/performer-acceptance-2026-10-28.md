@@ -52,7 +52,7 @@ Mechanical, tested in `tests/performer.test.ts`, `tests/performer-extra.test.ts`
 - P4/P5 reveal has 3 cues, honest miss has 2, last cue rests; miss text names no hypothesis.
 - P6 source scan plus runs on card and Ember Words through the same session.
 - P7 reduced motion shows cues without timers and keeps earlier lines readable; Skip ahead is present while a pause is pending.
-- P9 Escape skips a pending pause, then leaves the show; digits, Space and Enter drive a full run.
+- P9 focus lands on the first answer, Skip ahead or Continue as the moment changes and returns to the consent screen on leave; Escape skips a pending pause, then leaves the show; digits, Space and Enter drive a full run.
 - P8 exactly one polite live region on the performance screen.
 Stale-claim note: `docs/pilot-readiness-2026-10-28.md` cites main 4eddfe4; the base for this work is ccf2f04 and later heads. Its simulator counts are unchanged because the performer uses a separate random stream and never touches engine beliefs.
 Not shown by any of this: that the performance feels live, suspenseful or comfortable to a person, or how a real screen reader reads it. Those are pilot questions.

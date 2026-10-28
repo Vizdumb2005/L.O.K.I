@@ -1,17 +1,23 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EFFECTS, type EffectId } from "../lib/effects.js";
 
 interface ConsentProps {
   onEnter: (effectId: EffectId, cameraOptIn: boolean) => void;
+  /** True when returning from a show (Leave/Escape): move focus to the consent heading. */
+  restoreFocus?: boolean;
 }
 
-export function Consent({ onEnter }: ConsentProps) {
+export function Consent({ onEnter, restoreFocus = false }: ConsentProps) {
+  const mainRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (restoreFocus) mainRef.current?.focus({ preventScroll: true });
+  }, [restoreFocus]);
   const [effectId, setEffectId] = useState<EffectId>("card-twelve");
   const [understood, setUnderstood] = useState(false);
   const [cameraOptIn, setCameraOptIn] = useState(false);
 
   return (
-    <main className="consent" id="main">
+    <main className="consent" id="main" ref={mainRef} tabIndex={-1}>
       <section className="consent-hero">
         <p className="eyebrow">A consent-based performance</p>
         <h1 className="wordmark" aria-label="LOKI">
