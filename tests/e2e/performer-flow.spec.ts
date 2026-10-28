@@ -110,6 +110,13 @@ for (const effectName of ["The Twelve", "Ember Words"] as const) {
       await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "false");
       await page.getByRole("button", { name: "Skip ahead" }).first().click();
       await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "true");
+      // A skipped sequence stays skipped: no late timer may pull it back to a hush beat.
+      for (let k = 0; k < 16; k++) {
+        await page.waitForTimeout(250);
+        // Plain reads, not auto-retrying assertions: a transient flicker back must fail the test.
+        expect(await hush.innerText()).not.toMatch(/quiet|say it now/i);
+        expect(await page.locator(".stage-shell").getAttribute("data-target-lit")).toBe("true");
+      }
       return;
     }
     test.skip(true, "no reveal reached in 6 option-1 runs; miss path asserted dark");

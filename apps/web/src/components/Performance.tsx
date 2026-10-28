@@ -77,21 +77,17 @@ export function Performance({
   useEffect(() => {
     setCueIndex(reducedMotion ? lastCue : 0);
     setIndexKey(cueKey);
-    if (reducedMotion || lastCue === 0) return;
-    let index = 0;
-    let timer = 0;
-    const step = () => {
-      const hold = cues[index]?.holdMs ?? 0;
-      if (index >= lastCue || hold <= 0) return;
-      timer = window.setTimeout(() => {
-        index += 1;
-        setCueIndex(index);
-        step();
-      }, hold);
-    };
-    step();
-    return () => window.clearTimeout(timer);
   }, [cueKey, reducedMotion]);
+
+  // One timer per step, owned by the current index. Skipping changes the index, which clears the
+  // pending timer, so a late timer can never pull a skipped sequence back to an earlier cue.
+  useEffect(() => {
+    if (reducedMotion || indexKey !== cueKey || cueIndex >= lastCue) return;
+    const hold = cues[cueIndex]?.holdMs ?? 0;
+    if (hold <= 0) return;
+    const timer = window.setTimeout(() => setCueIndex((i) => Math.min(i + 1, lastCue)), hold);
+    return () => window.clearTimeout(timer);
+  }, [cueIndex, indexKey, cueKey, reducedMotion, lastCue]);
 
   useEffect(() => {
     setDisplayLine(view?.line ?? "");
