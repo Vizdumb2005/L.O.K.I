@@ -55,9 +55,37 @@ export function Performance({
 }: PerformanceProps) {
   const { view, error, advance, answer, restart } = usePerformance(effect);
   const [displayLine, setDisplayLine] = useState("");
+  const [cueIndex, setCueIndex] = useState(0);
   const [patterSource, setPatterSource] = useState<"template" | "llm">("template");
   const primaryRef = useRef<HTMLButtonElement>(null);
   const lineRef = useRef<HTMLParagraphElement>(null);
+
+  const cues = view?.cues ?? [];
+  const cueKey = cues.map((c) => c.id).join("|");
+  const lastCue = Math.max(0, cues.length - 1);
+  const cuePending = cueIndex < lastCue;
+  const cuePendingRef = useRef(false);
+  const lastCueRef = useRef(0);
+  cuePendingRef.current = cuePending;
+  lastCueRef.current = lastCue;
+
+  useEffect(() => {
+    setCueIndex(reducedMotion ? lastCue : 0);
+    if (reducedMotion || lastCue === 0) return;
+    let index = 0;
+    let timer = 0;
+    const step = () => {
+      const hold = cues[index]?.holdMs ?? 0;
+      if (index >= lastCue || hold <= 0) return;
+      timer = window.setTimeout(() => {
+        index += 1;
+        setCueIndex(index);
+        step();
+      }, hold);
+    };
+    step();
+    return () => window.clearTimeout(timer);
+  }, [cueKey, reducedMotion]);
 
   useEffect(() => {
     setDisplayLine(view?.line ?? "");
@@ -112,6 +140,10 @@ export function Performance({
       if (onControl) return;
       if ([" ", "Enter"].includes(event.key)) {
         event.preventDefault();
+        if (cuePendingRef.current && (view.phase === "reveal" || view.phase === "miss")) {
+          setCueIndex(lastCueRef.current);
+          return;
+        }
         if (view.phase === "afterglow" || view.phase === "done") restart();
         else if (view.canAdvance) advance();
       }
@@ -133,6 +165,8 @@ export function Performance({
   const isProbe = view.phase === "probe" && view.options;
   const isEnd = view.phase === "afterglow" || view.phase === "done";
   const canContinue = view.canAdvance && !isProbe && !isEnd;
+  // Reveal and miss are the payoff: the first press only skips ahead to the line, never past it.
+  const skipOnly = cuePending && (view.phase === "reveal" || view.phase === "miss");
   const continueLabel =
     view.phase === "think"
       ? "I have chosen"
@@ -205,8 +239,15 @@ export function Performance({
         <div className="panel-copy">
           <p className="eyebrow">{view.stage.title}</p>
           <p id="line-heading" ref={lineRef} className="line" aria-live="polite">
-            {displayLine}
+            {cuePending ? cues[cueIndex]?.line : displayLine}
           </p>
+          {reducedMotion && cues.length > 1 && (
+            <ul className="cue-trail" aria-label="Earlier lines of this moment">
+              {cues.slice(0, lastCue).map((cue) => (
+                <li key={cue.id}>{cue.line}</li>
+              ))}
+            </ul>
+          )}
           {llmEnabled && (view.phase === "build" || view.phase === "afterglow") && (
             <p className="source-line">
               {patterSource === "llm" ? "Optional proxy patter · filtered" : "Bundled patter · offline fallback"}
@@ -229,9 +270,19 @@ export function Performance({
               {option.label}
             </button>
           ))}
+          {cuePending && !canContinue && !isProbe && (
+            <button type="button" className="ghost" onClick={() => setCueIndex(lastCue)}>
+              Skip ahead
+            </button>
+          )}
           {canContinue && (
-            <button ref={primaryRef} type="button" className="primary" onClick={advance}>
-              {continueLabel}
+            <button
+              ref={primaryRef}
+              type="button"
+              className="primary"
+              onClick={() => (skipOnly ? setCueIndex(lastCue) : advance())}
+            >
+              {skipOnly ? "Skip ahead" : continueLabel}
             </button>
           )}
           {isEnd && (

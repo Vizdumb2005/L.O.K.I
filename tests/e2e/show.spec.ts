@@ -28,7 +28,7 @@ const THREE_OF_DIAMONDS: Record<string, string> = {
 };
 
 async function answerThreeOfDiamonds(page: Page): Promise<void> {
-  for (let step = 0; step < 12; step++) {
+  for (let step = 0; step < 40; step++) {
     await page.waitForTimeout(140);
     const reveal = page.getByRole("button", { name: "Reveal it" });
     if (await reveal.isVisible().catch(() => false)) {
@@ -57,7 +57,7 @@ async function answerThreeOfDiamonds(page: Page): Promise<void> {
       await primary.click();
       continue;
     }
-    break;
+    // A timed performer cue (acknowledgement) is showing; wait for the prompt.
   }
   throw new Error("the deterministic screenshot run did not reach a reveal");
 }

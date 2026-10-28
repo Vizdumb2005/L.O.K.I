@@ -180,3 +180,8 @@ provenance. No inference or creative-direction change.
 
 Current follow-on: test and correct optional patter fallback provenance using mocks only.
 Do not invoke the runtime keyed model or infer generation from a returned line alone.
+
+## Performer layer rules
+Keep `performer.ts` free of card, word or effect identifiers (tests scan it). Cues may echo
+only what the person chose. No cue may convert a miss into a hit or imply a signal the show
+does not use. Timings are presentation only; the engine and thresholds are unchanged.
