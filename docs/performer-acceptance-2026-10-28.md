@@ -48,7 +48,8 @@ Simulation shows the engine behaves. It says nothing about experience. Experienc
 ## Implementation status and evidence (updated 2026-10-29)
 Mechanical, tested in `tests/performer.test.ts`, `tests/performer-extra.test.ts`, `tests/e2e/performer*.spec.ts`:
 - P1/P2 acknowledgement echoes the chosen label; repeated label gets its own phrasing; no identical consecutive acknowledgements across 200 seeds.
-- P3 recap lists the person's own labels in order.
+- P3 recap keeps each of the person's own answers attached to the question it answered (last three), labels in order; label-only recap is the fallback.
+- P11 visual: the target is lit only when the resting reveal line is on screen, never during build or the hush beats (`data-target-lit` on the stage, e2e for The Twelve and Ember Words; verified to fail when the gate is removed). With reduced motion all cues show at once, so the target lights with the reveal.
 - P4/P5 reveal has 3 cues, honest miss has 2, last cue rests; miss text names no hypothesis.
 - P6 source scan plus runs on card and Ember Words through the same session.
 - P7 reduced motion shows cues without timers and keeps earlier lines readable; Skip ahead is present while a pause is pending.

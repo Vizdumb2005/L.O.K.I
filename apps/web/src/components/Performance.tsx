@@ -56,6 +56,7 @@ export function Performance({
   const { view, error, advance, answer, restart } = usePerformance(effect);
   const [displayLine, setDisplayLine] = useState("");
   const [cueIndex, setCueIndex] = useState(0);
+  const [indexKey, setIndexKey] = useState("");
   const [patterSource, setPatterSource] = useState<"template" | "llm">("template");
   const primaryRef = useRef<HTMLButtonElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
@@ -64,7 +65,10 @@ export function Performance({
   const cues = view?.cues ?? [];
   const cueKey = cues.map((c) => c.id).join("|");
   const lastCue = Math.max(0, cues.length - 1);
-  const cuePending = cueIndex < lastCue;
+  // The index only counts for the cue set it was recorded against; for the first render of a new
+  // set (before the effect below runs) the sequence is at its start, so nothing flashes early.
+  const effectiveIndex = indexKey === cueKey ? cueIndex : reducedMotion ? lastCue : 0;
+  const cuePending = effectiveIndex < lastCue;
   const cuePendingRef = useRef(false);
   const lastCueRef = useRef(0);
   cuePendingRef.current = cuePending;
@@ -72,6 +76,7 @@ export function Performance({
 
   useEffect(() => {
     setCueIndex(reducedMotion ? lastCue : 0);
+    setIndexKey(cueKey);
     if (reducedMotion || lastCue === 0) return;
     let index = 0;
     let timer = 0;
@@ -177,6 +182,9 @@ export function Performance({
     );
   }
 
+  // The target is lit only when the resting reveal cue is on screen, never during the hush beats.
+  const stageView: SessionView =
+    view.reveal && view.phase === "reveal" && cuePending ? { ...view, reveal: undefined } : view;
   const isProbe = view.phase === "probe" && view.options;
   const isEnd = view.phase === "afterglow" || view.phase === "done";
   const canContinue = view.canAdvance && !isProbe && !isEnd;
@@ -221,9 +229,9 @@ export function Performance({
         </div>
       </section>
 
-      <section className="stage-shell" aria-label={`${view.stage.title} stage`}>
+      <section className="stage-shell" aria-label={`${view.stage.title} stage`} data-target-lit={stageView.reveal ? "true" : "false"}>
         <div className="stage-vignette" />
-        <Stage effect={effect} view={view} reducedMotion={reducedMotion} />
+        <Stage effect={effect} view={stageView} reducedMotion={reducedMotion} />
         <div className="stage-caption" aria-hidden="true">
           <span>NOCTURNE OBSERVATORY</span>
           <span>{view.stage.items.length} OBJECTS IN THE LIGHT</span>
@@ -254,7 +262,7 @@ export function Performance({
         <div className="panel-copy">
           <p className="eyebrow">{view.stage.title}</p>
           <p id="line-heading" ref={lineRef} className="line" aria-live="polite">
-            {cuePending ? cues[cueIndex]?.line : displayLine}
+            {cuePending ? cues[effectiveIndex]?.line : displayLine}
           </p>
           {reducedMotion && cues.length > 1 && (
             <ul className="cue-trail" aria-label="Earlier lines of this moment">

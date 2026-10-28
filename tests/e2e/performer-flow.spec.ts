@@ -69,3 +69,49 @@ test("flow: focus follows the moment and is restored when leaving", async ({ pag
   await expect(page.getByRole("button", { name: "Enter the observatory" })).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("main");
 });
+
+async function reachRevealOrMiss(page: Page, tries = 8): Promise<"reveal" | "miss"> {
+  for (let t = 0; t < tries; t++) {
+    await playToPayoff(page);
+    const rv = page.getByRole("button", { name: "Reveal it" });
+    await expect(rv.or(page.locator(".panel-miss"))).toBeVisible({ timeout: 10000 });
+    if (await rv.isVisible()) {
+      // Build beat: the target must not be lit.
+      await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "false");
+      await rv.click();
+      return "reveal";
+    }
+    return "miss";
+  }
+  return "miss";
+}
+
+for (const effectName of ["The Twelve", "Ember Words"] as const) {
+  test(`flow: ${effectName} target is not lit during the hush beats, only at the resting reveal line`, async ({ page }) => {
+    await page.goto("/");
+    await page.getByText("I understand this is a", { exact: false }).click();
+    if (effectName === "Ember Words") await page.getByText("Ember Words", { exact: true }).click();
+    await page.getByRole("button", { name: "Enter the observatory" }).click();
+    await page.getByRole("button", { name: "I have chosen" }).click();
+    // Always answer option 1 until a payoff appears; retry from a fresh show if it is a miss.
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const outcome = await reachRevealOrMiss(page);
+      if (outcome === "miss") {
+        await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "false");
+        await page.getByRole("button", { name: "Skip ahead" }).click().catch(() => undefined);
+        await page.getByRole("button", { name: "Continue" }).click();
+        await page.getByRole("button", { name: "Begin again" }).click();
+        await page.getByRole("button", { name: "I have chosen" }).click();
+        continue;
+      }
+      // Hush beats: line is a hush cue, target must stay dark.
+      const hush = page.locator("#line-heading");
+      await expect(hush).toContainText(/quiet|say it now/i);
+      await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "false");
+      await page.getByRole("button", { name: "Skip ahead" }).first().click();
+      await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "true");
+      return;
+    }
+    test.skip(true, "no reveal reached in 6 option-1 runs; miss path asserted dark");
+  });
+}

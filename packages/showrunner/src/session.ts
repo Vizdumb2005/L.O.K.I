@@ -143,6 +143,7 @@ export class PerformanceSession {
   private startedAt: number;
   private performer: Performer;
   private pickedLabels: string[] = [];
+  private pickedPairs: Array<{ label: string; prompt: string }> = [];
   private ackCue: Cue | null = null;
   private phaseCues: Cue[] | null = null;
   private nowFn: () => number;
@@ -258,6 +259,7 @@ export class PerformanceSession {
     const pickedLabel = this.promptProbe.options.find((o) => o.id === optionId)?.label;
     if (pickedLabel) {
       this.pickedLabels.push(pickedLabel);
+      this.pickedPairs.push({ label: pickedLabel, prompt: this.promptProbe.prompt });
       this.ackCue = this.performer.acknowledge(pickedLabel);
     }
     this.promptProbe = null;
@@ -501,7 +503,7 @@ export class PerformanceSession {
     const template = lines[this.answered % Math.max(1, lines.length)] ?? "It is becoming clear.";
     this.line = sanitizeLine(template.replace(/\{n\}/g, String(this.answered)), "It is becoming clear.");
     this.ackCue = null;
-    this.phaseCues = this.performer.buildSequence(this.performer.recap(this.pickedLabels), this.line);
+    this.phaseCues = this.performer.buildSequence(this.performer.recapAnswers(this.pickedPairs), this.line);
   }
 
   private doReveal(): void {
