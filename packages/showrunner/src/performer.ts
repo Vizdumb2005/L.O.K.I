@@ -24,6 +24,8 @@ const ACK_TEMPLATES: readonly string[] = [
   "Good. {label}."
 ];
 
+const REPEAT_ACK_TEMPLATES: readonly string[] = ["{label} again. I heard you.", "{label}, once more. Noted."];
+
 const HUSH_LINES: readonly string[] = ["Let it be quiet for a moment.", "I am going to say it now."];
 const CONCEDE_LINE = "I cannot hold it clearly enough to say.";
 const RECAP_EMPTY = "I have what you have given me so far.";
@@ -45,6 +47,10 @@ function rng(seed: number): () => number {
   };
 }
 
+function safeLabelKey(label: string): string {
+  return label.trim().toLowerCase();
+}
+
 function joinLabels(labels: string[]): string {
   if (labels.length === 0) return "";
   if (labels.length === 1) return labels[0]!;
@@ -54,6 +60,7 @@ function joinLabels(labels: string[]): string {
 export class Performer {
   private readonly random: () => number;
   private lastAck = -1;
+  private lastLabel = "";
   private counter = 0;
 
   constructor(seed: number) {
@@ -68,10 +75,15 @@ export class Performer {
   /** Echo of the person's own chosen option label. Never repeats the previous template. */
   acknowledge(label: string): Cue {
     const safeLabel = label.replace(/[{}]/g, "").trim();
-    let index = Math.floor(this.random() * ACK_TEMPLATES.length);
-    if (index === this.lastAck) index = (index + 1) % ACK_TEMPLATES.length;
-    this.lastAck = index;
-    const template = ACK_TEMPLATES[index]!;
+    const repeated = safeLabelKey(safeLabel) !== "" && safeLabelKey(safeLabel) === this.lastLabel;
+    this.lastLabel = safeLabelKey(safeLabel);
+    const pool = repeated ? REPEAT_ACK_TEMPLATES : ACK_TEMPLATES;
+    let index = Math.floor(this.random() * pool.length);
+    // Never the same template twice in a row; repeat acks live in their own pool and offset the key.
+    const key = (i: number) => (repeated ? 100 + i : i);
+    if (key(index) === this.lastAck) index = (index + 1) % pool.length;
+    this.lastAck = key(index);
+    const template = pool[index]!;
     const fallback = `${safeLabel || "Noted"}.`;
     return {
       id: this.nextId("ack"),

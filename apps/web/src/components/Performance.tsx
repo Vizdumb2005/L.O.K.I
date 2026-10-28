@@ -125,6 +125,14 @@ export function Performance({
       // answer shortcuts (digits, Y) never activate a button, so they must still work when an
       // answer button has focus (keyboard-only users land on one).
       if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+      if (event.key === "Escape") {
+        // Escape never ends a pause by accident: first press skips the pause, a press with nothing
+        // pending leaves the show (the consent screen is one press away).
+        event.preventDefault();
+        if (cuePendingRef.current) setCueIndex(lastCueRef.current);
+        else onExit();
+        return;
+      }
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const onControl = Boolean(target?.closest("button, a"));
       if (view.phase === "probe" && view.options) {
@@ -150,7 +158,7 @@ export function Performance({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [view, answer, advance, restart]);
+  }, [view, answer, advance, restart, onExit]);
 
   if (!view) {
     return (
