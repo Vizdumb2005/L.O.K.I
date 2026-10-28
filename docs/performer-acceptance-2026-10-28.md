@@ -52,6 +52,7 @@ Mechanical, tested in `tests/performer.test.ts`, `tests/performer-extra.test.ts`
 - P11 visual: the target is lit only when the resting reveal line is on screen, never during build or the hush beats (`data-target-lit` on the stage, e2e for The Twelve and Ember Words; verified to fail when the gate is removed). With reduced motion all cues show at once, so the target lights with the reveal.
 - P4/P5 reveal has 3 cues, honest miss has 2, last cue rests; miss text names no hypothesis.
 - P6 source scan plus runs on card and Ember Words through the same session.
+- P4 skip: skipping a payoff sequence stays skipped (a late timer once pulled it back to a hush beat for about a second; fixed and covered by a sampling e2e that fails on the old code).
 - P7 reduced motion shows cues without timers and keeps earlier lines readable; Skip ahead is present while a pause is pending.
 - P9 focus lands on the first answer, Skip ahead or Continue as the moment changes and returns to the consent screen on leave; Escape skips a pending pause, then leaves the show; digits, Space and Enter drive a full run.
 - P8 exactly one polite live region on the performance screen.
