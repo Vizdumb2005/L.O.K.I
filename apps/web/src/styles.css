@@ -1472,3 +1472,14 @@ p {
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
 }
+
+.cue-trail {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted, #9aa3b5);
+  font-size: 0.95rem;
+}
+.cue-trail li + li {
+  margin-top: 0.25rem;
+}

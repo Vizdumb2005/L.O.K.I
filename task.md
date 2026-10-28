@@ -252,3 +252,13 @@ See docs/pilot-readiness-2026-10-28.md for what is finished and what needs human
 ## Keyboard answer shortcuts
 
 Number keys must answer even when an answer button has focus (found by Blitz, reproduced, fixed; e2e test added).
+
+## Performer layer (cards first, then words)
+
+User intent (2026-10-28): digitize how mentalists perform and recreate the receiving-end
+feel of a live 1:1 performance; cards and words are baseline proofs. Definition of done and
+the P1-P12 acceptance matrix: docs/performer-acceptance-2026-10-28.md. Milestone 1 (this
+branch): domain-neutral `Performer` in packages/showrunner producing timed cues
+(acknowledge, recap, build, staged reveal, staged honest miss), session `cues` in the view,
+UI cue player with Skip ahead and a reduced-motion trail. Engine untouched (provenance
+exact). Felt liveness is a pilot question, not proven.

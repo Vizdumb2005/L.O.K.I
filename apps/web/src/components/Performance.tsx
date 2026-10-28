@@ -55,9 +55,38 @@ export function Performance({
 }: PerformanceProps) {
   const { view, error, advance, answer, restart } = usePerformance(effect);
   const [displayLine, setDisplayLine] = useState("");
+  const [cueIndex, setCueIndex] = useState(0);
   const [patterSource, setPatterSource] = useState<"template" | "llm">("template");
   const primaryRef = useRef<HTMLButtonElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLParagraphElement>(null);
+
+  const cues = view?.cues ?? [];
+  const cueKey = cues.map((c) => c.id).join("|");
+  const lastCue = Math.max(0, cues.length - 1);
+  const cuePending = cueIndex < lastCue;
+  const cuePendingRef = useRef(false);
+  const lastCueRef = useRef(0);
+  cuePendingRef.current = cuePending;
+  lastCueRef.current = lastCue;
+
+  useEffect(() => {
+    setCueIndex(reducedMotion ? lastCue : 0);
+    if (reducedMotion || lastCue === 0) return;
+    let index = 0;
+    let timer = 0;
+    const step = () => {
+      const hold = cues[index]?.holdMs ?? 0;
+      if (index >= lastCue || hold <= 0) return;
+      timer = window.setTimeout(() => {
+        index += 1;
+        setCueIndex(index);
+        step();
+      }, hold);
+    };
+    step();
+    return () => window.clearTimeout(timer);
+  }, [cueKey, reducedMotion]);
 
   useEffect(() => {
     setDisplayLine(view?.line ?? "");
@@ -85,9 +114,15 @@ export function Performance({
 
   useEffect(() => {
     if (!view) return;
-    const timer = window.setTimeout(() => primaryRef.current?.focus({ preventScroll: true }), 140);
+    // Focus follows the moment: first answer in a question, the Skip/Continue control during pauses
+    // and payoffs, "Begin again" at the end. Keyboard and screen-reader users never get stranded
+    // on a removed element.
+    const timer = window.setTimeout(() => {
+      const target = actionsRef.current?.querySelector<HTMLButtonElement>("button.choice, button.primary, button.ghost");
+      (target ?? primaryRef.current)?.focus({ preventScroll: true });
+    }, 140);
     return () => window.clearTimeout(timer);
-  }, [view?.phase, view?.progress.answered]);
+  }, [view?.phase, view?.progress.answered, cuePending]);
 
   useEffect(() => {
     if (!view) return;
@@ -97,6 +132,14 @@ export function Performance({
       // answer shortcuts (digits, Y) never activate a button, so they must still work when an
       // answer button has focus (keyboard-only users land on one).
       if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+      if (event.key === "Escape") {
+        // Escape never ends a pause by accident: first press skips the pause, a press with nothing
+        // pending leaves the show (the consent screen is one press away).
+        event.preventDefault();
+        if (cuePendingRef.current) setCueIndex(lastCueRef.current);
+        else onExit();
+        return;
+      }
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const onControl = Boolean(target?.closest("button, a"));
       if (view.phase === "probe" && view.options) {
@@ -112,13 +155,17 @@ export function Performance({
       if (onControl) return;
       if ([" ", "Enter"].includes(event.key)) {
         event.preventDefault();
+        if (cuePendingRef.current && (view.phase === "reveal" || view.phase === "miss")) {
+          setCueIndex(lastCueRef.current);
+          return;
+        }
         if (view.phase === "afterglow" || view.phase === "done") restart();
         else if (view.canAdvance) advance();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [view, answer, advance, restart]);
+  }, [view, answer, advance, restart, onExit]);
 
   if (!view) {
     return (
@@ -133,6 +180,8 @@ export function Performance({
   const isProbe = view.phase === "probe" && view.options;
   const isEnd = view.phase === "afterglow" || view.phase === "done";
   const canContinue = view.canAdvance && !isProbe && !isEnd;
+  // Reveal and miss are the payoff: the first press only skips ahead to the line, never past it.
+  const skipOnly = cuePending && (view.phase === "reveal" || view.phase === "miss");
   const continueLabel =
     view.phase === "think"
       ? "I have chosen"
@@ -205,8 +254,15 @@ export function Performance({
         <div className="panel-copy">
           <p className="eyebrow">{view.stage.title}</p>
           <p id="line-heading" ref={lineRef} className="line" aria-live="polite">
-            {displayLine}
+            {cuePending ? cues[cueIndex]?.line : displayLine}
           </p>
+          {reducedMotion && cues.length > 1 && (
+            <ul className="cue-trail" aria-label="Earlier lines of this moment">
+              {cues.slice(0, lastCue).map((cue) => (
+                <li key={cue.id}>{cue.line}</li>
+              ))}
+            </ul>
+          )}
           {llmEnabled && (view.phase === "build" || view.phase === "afterglow") && (
             <p className="source-line">
               {patterSource === "llm" ? "Optional proxy patter · filtered" : "Bundled patter · offline fallback"}
@@ -217,7 +273,7 @@ export function Performance({
           )}
         </div>
 
-        <div className="panel-actions" role="group" aria-label="Choices">
+        <div ref={actionsRef} className="panel-actions" role="group" aria-label="Choices">
           {isProbe && view.options?.map((option, index) => (
             <button
               key={option.id}
@@ -229,9 +285,19 @@ export function Performance({
               {option.label}
             </button>
           ))}
+          {cuePending && !canContinue && !isProbe && (
+            <button type="button" className="ghost" onClick={() => setCueIndex(lastCue)}>
+              Skip ahead
+            </button>
+          )}
           {canContinue && (
-            <button ref={primaryRef} type="button" className="primary" onClick={advance}>
-              {continueLabel}
+            <button
+              ref={primaryRef}
+              type="button"
+              className="primary"
+              onClick={() => (skipOnly ? setCueIndex(lastCue) : advance())}
+            >
+              {skipOnly ? "Skip ahead" : continueLabel}
             </button>
           )}
           {isEnd && (

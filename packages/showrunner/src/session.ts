@@ -24,6 +24,7 @@ import type {
 } from "@loki/effect-api";
 import { validateEffect } from "@loki/effect-api";
 import { sanitizeLine } from "./patter.js";
+import { Performer, type Cue } from "./performer.js";
 
 export type SessionPhase =
   | "invite"
@@ -52,6 +53,8 @@ export interface SessionOptions {
 export interface SessionView {
   phase: SessionPhase;
   line: string;
+  /** Timed cues for the current moment. The last cue always equals `line` and rests. */
+  cues: Cue[];
   caption: string;
   prompt?: string;
   probeId?: string;
@@ -138,6 +141,10 @@ export class PerformanceSession {
   private gazeWindows = 0;
   private recoveryCount = 0;
   private startedAt: number;
+  private performer: Performer;
+  private pickedLabels: string[] = [];
+  private ackCue: Cue | null = null;
+  private phaseCues: Cue[] | null = null;
   private nowFn: () => number;
   private lastAt = 0;
 
@@ -157,6 +164,7 @@ export class PerformanceSession {
     this.probes = effect.probes();
     this.nowFn = options.now ?? (() => Date.now());
     this.startedAt = this.nowFn();
+    this.performer = new Performer(this.layoutSeed);
     const baseStage = effect.stage();
     const random = mulberry32(this.layoutSeed);
     this.stage = { ...baseStage, items: shuffled(baseStage.items, random) };
@@ -247,6 +255,11 @@ export class PerformanceSession {
     this.belief = result.state;
     this.answered += 1;
     this.used.add(this.promptProbe.id);
+    const pickedLabel = this.promptProbe.options.find((o) => o.id === optionId)?.label;
+    if (pickedLabel) {
+      this.pickedLabels.push(pickedLabel);
+      this.ackCue = this.performer.acknowledge(pickedLabel);
+    }
     this.promptProbe = null;
 
     if (result.contradiction && !this.inRecovery) {
@@ -312,6 +325,7 @@ export class PerformanceSession {
     return {
       phase: this.phase,
       line: this.line,
+      cues: this.currentCues(),
       caption: this.line,
       prompt: this.phase === "probe" ? this.promptProbe?.prompt : undefined,
       probeId: this.phase === "probe" ? this.promptProbe?.id : undefined,
@@ -396,6 +410,18 @@ export class PerformanceSession {
     };
   }
 
+  private currentCues(): Cue[] {
+    const rest: Cue = { id: `line-${this.phase}-${this.answered}`, kind: "line", line: this.line, holdMs: 0 };
+    if (this.phase === "probe") {
+      const prompt: Cue = { ...rest, kind: "prompt" };
+      return this.ackCue ? [this.ackCue, prompt] : [prompt];
+    }
+    if (this.phase === "build" || this.phase === "reveal" || this.phase === "miss") {
+      if (this.phaseCues && this.phaseCues.length > 0) return this.phaseCues.map((c) => ({ ...c }));
+    }
+    return [rest];
+  }
+
   private tick(): number {
     const at = Math.max(this.lastAt, this.nowFn() - this.startedAt);
     this.lastAt = at;
@@ -437,6 +463,7 @@ export class PerformanceSession {
     }
     this.recoveryLeft -= 1;
     this.recoveryCount += 1;
+    this.ackCue = null;
     this.phase = "recover";
     this.line = sanitizeLine(
       this.effect.script().recoverLine,
@@ -473,6 +500,8 @@ export class PerformanceSession {
     const lines = this.effect.script().buildLines;
     const template = lines[this.answered % Math.max(1, lines.length)] ?? "It is becoming clear.";
     this.line = sanitizeLine(template.replace(/\{n\}/g, String(this.answered)), "It is becoming clear.");
+    this.ackCue = null;
+    this.phaseCues = this.performer.buildSequence(this.performer.recap(this.pickedLabels), this.line);
   }
 
   private doReveal(): void {
@@ -485,6 +514,7 @@ export class PerformanceSession {
       .script()
       .revealLine(this.revealCandidate.hypothesis, this.revealCandidate.probability);
     this.line = sanitizeLine(line, `It was ${this.revealCandidate.hypothesis.label}.`);
+    this.phaseCues = this.performer.revealSequence(this.line);
   }
 
   private miss(): void {
@@ -494,6 +524,8 @@ export class PerformanceSession {
       this.effect.script().missLine,
       "You beat me. The choice stayed yours."
     );
+    this.ackCue = null;
+    this.phaseCues = this.performer.missSequence(this.line);
   }
 }
 

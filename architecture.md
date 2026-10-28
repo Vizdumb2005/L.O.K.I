@@ -400,3 +400,14 @@ provenance. No inference or creative-direction change.
 Patter response provenance: explicit `source: "template"` from the proxy must remain
 source=template in the client. Only validated LLM responses or supported legacy line-only
 responses count as rewrites. This metadata must not change the belief/reveal state.
+
+## Performer layer
+
+`packages/showrunner/src/performer.ts` is effect-neutral. The session records the labels the
+person chose and asks the performer for cues: an acknowledgement echoing the chosen label,
+a recap of the person's own choices before the reveal, a two-beat hush plus the effect's own
+reveal line, and a concede plus the effect's own miss line. `SessionView.cues` carries them;
+the last cue always equals `line` and rests (holdMs 0). The web shell plays cues on timers,
+offers Skip ahead (never past the reveal or miss line), and under reduced motion shows the
+earlier cues as a static trail. The performer never names a hypothesis and cannot change
+inference.
