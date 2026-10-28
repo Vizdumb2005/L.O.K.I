@@ -106,6 +106,24 @@ export class Performer {
     };
   }
 
+  /**
+   * Thought echo that keeps each answer attached to the question it answered, newest last.
+   * Uses only text the person already saw and chose. Falls back to the label-only recap when the
+   * pairs do not fit the line limit.
+   */
+  recapAnswers(pairs: Array<{ label: string; prompt: string }>): Cue {
+    const clean = pairs
+      .map((p) => ({ label: p.label.replace(/[{}]/g, "").trim(), prompt: p.prompt.replace(/[{}"]/g, "").replace(/\s+/g, " ").trim() }))
+      .filter((p) => p.label);
+    for (let take = Math.min(3, clean.length); take >= 1; take--) {
+      const parts = clean.slice(-take).map((p) => (p.prompt ? `${p.label} to "${p.prompt}"` : p.label));
+      const line = `${take < clean.length ? "Lately you said" : "You said"} ${joinLabels(parts)}. All of it was yours.`;
+      const safe = sanitizeLine(line, "");
+      if (safe) return { id: this.nextId("recap"), kind: "recap", line: safe, holdMs: RECAP_HOLD_MS };
+    }
+    return this.recap(clean.map((p) => p.label));
+  }
+
   /** Reveal: two quiet beats, then the effect's own reveal line, which rests. */
   revealSequence(revealLine: string): Cue[] {
     return [
