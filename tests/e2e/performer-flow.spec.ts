@@ -109,6 +109,12 @@ for (const effectName of ["The Twelve", "Ember Words"] as const) {
       await expect(hush).toContainText(/quiet|say it now/i);
       await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "false");
       await page.getByRole("button", { name: "Skip ahead" }).first().click();
+      if (effectName === "The Twelve") {
+        // The reveal waits for the person to perform it: invitation line, target still dark.
+        await expect(hush).toContainText(/turn it over/i);
+        await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "false");
+        await page.getByRole("button", { name: "Turn it over" }).click();
+      }
       await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "true");
       // A skipped sequence stays skipped: no late timer may pull it back to a hush beat.
       for (let k = 0; k < 16; k++) {

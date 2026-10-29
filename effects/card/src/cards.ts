@@ -87,7 +87,7 @@ function categoricalProbe(
 export const CARD_PROBES: Probe[] = [
   categoricalProbe(
     "suit",
-    "Which suit is your card: Hearts, Diamonds or Spades?",
+    "Don't tell me the card. Just let the symbol come forward - is it hearts, diamonds, or spades?",
     0.1,
     [
       { id: "h", label: "Hearts" },
@@ -98,7 +98,7 @@ export const CARD_PROBES: Probe[] = [
   ),
   categoricalProbe(
     "value",
-    "Which value: Ace, Two, Three or Four?",
+    "And its rank - ace, two, three, or four?",
     0.1,
     [
       { id: "a", label: "Ace" },
@@ -108,26 +108,26 @@ export const CARD_PROBES: Probe[] = [
     ],
     (c) => c.rank
   ),
-  binaryProbe("warm-colour", "Does your card's colour feel warm?", 0.1, (c) => c.red),
-  binaryProbe("heart", "Is the suit a heart?", 0.12, (c) => c.suit === "h"),
-  binaryProbe("diamond", "Is it a diamond?", 0.12, (c) => c.suit === "d"),
-  binaryProbe("spade", "Is it a spade?", 0.12, (c) => c.suit === "s"),
-  binaryProbe("low-half", "Is the value in the low half — Ace or Two?", 0.15, (c) => c.rankValue <= 2),
-  binaryProbe("high-half", "Is it a Three or a Four?", 0.15, (c) => c.rankValue >= 3),
-  binaryProbe("even", "Is the value even — Two or Four?", 0.18, (c) => c.rankValue % 2 === 0),
-  binaryProbe("odd", "Is the value odd — Ace or Three?", 0.18, (c) => c.rankValue % 2 === 1),
-  binaryProbe("ace", "Is it the Ace?", 0.2, (c) => c.rank === "a"),
-  binaryProbe("two", "Is it the Two?", 0.2, (c) => c.rank === "2"),
-  binaryProbe("three", "Is it the Three?", 0.2, (c) => c.rank === "3"),
-  binaryProbe("four", "Is it the Four?", 0.2, (c) => c.rank === "4"),
-  binaryProbe("pip", "Is the rank a number rather than a letter?", 0.16, (c) => c.rank !== "a"),
-  binaryProbe("curved-symbol", "Does the suit symbol curve rather than angle?", 0.22, (c) => c.suit !== "d"),
-  binaryProbe("high-red", "Is it a high red card — a red Three or Four?", 0.25, (c) => c.red && c.rankValue >= 3),
-  binaryProbe("low-black", "Is it a low black card — a black Ace or Two?", 0.25, (c) => !c.red && c.rankValue <= 2),
-  binaryProbe("heart-high", "Is it a heart above a Two?", 0.24, (c) => c.suit === "h" && c.rankValue >= 3),
-  binaryProbe("diamond-low", "Is it a diamond below a Three?", 0.24, (c) => c.suit === "d" && c.rankValue <= 2),
-  binaryProbe("red-ace", "Is it a red Ace?", 0.26, (c) => c.red && c.rank === "a"),
-  binaryProbe("spade-high", "Is it a high spade — a spade Three or Four?", 0.24, (c) => c.suit === "s" && c.rankValue >= 3)
+  binaryProbe("warm-colour", "Some cards feel warm, some feel cool. Does yours feel like one of the warm ones?", 0.1, (c) => c.red),
+  binaryProbe("heart", "Stay with the symbol a moment. Could it be a heart?", 0.12, (c) => c.suit === "h"),
+  binaryProbe("diamond", "Could it be a diamond?", 0.12, (c) => c.suit === "d"),
+  binaryProbe("spade", "Could it be a spade?", 0.12, (c) => c.suit === "s"),
+  binaryProbe("low-half", "Think of its weight now. Does it sit low - an ace or a two?", 0.15, (c) => c.rankValue <= 2),
+  binaryProbe("high-half", "Does it sit high - a three or a four?", 0.15, (c) => c.rankValue >= 3),
+  binaryProbe("even", "Is its number even - a two or a four?", 0.18, (c) => c.rankValue % 2 === 0),
+  binaryProbe("odd", "Is it odd - the ace or the three?", 0.18, (c) => c.rankValue % 2 === 1),
+  binaryProbe("ace", "Could it be the ace?", 0.2, (c) => c.rank === "a"),
+  binaryProbe("two", "Could it be the two?", 0.2, (c) => c.rank === "2"),
+  binaryProbe("three", "Could it be the three?", 0.2, (c) => c.rank === "3"),
+  binaryProbe("four", "Could it be the four?", 0.2, (c) => c.rank === "4"),
+  binaryProbe("pip", "Is its face a number rather than a letter?", 0.16, (c) => c.rank !== "a"),
+  binaryProbe("curved-symbol", "Does the symbol curve, rather than cut into angles?", 0.22, (c) => c.suit !== "d"),
+  binaryProbe("high-red", "Is it a high red card - a red three or four?", 0.25, (c) => c.red && c.rankValue >= 3),
+  binaryProbe("low-black", "Is it a low black card - a black ace or two?", 0.25, (c) => !c.red && c.rankValue <= 2),
+  binaryProbe("heart-high", "A heart, and above a two?", 0.24, (c) => c.suit === "h" && c.rankValue >= 3),
+  binaryProbe("diamond-low", "A diamond, below a three?", 0.24, (c) => c.suit === "d" && c.rankValue <= 2),
+  binaryProbe("red-ace", "Could it be a red ace?", 0.26, (c) => c.red && c.rank === "a"),
+  binaryProbe("spade-high", "A high spade - the three or the four?", 0.24, (c) => c.suit === "s" && c.rankValue >= 3)
 ];
 
 export const CARD_STAGE_BASE: StageSpec = {
