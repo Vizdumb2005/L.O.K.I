@@ -106,6 +106,13 @@ export interface ShowScript {
   revealLine(item: Hypothesis, confidence: number): string;
   recoverLine: string;
   missLine: string;
+  /**
+   * Optional user-performed reveal: when present, the reveal lands dark behind this
+   * invitation line and only lights when the person performs `revealAction` themselves.
+   * Omit both to keep the reveal resting on its own line.
+   */
+  revealInvite?: string;
+  revealAction?: string;
 }
 
 export interface EffectConfig {
