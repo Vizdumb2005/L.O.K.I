@@ -7,7 +7,8 @@ export default tseslint.config(
       "**/dist/**",
       "**/test-results/**",
       "**/playwright-report/**",
-      "data/**"
+      "data/**",
+      "apps/web/public/ort/**"
     ]
   },
   ...tseslint.configs.recommended,
