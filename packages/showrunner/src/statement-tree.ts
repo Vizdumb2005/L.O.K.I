@@ -1,5 +1,5 @@
 /**
- * Branching statement tree for The Twelve.
+ * Branching statement tree driver for claim-style effects.
  *
  * Same construction as the offline solver verified 2026-10-30 (see
  * docs/research-card-method-design-2026-10-30.md): exhaustive greedy search

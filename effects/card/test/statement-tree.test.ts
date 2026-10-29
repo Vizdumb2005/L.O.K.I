@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CARDS } from "@loki/effect-card";
-import { buildStatementTree, traceCard } from "./statement-tree.js";
+import { buildStatementTree, traceCard } from "@loki/showrunner";
 
 const tree = buildStatementTree(CARDS);
 

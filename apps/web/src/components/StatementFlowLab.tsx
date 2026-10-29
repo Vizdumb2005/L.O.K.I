@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { CARDS } from "@loki/effect-card";
-import { buildStatementTree, type TreeNode } from "./statement-tree.js";
+import { buildStatementTree, type TreeNode } from "@loki/showrunner";
 
 /**
  * Statement-flow prototype for The Twelve (lab only, click input).
