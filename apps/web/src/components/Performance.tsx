@@ -248,7 +248,6 @@ export function Performance({
     (reason: string) => {
       onStopSensors?.(reason);
     },
-    // eslint-disable-next-line
     [onStopSensors]
   );
   const voice = useVoiceAnswer({
