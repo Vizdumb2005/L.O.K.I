@@ -74,7 +74,7 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
     }).catch(() => {
       setState("unavailable");
       onEndSensorModeRef.current(
-        "The on-device voice models could not load here, and the sensor-enabled performance requires voice answering - so it has ended, and every sensor was released. The click demo below is the same illusion without sensors."
+        "The on-device voice models could not load here, and the sensor-enabled performance requires voice answering - so it has ended, and every sensor was released. The click demo below runs without sensors."
       );
     });
   }, [active]);
@@ -118,8 +118,8 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
     setListening(false);
     onEndSensorModeRef.current(
       reason === "forgotten"
-        ? "Your voice enrollment was withdrawn, and the sensor-enabled performance requires voice answering - so it has ended, and every sensor was released. The click demo below is the same illusion without sensors."
-        : "Voice answering was declined, and the sensor-enabled performance requires it - so it did not start, and every sensor was released. The click demo below is the same illusion without sensors."
+        ? "Your voice enrollment was withdrawn, and the sensor-enabled performance requires voice answering - so it has ended, and every sensor was released. The click demo below runs without sensors."
+        : "Voice answering was declined, and the sensor-enabled performance requires it - so it did not start, and every sensor was released. The click demo below runs without sensors."
     );
   }, [session]);
 
