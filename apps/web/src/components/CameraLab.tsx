@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DirectionLabel, PointSmoother, ScalarSmoother, StableLatch } from "./camera-lab-smoothing.js";
+import { MicLab } from "./MicLab.js";
+import { useGazeCalibration, type CalibrationZoneId } from "./use-gaze-calibration.js";
 
 type Landmark = { x: number; y: number; z: number };
 interface FaceLandmarkerLike {
@@ -71,6 +73,15 @@ function average(points: Landmark[]): Landmark {
   return { x: sum.x / points.length, y: sum.y / points.length, z: sum.z / points.length };
 }
 
+const CALIB_ZONE_RECTS: Record<CalibrationZoneId, { x: number; y: number; w: number; h: number }> = {
+  "top-left": { x: 0, y: 0, w: 0.5, h: 1 / 3 },
+  "top-right": { x: 0.5, y: 0, w: 0.5, h: 1 / 3 },
+  "mid-left": { x: 0, y: 1 / 3, w: 0.5, h: 1 / 3 },
+  "mid-right": { x: 0.5, y: 1 / 3, w: 0.5, h: 1 / 3 },
+  "bottom-left": { x: 0, y: 2 / 3, w: 0.5, h: 1 / 3 },
+  "bottom-right": { x: 0.5, y: 2 / 3, w: 0.5, h: 1 / 3 }
+};
+
 interface CameraLabProps {
   cameraOptIn: boolean;
   onBack: () => void;
@@ -98,6 +109,12 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
   const [error, setError] = useState<string | null>(null);
   const [glasses, setGlasses] = useState(false);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const calibration = useGazeCalibration();
+  // The rAF draw loop reads this ref: state captured in its closure would go stale.
+  const calibStateRef = useRef(calibration.state);
+  useEffect(() => {
+    calibStateRef.current = calibration.state;
+  }, [calibration.state]);
   const stabilizersRef = useRef({
     marker: new PointSmoother(120, 500),
     brightness: new ScalarSmoother(250),
@@ -108,6 +125,7 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
   });
 
   const stop = useCallback(() => {
+    calibration.stop();
     generationRef.current += 1;
     startingRef.current = false;
     setStarting(false);
@@ -218,6 +236,43 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
         ctx.drawImage(currentVideo, 0, 0, width, height);
         ctx.restore();
 
+        // Calibration target: six screen regions standing in for the stage zones.
+        const calibState = calibStateRef.current;
+        if (calibState.status === "running") {
+          const target = calibState.targetZone;
+          ctx.fillStyle = "rgba(7, 17, 15, 0.55)";
+          ctx.fillRect(0, 0, width, height);
+          if (target) {
+            const zoneRect = CALIB_ZONE_RECTS[target];
+            const rx = zoneRect.x * width;
+            const ry = zoneRect.y * height;
+            const rw = zoneRect.w * width;
+            const rh = zoneRect.h * height;
+            ctx.strokeStyle = "#d8b877";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(rx + 6, ry + 6, rw - 12, rh - 12);
+            ctx.fillStyle = "#e8dfcc";
+            ctx.font = "15px 'Courier New', monospace";
+            ctx.textAlign = "center";
+            ctx.fillText(
+              calibState.phase === "settle" ? "LOOK HERE…" : "HOLD IT HERE",
+              rx + rw / 2,
+              ry + rh / 2
+            );
+          } else {
+            ctx.fillStyle = "#d8b877";
+            ctx.beginPath();
+            ctx.arc(width / 2, height / 2, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.font = "13px 'Courier New', monospace";
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#e8dfcc";
+            ctx.fillText("BACK TO THE CENTER", width / 2, height / 2 + 28);
+          }
+          ctx.textAlign = "left";
+        }
+
+
         const now = performance.now();
         const counter = frameCounterRef.current;
         counter.count += 1;
@@ -273,6 +328,7 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
               stabilizers.lastBrightnessAt
             );
             stabilizers.lastBrightnessAt = now;
+            if (iris) calibration.collect(iris.x, iris.y, luma, now);
           } else {
             stabilizers.marker.update(null, now);
           }
@@ -447,10 +503,98 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
               </p>
             </div>
 
+            <div className="gate-card">
+              <p className="eyebrow">Zone measurement (experimental)</p>
+              {calibration.state.status === "idle" && (
+                <>
+                  <p>
+                    Measure whether this device's raw iris signal can tell six screen
+                    regions apart while you look at marked targets on purpose.
+                  </p>
+                  <button
+                    type="button"
+                    className="chip"
+                    disabled={!cameraOn || modelState !== "ready"}
+                    onClick={() => void calibration.start()}
+                  >
+                    {!cameraOn
+                      ? "Open the camera first"
+                      : modelState !== "ready"
+                        ? "Waiting for the vision model"
+                        : "Start zone measurement"}
+                  </button>
+                  <p className="tiny">
+                    About a minute. Measurements stay in this tab, are never sent, and
+                    open nothing: the show gate stays closed either way.
+                  </p>
+                </>
+              )}
+              {calibration.state.status === "running" && (
+                <>
+                  <p>
+                    Trial {calibration.state.trialIndex + 1} of {calibration.state.trialCount}
+                    {calibration.state.phase === "pause"
+                      ? " - back to the center dot."
+                      : calibration.state.phase === "settle"
+                        ? " - look at the marked area."
+                        : " - keep holding it there."}
+                  </p>
+                  <button type="button" className="chip" onClick={calibration.stop}>
+                    Stop measurement
+                  </button>
+                </>
+              )}
+              {calibration.state.status === "done" && calibration.state.metrics && (
+                <>
+                  <p className="eyebrow">Measured on this device</p>
+                  <dl>
+                    <div>
+                      <dt>Trials</dt>
+                      <dd>
+                        {calibration.state.metrics.trials} ({calibration.state.metrics.abstained} abstained)
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Fitted, held-out</dt>
+                      <dd>
+                        {calibration.state.metrics.fittedAccuracy === null
+                          ? "no scorable trials"
+                          : `${Math.round(calibration.state.metrics.fittedAccuracy * 100)}% of ${calibration.state.metrics.trials - calibration.state.metrics.abstained}`}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Fixed grid, held-out</dt>
+                      <dd>
+                        {calibration.state.metrics.fixedAccuracy === null
+                          ? "no scorable trials"
+                          : `${Math.round(calibration.state.metrics.fixedAccuracy * 100)}%`}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Chance</dt>
+                      <dd>{Math.round(calibration.state.metrics.chance * 100)}%</dd>
+                    </div>
+                  </dl>
+                  <p className="tiny">
+                    Prompted-looking accuracy on six coarse regions, fit and scored on
+                    separate trials. This is not free-choice reading, not item-level
+                    accuracy, and not a validation of the show. Targets stand in for the
+                    six stage areas; the show's real layout is a separate check. The gate
+                    stays CLOSED.
+                  </p>
+                  <button type="button" className="chip" onClick={() => void calibration.start()}>
+                    Run it again
+                  </button>
+                </>
+              )}
+            </div>
+
             {error && <p className="error" role="alert">{error}</p>}
           </aside>
         </div>
       )}
+
+      <MicLab />
 
       <footer className="lab-footer">
         <a href="https://www.mediapipe.dev/" target="_blank" rel="noreferrer">
