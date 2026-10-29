@@ -4,6 +4,7 @@ import { MicLab } from "./MicLab.js";
 import { VoiceBench } from "./VoiceBench.js";
 import { SpeakerGateBench } from "./SpeakerGateBench.js";
 import { StatementFlowLab } from "./StatementFlowLab.js";
+import { VoiceAnswerBench } from "./VoiceAnswerBench.js";
 import { useGazeCalibration, type CalibrationZoneId } from "./use-gaze-calibration.js";
 
 type Landmark = { x: number; y: number; z: number };
@@ -604,6 +605,8 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
       <SpeakerGateBench />
 
       <StatementFlowLab />
+
+      <VoiceAnswerBench />
 
       <footer className="lab-footer">
         <a href="https://www.mediapipe.dev/" target="_blank" rel="noreferrer">
