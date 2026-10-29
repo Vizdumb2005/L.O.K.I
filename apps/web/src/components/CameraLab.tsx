@@ -299,7 +299,6 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
           if (faceRaw && landmarks) {
             drawLandmarks(ctx, landmarks, width, height);
             const iris = irisOffset(landmarks);
-            if (iris) calibration.collect(iris.x, iris.y, luma, now);
             const marker = stabilizers.marker.update(
               iris ? { x: clamp01(0.5 + iris.x * 1.1) * width, y: clamp01(0.5 + iris.y * 1.9) * height } : null,
               now
@@ -329,6 +328,7 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
               stabilizers.lastBrightnessAt
             );
             stabilizers.lastBrightnessAt = now;
+            if (iris) calibration.collect(iris.x, iris.y, luma, now);
           } else {
             stabilizers.marker.update(null, now);
           }

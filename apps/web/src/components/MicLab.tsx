@@ -97,6 +97,8 @@ export function MicLab() {
     } catch (cause) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
+      void contextRef.current?.close().catch(() => undefined);
+      contextRef.current = null;
       setError(
         cause instanceof DOMException && cause.name === "NotAllowedError"
           ? "Microphone permission was declined. Nothing was captured."
