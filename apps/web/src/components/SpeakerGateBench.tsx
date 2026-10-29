@@ -33,9 +33,12 @@ interface ConditionResult {
   name: string;
   seconds: number;
   windows: number;
+  subjectWindows: number;
+  otherWindows: number;
   falseAccepts: number;
   falseRejects: number;
-  abstentions: number;
+  abstainSubject: number;
+  abstainOther: number;
   correctKeeps: number;
   correctDrops: number;
   werUngated: number | null;
@@ -178,19 +181,27 @@ export function SpeakerGateBench() {
       const unk = manifest.clips.filter((c) => c.role === "unknown_rejection");
       const clipOf = (c: ClipRef) => pcms.get(c.file)!;
 
-      const conditions: { name: string; pcm: Float32Array; regions: Region[]; ref: string; note: string }[] = [
+      // Iteration affordance (documented): ?conditions=key,key runs a subset and
+      // ?nower=1 skips ASR (gate metrics only). Default = full run with WER.
+      const params = new URLSearchParams(window.location.search);
+      const only = params.get("conditions")?.split(",") ?? null;
+      const noWer = params.get("nower") === "1";
+      const allConditions: { key: string; name: string; pcm: Float32Array; regions: Region[]; ref: string; note: string }[] = [
         (() => { const m = mix(test.map((c) => ({ pcm: clipOf(c), truth: "subject" as const })));
-          return { name: "Clean control (subject only)", ...m, ref: test.map((c) => manifest.transcripts[c.file]).join(" "), note: "Baseline: no gate needed; gating must not hurt this." }; })(),
+          return { key: "clean", name: "Clean control (subject only)", ...m, ref: test.map((c) => manifest.transcripts[c.file]).join(" "), note: "Baseline: no gate needed; gating must not hurt this." }; })(),
         (() => { const seq: { pcm: Float32Array; truth: Region["truth"] }[] = [];
           for (let i = 0; i < test.length; i++) { seq.push({ pcm: clipOf(test[i]), truth: "subject" }); if (bg[i]) seq.push({ pcm: clipOf(bg[i]), truth: "non_target" }); }
           const m = mix(seq);
-          return { name: "Sequential, no overlap", ...m, ref: test.map((c) => manifest.transcripts[c.file]).join(" "), note: "The living-room case: talkers take turns." }; })(),
+          return { key: "sequential", name: "Sequential, no overlap", ...m, ref: test.map((c) => manifest.transcripts[c.file]).join(" "), note: "The living-room case: talkers take turns." }; })(),
         (() => { const m = overlay(test.map((c) => ({ pcm: clipOf(c) })), bg.map((c) => ({ pcm: clipOf(c) })), 1.0);
-          return { name: "Overlap at 0 dB", ...m, ref: test.map((c) => manifest.transcripts[c.file]).join(" "), note: "Expected to leak: a gate cannot un-mix simultaneous speech." }; })(),
+          return { key: "overlap0", name: "Overlap at 0 dB", ...m, ref: test.map((c) => manifest.transcripts[c.file]).join(" "), note: "Expected to leak: a gate cannot un-mix simultaneous speech." }; })(),
+        (() => { const m = overlay(test.map((c) => ({ pcm: clipOf(c) })), bg.map((c) => ({ pcm: clipOf(c) })), 0.562);
+          return { key: "overlap-5", name: "Overlap at -5 dB (background quieter)", ...m, ref: test.map((c) => manifest.transcripts[c.file]).join(" "), note: "Same failure mode expected, less severe: the gate still cannot un-mix." }; })(),
         (() => { const m = mix(unk.map((c) => ({ pcm: clipOf(c), truth: "unknown" as const })));
-          return { name: "Unknown speaker (never enrolled)", ...m, ref: "", note: "The gate must abstain or reject; any subject transcript here is a false accept." }; })()
+          return { key: "unknown", name: "Unknown speaker (never enrolled)", ...m, ref: "", note: "The gate must abstain or reject; any subject transcript here is a false accept." }; })()
       ];
 
+      const conditions = only ? allConditions.filter((c) => only.includes(c.key)) : allConditions;
       const { pipeline } = await import("@huggingface/transformers");
       let transcriber: ((audio: Float32Array, opts?: Record<string, unknown>) => Promise<{ text?: string } | Array<{ text?: string }>>) | null = null;
 
@@ -201,7 +212,7 @@ export function SpeakerGateBench() {
         const frameAct = await frameActivity(cond.pcm);
 
         say(`Gating windows: ${cond.name}`);
-        let fa = 0, fr = 0, abst = 0, keep = 0, drop = 0;
+        let fa = 0, fr = 0, abstS = 0, abstO = 0, keep = 0, drop = 0, subj = 0, other = 0;
         const gatedChunks: Float32Array[] = [];
         let windows = 0;
         let lastKeptEnd = -1;
@@ -218,6 +229,7 @@ export function SpeakerGateBench() {
           const sim = dj.cosineSimilarity(Array.from(e), Array.from(eEnroll));
           const truth = truthAt(cond.regions, w0, w1);
           const wants = truth === "subject";
+          if (wants) subj++; else other++;
           if (sim >= TAU_ACCEPT) {
             if (wants) {
               keep++;
@@ -230,7 +242,7 @@ export function SpeakerGateBench() {
             } else { fa++; }
           } else if (sim <= TAU_REJECT) {
             if (wants) fr++; else drop++;
-          } else abst++;
+          } else if (wants) abstS++; else abstO++;
           if (!alive()) return;
         }
 
@@ -242,7 +254,9 @@ export function SpeakerGateBench() {
           return out;
         };
         let werU: number | null = null, werG: number | null = null, gatedText = "";
-        if (cond.ref) {
+        if (noWer) {
+          gatedText = "(ASR skipped for this run - gate metrics only)";
+        } else if (cond.ref) {
           if (!transcriber) {
             say("Downloading the Whisper model (one time, ~39 MB)");
             transcriber = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", { device: "webgpu" in navigator ? "webgpu" : "wasm", dtype: "webgpu" in navigator ? "fp16" : "q8" } as Record<string, unknown>)) as unknown as typeof transcriber;
@@ -266,7 +280,8 @@ export function SpeakerGateBench() {
 
         results.push({
           name: cond.name, seconds: cond.pcm.length / SR, windows,
-          falseAccepts: fa, falseRejects: fr, abstentions: abst,
+          subjectWindows: subj, otherWindows: other,
+          falseAccepts: fa, falseRejects: fr, abstainSubject: abstS, abstainOther: abstO,
           correctKeeps: keep, correctDrops: drop,
           werUngated: werU, werGated: werG, gatedTranscript: gatedText, note: cond.note
         });
@@ -325,11 +340,8 @@ export function SpeakerGateBench() {
                 <p><strong>{r.name}</strong> <span className="tiny">({r.seconds.toFixed(0)}s, {r.windows} windows)</span></p>
                 <p className="tiny">{r.note}</p>
                 <dl>
-                  <div><dt>Kept correctly</dt><dd>{r.correctKeeps}</dd></div>
-                  <div><dt>Dropped correctly</dt><dd>{r.correctDrops}</dd></div>
-                  <div><dt>False accepts</dt><dd>{r.falseAccepts}</dd></div>
-                  <div><dt>False rejects</dt><dd>{r.falseRejects}</dd></div>
-                  <div><dt>Abstentions</dt><dd>{r.abstentions}</dd></div>
+                  <div><dt>Subject windows</dt><dd>{r.subjectWindows}: kept {r.correctKeeps}, rejected {r.falseRejects}, abstained {r.abstainSubject}</dd></div>
+                  <div><dt>Non-target windows</dt><dd>{r.otherWindows}: rejected {r.correctDrops}, accepted {r.falseAccepts}, abstained {r.abstainOther}</dd></div>
                   {r.werUngated !== null && <div><dt>WER ungated</dt><dd>{pct(r.werUngated)}</dd></div>}
                   {r.werGated !== null && <div><dt>WER gated</dt><dd>{pct(r.werGated)}</dd></div>}
                 </dl>
