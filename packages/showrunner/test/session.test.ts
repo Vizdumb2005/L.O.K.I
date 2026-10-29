@@ -453,3 +453,32 @@ describe("patter response provenance", () => {
   });
 
 });
+
+describe("presence mode", () => {
+  it("presenceEnabled gives the attune beat without opening the gaze channel", async () => {
+    const { PerformanceSession } = await import("../src/session.js");
+    const { cardEffect } = await import("@loki/effect-card");
+    const session = new PerformanceSession(cardEffect, {
+      seed: 7,
+      cameraEnabled: true,
+      cameraValidated: false,
+      presenceEnabled: true
+    });
+    session.begin();
+    session.chosen();
+    expect(session.snapshot().phase).toBe("attune");
+    // The gaze channel stays closed: evidence is refused.
+    expect(session.addGaze({ zone: "z0", reliability: 0.9 })).toBe(false);
+    session.finishAttune();
+    expect(session.snapshot().phase).toBe("probe");
+  });
+
+  it("no presence and no validation skips attune exactly as before", async () => {
+    const { PerformanceSession } = await import("../src/session.js");
+    const { cardEffect } = await import("@loki/effect-card");
+    const session = new PerformanceSession(cardEffect, { seed: 7 });
+    session.begin();
+    session.chosen();
+    expect(session.snapshot().phase).toBe("probe");
+  });
+});

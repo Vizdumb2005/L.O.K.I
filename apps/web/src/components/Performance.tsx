@@ -1,15 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Effect } from "@loki/effect-api";
 import { rewritePatter } from "@loki/showrunner";
 import { Stage } from "./Stage.js";
 import { usePerformance } from "../lib/performance.js";
 import type { SessionView } from "@loki/showrunner";
+import type { SensorSession } from "../lib/sensor-session.js";
+import { createPresenceDetector } from "../lib/presence.js";
 
 interface PerformanceProps {
   effect: Effect;
   reducedMotion: boolean;
   llmEnabled: boolean;
   cameraReady: boolean;
+  sensorMode?: boolean;
+  sensorSession?: SensorSession | null;
+  onStopSensors?: () => void;
   onExit: () => void;
   onOpenLab: () => void;
   onToggleReducedMotion: () => void;
@@ -46,12 +51,78 @@ export function Performance({
   reducedMotion,
   llmEnabled,
   cameraReady,
+  sensorMode = false,
+  sensorSession = null,
+  onStopSensors,
   onExit,
   onOpenLab,
   onToggleReducedMotion,
   onToggleLlm
 }: PerformanceProps) {
-  const { view, error, advance, answer, restart } = usePerformance(effect);
+  const { view, error, advance, answer, restart } = usePerformance(effect, sensorMode);
+  const [presence, setPresence] = useState<"unknown" | "present" | "absent" | "unavailable">("unknown");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const attuning = sensorMode && view?.phase === "attune";
+
+  // Attach the session camera the moment the preview element exists (it only
+  // renders after the session view loads, so an effect keyed on props would
+  // fire too early and never retry). Callback refs fire on element mount.
+  const attachVideo = useCallback(
+    (video: HTMLVideoElement | null) => {
+      videoRef.current = video;
+      if (!video) return;
+      const stream = sensorSession?.stream("camera");
+      if (!stream) return;
+      video.srcObject = stream as unknown as MediaStream;
+      void video.play().catch(() => undefined);
+    },
+    [sensorSession]
+  );
+
+  // Presence checks run only during the attune beat. One frame in, one
+  // boolean out; frames are never stored. Detection failure is honest:
+  // the show continues and says it could not see you.
+  useEffect(() => {
+    if (!attuning || !videoRef.current) return;
+    let live = true;
+    let timer = 0;
+    let failures = 0;
+    let detector: Awaited<ReturnType<typeof createPresenceDetector>> | null = null;
+    setPresence("unknown");
+    void createPresenceDetector(videoRef.current)
+      .then((d) => {
+        if (!live) { d.close(); return; }
+        detector = d;
+        const tick = async () => {
+          if (!live || !detector) return;
+          const video = videoRef.current;
+          if (!video || video.readyState < 2 || video.videoWidth === 0) {
+            timer = window.setTimeout(() => void tick(), 600);
+            return;
+          }
+          try {
+            const seen = await detector.check();
+            failures = 0;
+            if (live) setPresence(seen ? "present" : "absent");
+          } catch {
+            failures += 1;
+            // Persistent failure is stated honestly, never masked as "checking".
+            if (live && failures >= 5) {
+              setPresence("unavailable");
+              return;
+            }
+          }
+          timer = window.setTimeout(() => void tick(), 600);
+        };
+        void tick();
+      })
+      .catch(() => { if (live) setPresence("unavailable"); });
+    return () => {
+      live = false;
+      window.clearTimeout(timer);
+      detector?.close();
+    };
+  }, [attuning]);
   const [displayLine, setDisplayLine] = useState("");
   const [cueIndex, setCueIndex] = useState(0);
   const [indexKey, setIndexKey] = useState("");
@@ -229,6 +300,18 @@ export function Performance({
         </div>
       </section>
 
+      {sensorMode && (
+        <section className="sensor-bar" aria-label="Sensor status">
+          <video ref={attachVideo} className="sensor-preview" muted playsInline aria-label="Camera preview - presence only" />
+          <span className="sensor-indicator" role="status">
+            Camera on - presence only. Frames are processed here and discarded.
+          </span>
+          <button type="button" className="chip" onClick={onStopSensors}>
+            Stop sensors
+          </button>
+        </section>
+      )}
+
       <section className="stage-shell" aria-label={`${view.stage.title} stage`} data-target-lit={stageView.reveal ? "true" : "false"}>
         <div className="stage-vignette" />
         <Stage effect={effect} view={stageView} reducedMotion={reducedMotion} />
@@ -278,6 +361,17 @@ export function Performance({
           )}
           {isProbe && (
             <p className="prompt-note">Answer honestly, or not. There is no penalty for misleading me.</p>
+          )}
+          {attuning && (
+            <p className="prompt-note" role="status">
+              {presence === "present"
+                ? "I can see you are here. Nothing is recorded - presence only."
+                : presence === "absent"
+                  ? "I do not see a face yet. The camera only checks presence; you can continue whenever you like."
+                  : presence === "unavailable"
+                    ? "The presence check is unavailable here - the camera is still presence-only, and you can continue."
+                    : "Checking that someone is here - presence only, nothing is recorded."}
+            </p>
           )}
         </div>
 

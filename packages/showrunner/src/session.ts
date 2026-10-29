@@ -44,6 +44,12 @@ export interface SessionOptions {
   cameraEnabled?: boolean;
   /** A human/pilot validation must explicitly pass this; the lab does not. */
   cameraValidated?: boolean;
+  /**
+   * Presence mode: allows the attune beat (face presence only, no gaze
+   * evidence). Does NOT open the gaze channel - addGaze still requires
+   * cameraValidated. Presence is "a face is here", never card inference.
+   */
+  presenceEnabled?: boolean;
   forceEnabled?: boolean;
   now?: () => number;
   /** Simulator-only ablations. The app never supplies hardMode. */
@@ -143,6 +149,7 @@ export class PerformanceSession {
   private inRecovery = false;
   private revealCandidate: { hypothesis: Hypothesis; probability: number } | null = null;
   private cameraActive = false;
+  private readonly presenceEnabled: boolean;
   private gazeWindows = 0;
   private recoveryCount = 0;
   private startedAt: number;
@@ -165,6 +172,7 @@ export class PerformanceSession {
     this.policy = options.policy ?? "greedy";
     this.cameraRequested = options.cameraEnabled === true;
     this.cameraValidated = options.cameraValidated === true && options.cameraEnabled === true;
+    this.presenceEnabled = options.presenceEnabled === true;
     this.forceEnabled = options.forceEnabled === true;
     this.recoveryLeft = effect.config.recoveryBudget;
     this.probes = effect.probes();
@@ -197,7 +205,7 @@ export class PerformanceSession {
   /** Called after the spectator has silently chosen an item. */
   chosen(): void {
     if (this.phase !== "think") return;
-    if (this.cameraValidated) {
+    if (this.cameraValidated || this.presenceEnabled) {
       this.cameraActive = true;
       this.phase = "attune";
       this.line = this.lineFor("attune", "Let the room settle. Look where you like; nothing is recorded.");
