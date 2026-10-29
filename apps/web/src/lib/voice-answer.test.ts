@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decideAnswer, gateDecision, mapAnswerToken, TAU_ACCEPT, TAU_REJECT } from "./voice-answer.js";
+import { decideAnswer, decideOptionAnswer, gateDecision, mapAnswerToken, matchSpokenOption, TAU_ACCEPT, TAU_REJECT } from "./voice-answer.js";
 
 const speech = new Float32Array(16000).fill(0.05);
 
@@ -61,5 +61,49 @@ describe("rejection wording", () => {
       expect(d.reason).not.toMatch(/is not the enrolled/);
       expect(d.reason).toMatch(/no answer accepted/);
     }
+  });
+});
+
+describe("matchSpokenOption", () => {
+  it("matches a spoken label as a whole word", () => {
+    expect(matchSpokenOption("ace", ["Ace", "Two", "Three", "Four"])).toBe(0);
+    expect(matchSpokenOption("I think three", ["Ace", "Two", "Three", "Four"])).toBe(2);
+  });
+  it("abstains on zero or multiple matches", () => {
+    expect(matchSpokenOption("maybe seven", ["Ace", "Two", "Three", "Four"])).toBeNull();
+    expect(matchSpokenOption("ace or four", ["Ace", "Two", "Three", "Four"])).toBeNull();
+  });
+  it("does not match substrings of other words", () => {
+    expect(matchSpokenOption("a tower", ["Ace", "Two", "Three", "Four"])).toBeNull();
+  });
+  it("maps confirm and deny cues onto yes/no options", () => {
+    expect(matchSpokenOption("that's true", ["Yes", "No"])).toBe(0);
+    expect(matchSpokenOption("wrong", ["Yes", "No"])).toBe(1);
+    expect(matchSpokenOption("not true", ["Yes", "No"])).toBe(1);
+    expect(matchSpokenOption("um", ["Yes", "No"])).toBeNull();
+  });
+});
+
+describe("decideOptionAnswer", () => {
+  const loud = new Float32Array(16000).fill(0.2);
+  it("answers when the gate accepts and one option matches", () => {
+    const d = decideOptionAnswer(loud, 1, 0.9, "three", ["Ace", "Two", "Three", "Four"]);
+    expect(d.kind).toBe("answer");
+    expect(d.index).toBe(2);
+  });
+  it("rejects a non-enrolled voice without claiming identity", () => {
+    const d = decideOptionAnswer(loud, 1, 0.2, "three", ["Ace", "Two", "Three", "Four"]);
+    expect(d.kind).toBe("uncertain");
+    expect(d.reason).toContain("could not confidently match the enrolled voice");
+    expect(d.reason).not.toMatch(/impostor|not you|stranger/i);
+  });
+  it("abstains when the transcript is ambiguous", () => {
+    const d = decideOptionAnswer(loud, 1, 0.9, "ace or four", ["Ace", "Two", "Three", "Four"]);
+    expect(d.kind).toBe("uncertain");
+  });
+  it("abstains on silence", () => {
+    const d = decideOptionAnswer(new Float32Array(16000), 1, 0.9, "", ["Yes", "No"]);
+    expect(d.kind).toBe("uncertain");
+    expect(d.reason).toBe("silence");
   });
 });

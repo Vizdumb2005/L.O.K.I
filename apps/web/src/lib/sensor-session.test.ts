@@ -68,3 +68,4 @@ describe("SensorSession", () => {
     expect(() => s.stopAll()).not.toThrow();
   });
 });
+

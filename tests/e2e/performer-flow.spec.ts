@@ -15,7 +15,7 @@ async function playToPayoff(page: Page): Promise<void> {
       await page.waitForTimeout(120);
       continue;
     }
-    const recover = page.getByRole("button", { name: "One clean question" });
+    const recover = page.getByRole("button", { name: "One clean claim" });
     if (await recover.isVisible().catch(() => false)) {
       await recover.click();
       continue;

@@ -3,28 +3,27 @@ import { expect, test, type Page } from "@playwright/test";
 // Deterministic answers for the Three of Diamonds. Used only for the documentation
 // screenshot so the reveal shot is reproducible instead of depending on a miss.
 const THREE_OF_DIAMONDS: Record<string, string> = {
-  "Don't tell me the card. Just let the symbol come forward - is it hearts, diamonds, or spades?": "Diamonds",
-  "And its rank - ace, two, three, or four?": "Three",
-  "Some cards feel warm, some feel cool. Does yours feel like one of the warm ones?": "Yes",
-  "Stay with the symbol a moment. Could it be a heart?": "No",
-  "Could it be a diamond?": "Yes",
-  "Could it be a spade?": "No",
-  "Think of its weight now. Does it sit low - an ace or a two?": "No",
-  "Does it sit high - a three or a four?": "Yes",
-  "Is its number even - a two or a four?": "No",
-  "Is it odd - the ace or the three?": "Yes",
-  "Could it be the ace?": "No",
-  "Could it be the two?": "No",
-  "Could it be the three?": "Yes",
-  "Could it be the four?": "No",
-  "Is its face a number rather than a letter?": "Yes",
-  "Does the symbol curve, rather than cut into angles?": "No",
-  "Is it a high red card - a red three or four?": "Yes",
-  "Is it a low black card - a black ace or two?": "No",
-  "A heart, and above a two?": "No",
-  "A diamond, below a three?": "No",
-  "Could it be a red ace?": "No",
-  "A high spade - the three or the four?": "No"
+  "Some cards feel warm, some feel cool. Yours is one of the warm ones.": "True of my card",
+  "Stay with the symbol a moment. It's a heart.": "That's wrong",
+  "The symbol is a diamond.": "True of my card",
+  "The symbol is a spade.": "That's wrong",
+  "Think of its weight now. It sits low - an ace or a two.": "That's wrong",
+  "It sits high - a three or a four.": "True of my card",
+  "Its number is even - a two or a four.": "That's wrong",
+  "It's odd - the ace or the three.": "True of my card",
+  "It's the ace.": "That's wrong",
+  "It's the two.": "That's wrong",
+  "It's the three.": "True of my card",
+  "It's the four.": "That's wrong",
+  "Its face is a number, not a letter.": "True of my card",
+  "The symbol curves; it does not cut into angles.": "That's wrong",
+  "It's a high red card - a red three or four.": "True of my card",
+  "It's a low black card - a black ace or two.": "That's wrong",
+  "A heart, and above a two.": "That's wrong",
+  "An even heart - the two or the four.": "That's wrong",
+  "A diamond, below a three.": "That's wrong",
+  "It's a red ace.": "That's wrong",
+  "A high spade - the three or the four.": "That's wrong"
 };
 
 async function answerThreeOfDiamonds(page: Page): Promise<void> {
@@ -37,14 +36,14 @@ async function answerThreeOfDiamonds(page: Page): Promise<void> {
       return;
     }
 
-    const clean = page.getByRole("button", { name: "One clean question" });
+    const clean = page.getByRole("button", { name: "One clean claim" });
     if (await clean.isVisible().catch(() => false)) {
       await clean.click();
       continue;
     }
 
     const line = (await page.locator("#line-heading").innerText().catch(() => ""))
-      .replace(/^One clean question\.\s*/, "")
+      .replace(/^One clean claim\.\s*/, "")
       .trim();
     const answer = THREE_OF_DIAMONDS[line];
     if (answer) {
@@ -75,7 +74,7 @@ async function playToEnd(page: Page): Promise<void> {
       continue;
     }
 
-    // "I have chosen", "One clean question", "Reveal it", "Continue" — all share
+    // "I have chosen", "One clean claim", "Reveal it", "Continue" — all share
     // the primary action slot; the label changes by beat.
     const primary = page.locator(".panel-actions button.primary");
     if (await primary.isVisible().catch(() => false)) {

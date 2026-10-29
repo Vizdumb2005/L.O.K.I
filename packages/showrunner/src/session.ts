@@ -510,8 +510,8 @@ export class PerformanceSession {
     this.phase = "probe";
     this.promptProbe = choice.probe;
     this.line = sanitizeLine(
-      `One clean question. ${choice.probe.prompt}`,
-      "One clean question. What feels true?"
+      `One clean claim. ${choice.probe.prompt}`,
+      "One clean claim. What feels true?"
     );
   }
 

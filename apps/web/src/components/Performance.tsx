@@ -6,6 +6,7 @@ import { usePerformance } from "../lib/performance.js";
 import type { SessionView } from "@loki/showrunner";
 import type { SensorSession } from "../lib/sensor-session.js";
 import { createPresenceDetector } from "../lib/presence.js";
+import { useVoiceAnswer } from "../lib/use-voice-answer.js";
 
 interface PerformanceProps {
   effect: Effect;
@@ -14,7 +15,7 @@ interface PerformanceProps {
   cameraReady: boolean;
   sensorMode?: boolean;
   sensorSession?: SensorSession | null;
-  onStopSensors?: () => void;
+  onStopSensors?: (notice?: string) => void;
   onExit: () => void;
   onOpenLab: () => void;
   onToggleReducedMotion: () => void;
@@ -30,7 +31,7 @@ function phaseLabel(view: SessionView): string {
     case "attune":
       return "Attunement";
     case "probe":
-      return view.progress.answered >= view.progress.max ? "One clean question" : "The reading";
+      return view.progress.answered >= view.progress.max ? "One clean answer" : "The reading";
     case "recover":
       return "A contradiction";
     case "build":
@@ -63,6 +64,7 @@ export function Performance({
   const [presence, setPresence] = useState<"unknown" | "present" | "absent" | "unavailable">("unknown");
   const [showPreview, setShowPreview] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoMounted, setVideoMounted] = useState(false);
   const attuning = sensorMode && view?.phase === "attune";
 
   // Attach the session camera the moment the preview element exists (it only
@@ -76,6 +78,7 @@ export function Performance({
       if (!stream) return;
       video.srcObject = stream as unknown as MediaStream;
       void video.play().catch(() => undefined);
+      setVideoMounted(true);
     },
     [sensorSession]
   );
@@ -123,7 +126,7 @@ export function Performance({
       window.clearTimeout(timer);
       detector?.close();
     };
-  }, [attuning]);
+  }, [attuning, videoMounted]);
   const [displayLine, setDisplayLine] = useState("");
   const [cueIndex, setCueIndex] = useState(0);
   const [indexKey, setIndexKey] = useState("");
@@ -241,12 +244,119 @@ export function Performance({
     return () => window.removeEventListener("keydown", onKey);
   }, [view, answer, advance, restart, onExit]);
 
+  const endSensorMode = useCallback(
+    (reason: string) => {
+      onStopSensors?.(reason);
+    },
+    [onStopSensors]
+  );
+  const voice = useVoiceAnswer({
+    active: sensorMode,
+    session: sensorSession ?? null,
+    probeActive: sensorMode && view?.phase === "probe" && Boolean(view?.options),
+    probeKey: `${view?.phase ?? ""}:${view?.progress.answered ?? 0}`,
+    options: view?.options,
+    onAnswer: answer,
+    onEndSensorMode: endSensorMode
+  });
+  // Losing REQUIRED capture (camera unplugged, OS revoked the mic) pauses the
+  // sensor-enabled performance - it never continues unchanged without a
+  // sensor it declared mandatory. Intentional mic release is exempt.
+  const onStopSensorsRef = useRef(onStopSensors);
+  onStopSensorsRef.current = onStopSensors;
+  useEffect(() => {
+    if (!sensorMode || !sensorSession) return;
+    const subs: Array<[MediaStreamTrack, () => void]> = [];
+    const watch = (stream: MediaStream | null, kind: "camera" | "mic") => {
+      stream?.getTracks().forEach((t) => {
+        const h = () => {
+          onStopSensorsRef.current?.(
+            kind === "mic"
+              ? "The microphone capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below is the same illusion without sensors."
+              : "The camera capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below is the same illusion without sensors."
+          );
+        };
+        t.addEventListener("ended", h);
+        subs.push([t, h]);
+      });
+    };
+    watch(sensorSession.stream("camera") as unknown as MediaStream | null, "camera");
+    watch(sensorSession.stream("mic") as unknown as MediaStream | null, "mic");
+    return () => subs.forEach(([t, h]) => t.removeEventListener("ended", h));
+  }, [sensorMode, sensorSession]);
+
   if (!view) {
     return (
       <main className="performance loading" id="main">
         <p className="eyebrow">Setting the table</p>
         <h1>One moment.</h1>
         {error && <p className="error">{error}</p>}
+      </main>
+    );
+  }
+
+  // Voice setup gates the sensor-enabled performance: enrollment (or an
+  // explicit tap-answers choice) happens before the show content is live.
+  const voiceOverlay =
+    sensorMode && (voice.state === "loading" || voice.state === "enroll" || voice.state === "recording");
+  if (voiceOverlay) {
+    return (
+      <main className="performance" id="main">
+        <section className="sensor-bar" aria-label="Sensor status">
+          <span className="sensor-indicator" role="status">
+            Camera on - presence only. Frames are processed here and discarded.
+          </span>
+          <span className="sensor-indicator" role="status">
+            Mic on - voice answers (experimental). Clips are processed here and discarded.
+          </span>
+          <button type="button" className="chip" onClick={() => onStopSensors?.()}>
+            Stop sensors
+          </button>
+        </section>
+        <section className="panel" aria-labelledby="voice-enroll-heading">
+          <div className="panel-copy">
+            <p className="eyebrow">Voice setup · experimental</p>
+            {voice.state === "loading" ? (
+              <>
+                <h2 id="voice-enroll-heading">Loading the on-device voice models</h2>
+                <p className="line">One moment. The models download into this tab and never leave it.</p>
+              </>
+            ) : voice.state === "recording" ? (
+              <>
+                <h2 id="voice-enroll-heading">Recording your enrollment</h2>
+                <p className="line">
+                  Say clearly: "I am thinking of one card." About four seconds, then it stops on its own.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 id="voice-enroll-heading">Enroll your voice for this performance</h2>
+                <p className="line">
+                  This is an experimental attempt to recognize your enrolled voice when you answer -
+                  it may reject you, or accept another speaker, and it is not reliable separation of
+                  voices in a room, especially when people talk over each other. It has been checked
+                  on synthetic clips only, not yet on a real device. About four seconds of speech;
+                  the voice print is computed in this tab, kept only in memory, never uploaded, and
+                  discarded when you stop or leave. Withdraw it any time with "Forget my voice" -
+                  that ends the sensor performance. It is not identification or sign-in.
+                </p>
+                {voice.feedback && (
+                  <p className="prompt-note" role="status">
+                    {voice.feedback}
+                  </p>
+                )}
+                <div className="panel-actions" role="group" aria-label="Voice setup choices">
+                  <button type="button" className="primary" onClick={() => void voice.enroll()}>
+                    Enroll my voice
+                  </button>
+                  <button type="button" className="ghost" onClick={() => voice.useManual("declined")}>
+                    No voice - end the sensor performance
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </section>
       </main>
     );
   }
@@ -266,7 +376,7 @@ export function Performance({
     view.phase === "think"
       ? "I have chosen"
       : view.phase === "recover"
-        ? "One clean question"
+        ? "One clean claim"
         : view.phase === "build"
           ? "Reveal it"
           : view.phase === "reveal" || view.phase === "miss"
@@ -316,10 +426,20 @@ export function Performance({
           <span className="sensor-indicator" role="status">
             Camera on - presence only. Frames are processed here and discarded.
           </span>
+          {(voice.state === "loading" || voice.state === "enroll" || voice.state === "recording" || voice.state === "ready") && (
+            <span className="sensor-indicator" role="status">
+              Mic on - voice answers (experimental). Clips are processed here and discarded.
+            </span>
+          )}
+          {voice.enrolled && (
+            <button type="button" className="chip" onClick={() => voice.useManual("forgotten")}>
+              Forget my voice
+            </button>
+          )}
           <button type="button" className="chip" onClick={() => setShowPreview((v) => !v)} aria-pressed={showPreview}>
             {showPreview ? "Hide preview" : "Show preview"}
           </button>
-          <button type="button" className="chip" onClick={onStopSensors}>
+          <button type="button" className="chip" onClick={() => onStopSensors?.()}>
             Stop sensors
           </button>
         </section>
@@ -374,6 +494,11 @@ export function Performance({
           )}
           {isProbe && (
             <p className="prompt-note">Answer honestly, or not. There is no penalty for misleading me.</p>
+          )}
+          {sensorMode && voice.feedback && (
+            <p className="prompt-note" role="status">
+              {voice.feedback}
+            </p>
           )}
           {attuning && (
             <p className="prompt-note" role="status">
