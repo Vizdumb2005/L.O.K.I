@@ -1483,3 +1483,35 @@ p {
 .cue-trail li + li {
   margin-top: 0.25rem;
 }
+
+/* Microphone check (camera lab) */
+.mic-lab {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.mic-meter {
+  position: relative;
+  height: 10px;
+  margin: 0.75rem 0;
+  border-radius: 5px;
+  background: rgba(216, 184, 119, 0.12);
+  overflow: hidden;
+}
+
+.mic-level {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, rgba(216, 184, 119, 0.55), #d8b877);
+  transition: width 90ms linear;
+}
+
+.mic-floor {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: rgba(244, 234, 215, 0.85);
+  transition: left 200ms linear;
+}

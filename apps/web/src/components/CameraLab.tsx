@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DirectionLabel, PointSmoother, ScalarSmoother, StableLatch } from "./camera-lab-smoothing.js";
+import { MicLab } from "./MicLab.js";
 
 type Landmark = { x: number; y: number; z: number };
 interface FaceLandmarkerLike {
@@ -451,6 +452,8 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
           </aside>
         </div>
       )}
+
+      <MicLab />
 
       <footer className="lab-footer">
         <a href="https://www.mediapipe.dev/" target="_blank" rel="noreferrer">
