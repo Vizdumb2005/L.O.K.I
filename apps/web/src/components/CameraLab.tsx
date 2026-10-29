@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DirectionLabel, PointSmoother, ScalarSmoother, StableLatch } from "./camera-lab-smoothing.js";
 
 type Landmark = { x: number; y: number; z: number };
 interface FaceLandmarkerLike {
@@ -96,6 +97,15 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
   const [diagnostics, setDiagnostics] = useState<Diagnostics>(initialDiagnostics);
   const [error, setError] = useState<string | null>(null);
   const [glasses, setGlasses] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const stabilizersRef = useRef({
+    marker: new PointSmoother(120, 500),
+    brightness: new ScalarSmoother(250),
+    face: new StableLatch(2, 12),
+    direction: new DirectionLabel(0.06),
+    lastTextUpdate: 0,
+    lastBrightnessAt: 0
+  });
 
   const stop = useCallback(() => {
     generationRef.current += 1;
@@ -114,6 +124,13 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
     setDiagnostics(initialDiagnostics);
     setModelState("idle");
     setModelSource(null);
+    const stabilizers = stabilizersRef.current;
+    stabilizers.marker.reset();
+    stabilizers.brightness.reset();
+    stabilizers.face.reset();
+    stabilizers.direction.reset();
+    stabilizers.lastTextUpdate = 0;
+    stabilizers.lastBrightnessAt = 0;
   }, []);
 
   useEffect(() => {
@@ -209,7 +226,6 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
           frameCounterRef.current = { count: 0, since: now };
         }
 
-        let face = false;
         if (
           landmarkerRef.current &&
           currentVideo.currentTime !== lastVideoTimeRef.current &&
@@ -217,25 +233,33 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
         ) {
           lastVideoTimeRef.current = currentVideo.currentTime;
           lastDetectRef.current = now;
+          const stabilizers = stabilizersRef.current;
           const result = landmarkerRef.current.detectForVideo(currentVideo, now);
           const landmarks = result.faceLandmarks[0];
-          if (landmarks && landmarks.length > 400) {
-            face = true;
+          const faceRaw = !!(landmarks && landmarks.length > 400);
+          // Stable display state: brief detection dropouts never flip the UI.
+          const faceStable = stabilizers.face.update(faceRaw);
+          let eyeText = faceStable ? "no iris" : "no face";
+          let luma: number | null = null;
+          if (faceRaw && landmarks) {
             drawLandmarks(ctx, landmarks, width, height);
             const iris = irisOffset(landmarks);
-            if (iris) {
-              const x = clamp01(0.5 + iris.x * 1.1) * width;
-              const y = clamp01(0.5 + iris.y * 1.9) * height;
+            const marker = stabilizers.marker.update(
+              iris ? { x: clamp01(0.5 + iris.x * 1.1) * width, y: clamp01(0.5 + iris.y * 1.9) * height } : null,
+              now
+            );
+            if (iris) eyeText = stabilizers.direction.update(iris);
+            if (marker) {
               ctx.strokeStyle = "rgba(216, 184, 119, 0.95)";
               ctx.lineWidth = 1.5;
               ctx.beginPath();
-              ctx.arc(x, y, 15, 0, Math.PI * 2);
+              ctx.arc(marker.x, marker.y, 15, 0, Math.PI * 2);
               ctx.stroke();
               ctx.beginPath();
-              ctx.moveTo(x - 23, y);
-              ctx.lineTo(x + 23, y);
-              ctx.moveTo(x, y - 23);
-              ctx.lineTo(x, y + 23);
+              ctx.moveTo(marker.x - 23, marker.y);
+              ctx.lineTo(marker.x + 23, marker.y);
+              ctx.moveTo(marker.x, marker.y - 23);
+              ctx.lineTo(marker.x, marker.y + 23);
               ctx.stroke();
               ctx.fillStyle = "rgba(7, 17, 15, 0.75)";
               ctx.fillRect(12, height - 34, 236, 22);
@@ -243,18 +267,17 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
               ctx.font = "11px 'Courier New', monospace";
               ctx.fillText("RAW IRIS SIGNAL · UNCALIBRATED", 20, height - 19);
             }
-            setDiagnostics((previous) => ({
-              ...previous,
-              face,
-              brightness: brightnessOf(ctx, width, height),
-              eyeSignal: iris ? `${iris.x >= 0 ? "right" : "left"} / ${iris.y >= 0 ? "down" : "up"}` : "no iris",
-              frames: previous.frames + 1,
-              fps: Math.round(fps)
-            }));
+            luma = stabilizers.brightness.update(
+              brightnessOf(ctx, width, height),
+              now,
+              stabilizers.lastBrightnessAt
+            );
+            stabilizers.lastBrightnessAt = now;
           } else {
-            setDiagnostics((previous) => ({ ...previous, face: false, eyeSignal: "no face", fps: Math.round(fps) }));
+            stabilizers.marker.update(null, now);
           }
-          if (!face) {
+          // The overlay appears only for a sustained loss, not single-frame misses.
+          if (!faceStable) {
             ctx.fillStyle = "rgba(7, 17, 15, 0.72)";
             ctx.fillRect(width / 2 - 120, 16, 240, 34);
             ctx.fillStyle = "#e8dfcc";
@@ -262,6 +285,18 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
             ctx.textAlign = "center";
             ctx.fillText("NO FACE IN FRAME", width / 2, 38);
             ctx.textAlign = "left";
+          }
+          // Text readouts are throttled: steady values, not a per-frame ticker.
+          if (now - stabilizers.lastTextUpdate >= 500) {
+            stabilizers.lastTextUpdate = now;
+            setDiagnostics((previous) => ({
+              ...previous,
+              face: faceStable,
+              brightness: luma ?? previous.brightness,
+              eyeSignal: eyeText,
+              frames: previous.frames + 1,
+              fps: Math.round(fps)
+            }));
           }
         }
 
@@ -348,6 +383,15 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
           </section>
 
           <aside className="lab-side" aria-label="Camera diagnostics">
+            <button
+              type="button"
+              className="chip"
+              aria-expanded={showDiagnostics}
+              onClick={() => setShowDiagnostics((open) => !open)}
+            >
+              {showDiagnostics ? "Hide developer diagnostics" : "Show developer diagnostics"}
+            </button>
+            {showDiagnostics && (
             <div className={`status-card ${cameraOn ? "is-live" : ""}`}>
               <p className="eyebrow">Signal</p>
               <dl>
@@ -373,6 +417,7 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
                 </div>
               </dl>
             </div>
+            )}
 
             <div className="gate-card">
               <p className="eyebrow">Show gate</p>
