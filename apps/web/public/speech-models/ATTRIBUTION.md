@@ -20,3 +20,10 @@
   Oxford VGG; ONNX conversion: k2-fsa sherpa-onnx,
   https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models
 - Changes: converted to ONNX (int8 not applied); no weight changes.
+
+## Voice answer bench clips (apps/web/public/voice-answer-bench/)
+
+Synthetic clips generated locally with Piper TTS (MIT code) using the
+en_US-libritts_r-medium voice model from rhasspy/piper-voices, trained on the
+LibriTTS-R dataset (CC BY 4.0, https://www.openslr.org/141/). The clips are
+machine-generated for benchmarking only; they are not recordings of any person.
