@@ -58,8 +58,9 @@ export function VoiceBench() {
   useEffect(() => () => { abortRef.current += 1; }, []);
 
   const cancel = useCallback(() => {
+    // Do NOT clear busyRef here: the in-flight run's finally block owns it.
+    // Clearing it early would let a second run start while the first is live.
     abortRef.current += 1;
-    busyRef.current = false;
     setPhase({ kind: "idle" });
   }, []);
 
@@ -98,8 +99,15 @@ export function VoiceBench() {
       const clip = await loadClip16k();
       if (!alive()) return;
       const t1 = performance.now();
-      const output = (await transcriber(clip.audio)) as { text?: string };
+      // A 16 kHz Float32Array is valid input: the pipeline resamples against the
+      // model's own feature-extractor sampling rate (verified with a real run).
+      const output = (await transcriber(clip.audio)) as
+        | { text?: string }
+        | Array<{ text?: string }>;
       const transcribeMs = performance.now() - t1;
+      const transcript = Array.isArray(output)
+        ? output.map((chunk) => chunk.text ?? "").join(" ")
+        : (output.text ?? "");
       if (!alive()) return;
 
       setPhase({
@@ -111,7 +119,7 @@ export function VoiceBench() {
           clipSeconds: clip.seconds,
           transcribeMs,
           realtimeFactor: clip.seconds / (transcribeMs / 1000),
-          transcript: (output.text ?? "").trim()
+          transcript: transcript.trim()
         }
       });
     } catch (cause) {
