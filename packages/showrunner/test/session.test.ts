@@ -455,10 +455,8 @@ describe("patter response provenance", () => {
 });
 
 describe("presence mode", () => {
-  it("presenceEnabled gives the attune beat without opening the gaze channel", async () => {
-    const { PerformanceSession } = await import("../src/session.js");
-    const { cardEffect } = await import("@loki/effect-card");
-    const session = new PerformanceSession(cardEffect, {
+  it("presenceEnabled gives the attune beat without opening the gaze channel", () => {
+    const session = new PerformanceSession(makeEffect(), {
       seed: 7,
       cameraEnabled: true,
       cameraValidated: false,
@@ -473,10 +471,8 @@ describe("presence mode", () => {
     expect(session.snapshot().phase).toBe("probe");
   });
 
-  it("no presence and no validation skips attune exactly as before", async () => {
-    const { PerformanceSession } = await import("../src/session.js");
-    const { cardEffect } = await import("@loki/effect-card");
-    const session = new PerformanceSession(cardEffect, { seed: 7 });
+  it("no presence and no validation skips attune exactly as before", () => {
+    const session = new PerformanceSession(makeEffect(), { seed: 7 });
     session.begin();
     session.chosen();
     expect(session.snapshot().phase).toBe("probe");
