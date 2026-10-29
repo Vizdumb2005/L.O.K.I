@@ -1,0 +1,108 @@
+{
+  "source": {
+    "dataset": "LibriSpeech test-clean",
+    "dataset_url": "https://www.openslr.org/12",
+    "mirror": "https://huggingface.co/datasets/openslr/librispeech_asr (config clean, split test)",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "citation": "Panayotov et al., LibriSpeech: an ASR corpus based on public domain audio books, ICASSP 2015"
+  },
+  "roles": {
+    "subject": "speaker 6930 (enrollment + answer clips)",
+    "non_target": "speaker 1320 (background talker)",
+    "unknown": "speaker 5639 (never enrolled; rejection condition)"
+  },
+  "clips": [
+    {
+      "file": "enroll-6930.wav",
+      "id": "6930-75918-0000",
+      "speaker": 6930,
+      "role": "enrollment",
+      "seconds": 3.505
+    },
+    {
+      "file": "test-6930-1.wav",
+      "id": "6930-75918-0001",
+      "speaker": 6930,
+      "role": "subject_test",
+      "seconds": 14.225
+    },
+    {
+      "file": "test-6930-2.wav",
+      "id": "6930-75918-0002",
+      "speaker": 6930,
+      "role": "subject_test",
+      "seconds": 5.025
+    },
+    {
+      "file": "test-6930-3.wav",
+      "id": "6930-75918-0003",
+      "speaker": 6930,
+      "role": "subject_test",
+      "seconds": 23.315
+    },
+    {
+      "file": "test-6930-4.wav",
+      "id": "6930-75918-0004",
+      "speaker": 6930,
+      "role": "subject_test",
+      "seconds": 11.065
+    },
+    {
+      "file": "bg-1320-1.wav",
+      "id": "1320-122617-0000",
+      "speaker": 1320,
+      "role": "non_target",
+      "seconds": 7.835
+    },
+    {
+      "file": "bg-1320-2.wav",
+      "id": "1320-122617-0001",
+      "speaker": 1320,
+      "role": "non_target",
+      "seconds": 14.055
+    },
+    {
+      "file": "bg-1320-3.wav",
+      "id": "1320-122617-0002",
+      "speaker": 1320,
+      "role": "non_target",
+      "seconds": 13.585
+    },
+    {
+      "file": "bg-1320-4.wav",
+      "id": "1320-122617-0003",
+      "speaker": 1320,
+      "role": "non_target",
+      "seconds": 6.285
+    },
+    {
+      "file": "unk-5639-1.wav",
+      "id": "5639-40744-0000",
+      "speaker": 5639,
+      "role": "unknown_rejection",
+      "seconds": 15.77
+    },
+    {
+      "file": "unk-5639-2.wav",
+      "id": "5639-40744-0001",
+      "speaker": 5639,
+      "role": "unknown_rejection",
+      "seconds": 12.44
+    }
+  ],
+  "transcripts": {
+    "enroll-6930.wav": "CONCORD RETURNED TO ITS PLACE AMIDST THE TENTS",
+    "test-6930-1.wav": "THE ENGLISH FORWARDED TO THE FRENCH BASKETS OF FLOWERS OF WHICH THEY HAD MADE A PLENTIFUL PROVISION TO GREET THE ARRIVAL OF THE YOUNG PRINCESS THE FRENCH IN RETURN INVITED THE ENGLISH TO A SUPPER WHICH WAS TO BE GIVEN THE NEXT DAY",
+    "test-6930-2.wav": "CONGRATULATIONS WERE POURED IN UPON THE PRINCESS EVERYWHERE DURING HER JOURNEY",
+    "test-6930-3.wav": "FROM THE RESPECT PAID HER ON ALL SIDES SHE SEEMED LIKE A QUEEN AND FROM THE ADORATION WITH WHICH SHE WAS TREATED BY TWO OR THREE SHE APPEARED AN OBJECT OF WORSHIP THE QUEEN MOTHER GAVE THE FRENCH THE MOST AFFECTIONATE RECEPTION FRANCE WAS HER NATIVE COUNTRY AND SHE HAD SUFFERED TOO MUCH UNHAPPINESS IN ENGLAND FOR ENGLAND TO HAVE MADE HER FORGET FRANCE",
+    "test-6930-4.wav": "SHE TAUGHT HER DAUGHTER THEN BY HER OWN AFFECTION FOR IT THAT LOVE FOR A COUNTRY WHERE THEY HAD BOTH BEEN HOSPITABLY RECEIVED AND WHERE A BRILLIANT FUTURE OPENED BEFORE THEM",
+    "bg-1320-1.wav": "NOTWITHSTANDING THE HIGH RESOLUTION OF HAWKEYE HE FULLY COMPREHENDED ALL THE DIFFICULTIES AND DANGER HE WAS ABOUT TO INCUR",
+    "bg-1320-2.wav": "IN HIS RETURN TO THE CAMP HIS ACUTE AND PRACTISED INTELLECTS WERE INTENTLY ENGAGED IN DEVISING MEANS TO COUNTERACT A WATCHFULNESS AND SUSPICION ON THE PART OF HIS ENEMIES THAT HE KNEW WERE IN NO DEGREE INFERIOR TO HIS OWN",
+    "bg-1320-3.wav": "IN OTHER WORDS WHILE HE HAD IMPLICIT FAITH IN THE ABILITY OF BALAAM'S ASS TO SPEAK HE WAS SOMEWHAT SKEPTICAL ON THE SUBJECT OF A BEAR'S SINGING AND YET HE HAD BEEN ASSURED OF THE LATTER ON THE TESTIMONY OF HIS OWN EXQUISITE ORGANS",
+    "bg-1320-4.wav": "THERE WAS SOMETHING IN HIS AIR AND MANNER THAT BETRAYED TO THE SCOUT THE UTTER CONFUSION OF THE STATE OF HIS MIND",
+    "unk-5639-1.wav": "ELEVEN O'CLOCK HAD STRUCK IT WAS A FINE CLEAR NIGHT THEY WERE THE ONLY PERSONS ON THE ROAD AND THEY SAUNTERED LEISURELY ALONG TO AVOID PAYING THE PRICE OF FATIGUE FOR THE RECREATION PROVIDED FOR THE TOLEDANS IN THEIR VALLEY OR ON THE BANKS OF THEIR RIVER",
+    "unk-5639-2.wav": "SECURE AS HE THOUGHT IN THE CAREFUL ADMINISTRATION OF JUSTICE IN THAT CITY AND THE CHARACTER OF ITS WELL DISPOSED INHABITANTS THE GOOD HIDALGO WAS FAR FROM THINKING THAT ANY DISASTER COULD BEFAL HIS FAMILY"
+  },
+  "note": "Full reference transcripts for every clip. Gate quality is scored on non-target/unknown audio leaking into the gated subject stream; subject clips also get WER scored against these references."
+}
