@@ -60,7 +60,7 @@ function makeEffect(script: Partial<ShowScript>): Effect {
       ],
       buildLines: ["One remains."],
       revealLine: (item) => `It was ${item.label}.`,
-      recoverLine: "One clean question.",
+      recoverLine: "One clean claim.",
       missLine: "You beat me.",
       ...script
     }),

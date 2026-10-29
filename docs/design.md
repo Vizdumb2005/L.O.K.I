@@ -97,7 +97,7 @@ belief logic.
 |---|---|---|
 | `think` | “Choose one card. Do not say it…” | “I have chosen” |
 | `probe` | One question + Yes/No | 1/2 or click |
-| `recover` | Contradiction line | “One clean question” |
+| `recover` | Contradiction line | “One clean claim” |
 | `build` | Build line | “Reveal it” |
 | `reveal` | The card + reveal line | “Continue” |
 | `miss` | Honest miss line | “Continue” |

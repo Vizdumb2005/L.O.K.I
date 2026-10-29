@@ -13,7 +13,7 @@ async function answerUntilPayoff(page: Page): Promise<void> {
   for (let i = 0; i < 12; i++) {
     const choice = page.locator("button.choice").first();
     if (!(await choice.isVisible().catch(() => false))) {
-      const recover = page.getByRole("button", { name: "One clean question" });
+      const recover = page.getByRole("button", { name: "One clean claim" });
       if (await recover.isVisible().catch(() => false)) await recover.click();
       else return;
       continue;
@@ -28,7 +28,8 @@ test("performer: a chosen answer is acknowledged with the person's own label, th
   const first = (await page.locator("button.choice").first().innerText()).replace(/^\s*\d+\s*/, "").trim();
   await page.keyboard.press("1");
   await expect(page.locator("#line-heading")).toContainText(new RegExp(first, "i"));
-  await expect(page.locator("#line-heading")).toContainText("?", { timeout: 4000 });
+  await expect(page.locator("#line-heading")).not.toContainText(first, { timeout: 4000 });
+  await expect(page.locator("#line-heading")).toContainText(/\w/);
 });
 
 test("performer: the payoff plays as timed cues and Skip ahead stops at the reveal or miss line, never past it", async ({ page }) => {

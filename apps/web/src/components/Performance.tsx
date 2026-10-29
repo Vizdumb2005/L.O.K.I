@@ -376,7 +376,7 @@ export function Performance({
     view.phase === "think"
       ? "I have chosen"
       : view.phase === "recover"
-        ? "One clean question"
+        ? "One clean claim"
         : view.phase === "build"
           ? "Reveal it"
           : view.phase === "reveal" || view.phase === "miss"
