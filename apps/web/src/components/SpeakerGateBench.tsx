@@ -132,17 +132,46 @@ export function SpeakerGateBench() {
       const ort = await import("onnxruntime-web");
       ort.env.wasm.wasmPaths = `${BASE}ort/`;
       const dj = await import("diarization-js");
-      const ortRuntime = ort as unknown as import("diarization-js").OrtRuntime;
+      // Load the k2-fsa ONNX exports directly: their I/O names (x, feats)
+      // differ from diarization-js's own export scripts, so we drive the
+      // sessions ourselves and reuse diarization-js only for fbank/cosine.
       const segBytes = new Uint8Array(await (await fetch(`${BASE}speech-models/segmentation-3-0.int8.onnx`)).arrayBuffer());
       const embBytes = new Uint8Array(await (await fetch(`${BASE}speech-models/wespeaker-resnet34-lm.onnx`)).arrayBuffer());
-      const seg = await dj.SegmentationModel.load(segBytes, ortRuntime);
-      const emb = await dj.EmbeddingModel.load(embBytes, ortRuntime);
+      const seg = await ort.InferenceSession.create(segBytes, { executionProviders: ["wasm"] });
+      const emb = await ort.InferenceSession.create(embBytes, { executionProviders: ["wasm"] });
+      const embedAudio = async (pcm: Float32Array) => {
+        const fb = dj.pyannoteFbank(pcm);
+        const t = new ort.Tensor("float32", new Float32Array(fb.data), [1, fb.numFrames, fb.numBins]);
+        const o = await emb.run({ feats: t });
+        return o.embs.data as Float32Array;
+      };
+      // Frame activity from the segmentation powerset output: class 0 is
+      // silence (pyannote powerset, 3 speakers, max 2 concurrent). Model is
+      // fully convolutional; run in 10 s windows as trained.
+      const frameActivity = async (pcm: Float32Array) => {
+        const WIN = 10 * SR;
+        const act: boolean[] = [];
+        for (let off = 0; off < pcm.length; off += WIN) {
+          const n = Math.min(WIN, pcm.length - off);
+          const x = new ort.Tensor("float32", pcm.slice(off, off + n), [1, 1, n]);
+          const o = await seg.run({ x });
+          const y = o.y.data as Float32Array;
+          const frames = o.y.dims[1];
+          for (let f = 0; f < frames; f++) {
+            let best = 0, bestV = -Infinity;
+            for (let c = 0; c < 7; c++) { const v = y[f * 7 + c]; if (v > bestV) { bestV = v; best = c; } }
+            act.push(best !== 0);
+          }
+          if (!alive()) return act;
+        }
+        return act;
+      };
+      const FRAME_SEC = 10 / 589;
 
       say("Enrolling the fixed subject clip");
       const enrollClip = manifest.clips.find((c) => c.role === "enrollment")!;
       const enrollPcm = pcms.get(enrollClip.file)!;
-      const enrollFb = dj.pyannoteFbank(enrollPcm);
-      const eEnroll = await emb.embed(enrollFb.data, enrollFb.numFrames);
+      const eEnroll = await embedAudio(enrollPcm);
 
       const test = manifest.clips.filter((c) => c.role === "subject_test");
       const bg = manifest.clips.filter((c) => c.role === "non_target");
@@ -163,46 +192,42 @@ export function SpeakerGateBench() {
       ];
 
       const { pipeline } = await import("@huggingface/transformers");
-      let transcriber: ((audio: Float32Array) => Promise<{ text?: string } | Array<{ text?: string }>>) | null = null;
+      let transcriber: ((audio: Float32Array, opts?: Record<string, unknown>) => Promise<{ text?: string } | Array<{ text?: string }>>) | null = null;
 
       const results: ConditionResult[] = [];
       for (const cond of conditions) {
         if (!alive()) return;
         say(`Segmenting: ${cond.name}`);
-        const segRes = await seg.run(cond.pcm, { stepRatio: 0.5 });
-        // Speech activity from segmentation: any local speaker active per frame.
-        const frameAct: boolean[] = new Array(segRes.numFrames).fill(false);
-        const nSpk = segRes.numLocalSpeakers;
-        for (let ch = 0; ch < segRes.numChunks; ch++) {
-          const startFrame = Math.round((segRes.chunkStarts[ch] * SR) / (segRes.frameDurationSec * SR));
-          for (let f = 0; f < segRes.numFrames; f++) {
-            const idx = (ch * segRes.numFrames + f) * nSpk;
-            let any = false;
-            for (let s = 0; s < nSpk; s++) if (segRes.data[idx + s]) any = true;
-            if (any) frameAct[Math.min(startFrame + f, frameAct.length - 1)] = true;
-          }
-        }
+        const frameAct = await frameActivity(cond.pcm);
 
         say(`Gating windows: ${cond.name}`);
         let fa = 0, fr = 0, abst = 0, keep = 0, drop = 0;
         const gatedChunks: Float32Array[] = [];
         let windows = 0;
+        let lastKeptEnd = -1;
         for (let w0 = 0; w0 + WIN_SEC * SR <= cond.pcm.length; w0 += HOP_SEC * SR) {
           const w1 = w0 + WIN_SEC * SR;
-          const f0 = Math.floor(w0 / (segRes.frameDurationSec * SR));
-          const f1 = Math.min(frameAct.length - 1, Math.floor(w1 / (segRes.frameDurationSec * SR)));
+          const f0 = Math.floor(w0 / (FRAME_SEC * SR));
+          const f1 = Math.min(frameAct.length - 1, Math.floor(w1 / (FRAME_SEC * SR)));
           let speech = 0;
           for (let f = f0; f <= f1; f++) if (frameAct[f]) speech++;
           if (speech / Math.max(1, f1 - f0 + 1) < 0.3) continue;
           windows++;
           const slice = cond.pcm.slice(w0, w1);
-          const fb = dj.pyannoteFbank(slice);
-          const e = await emb.embed(fb.data, fb.numFrames);
-          const sim = dj.cosineSimilarity(e, eEnroll);
+          const e = await embedAudio(slice);
+          const sim = dj.cosineSimilarity(Array.from(e), Array.from(eEnroll));
           const truth = truthAt(cond.regions, w0, w1);
           const wants = truth === "subject";
           if (sim >= TAU_ACCEPT) {
-            if (wants) { keep++; gatedChunks.push(slice); } else { fa++; }
+            if (wants) {
+              keep++;
+              // Append only audio not already contributed by the previous
+              // kept window (windows overlap by WIN-HOP; joining whole
+              // windows would duplicate speech and corrupt the WER).
+              const from = lastKeptEnd >= w0 && lastKeptEnd < w1 ? lastKeptEnd : w0;
+              gatedChunks.push(cond.pcm.slice(from, w1));
+              lastKeptEnd = w1;
+            } else { fa++; }
           } else if (sim <= TAU_REJECT) {
             if (wants) fr++; else drop++;
           } else abst++;
@@ -223,7 +248,9 @@ export function SpeakerGateBench() {
             transcriber = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", { device: "webgpu" in navigator ? "webgpu" : "wasm", dtype: "webgpu" in navigator ? "fp16" : "q8" } as Record<string, unknown>)) as unknown as typeof transcriber;
           }
           const text = async (audio: Float32Array) => {
-            const o = await transcriber!(audio);
+            // Long-form: 30 s chunks with 5 s stride; un-chunked calls only
+            // transcribe the first ~30 s, which silently inflates WER.
+            const o = await transcriber!(audio, { chunk_length_s: 30, stride_length_s: 5 } as Record<string, unknown>);
             return (Array.isArray(o) ? o.map((c) => c.text ?? "").join(" ") : (o.text ?? "")).trim();
           };
           werU = wer(cond.ref, await text(cond.pcm));

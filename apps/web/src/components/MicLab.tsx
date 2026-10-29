@@ -190,9 +190,11 @@ export function MicLab() {
           show.
         </p>
         <p className="tiny">
-          Separating the subject's voice from other voices in the room is not something
-          this build does or claims. A quiet room stays a hard requirement for any future
-          voice input.
+          The speaker-gate benchmark below measures one local route to telling the
+          subject's frames from another talker's on fixed synthetic clips. It is a gate
+          measured in this lab, not waveform separation and not a show feature: on
+          synthetic mixtures it rejected every non-target window in the turn-taking
+          case, and it dropped - rather than un-mixed - overlapped speech.
         </p>
       </div>
     </section>
