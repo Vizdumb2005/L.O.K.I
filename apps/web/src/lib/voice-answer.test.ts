@@ -53,3 +53,13 @@ describe("decideAnswer", () => {
     expect(decideAnswer(speech, 0.1, 0.9, "true").reason).toBe("too short to be an answer");
   });
 });
+
+describe("rejection wording", () => {
+  it("never claims identity from a gate rejection or abstention", () => {
+    for (const sim of [0.1, (TAU_ACCEPT + TAU_REJECT) / 2]) {
+      const d = decideAnswer(speech, 1.5, sim, "true");
+      expect(d.reason).not.toMatch(/is not the enrolled/);
+      expect(d.reason).toMatch(/no answer accepted/);
+    }
+  });
+});

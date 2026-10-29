@@ -127,7 +127,10 @@ export function decideAnswer(
       gate,
       similarity,
       transcript: "",
-      reason: gate === "reject" ? "voice is not the enrolled answerer" : "voice not clearly the enrolled answerer"
+      reason:
+        gate === "reject"
+          ? "could not confidently match the enrolled voice - no answer accepted"
+          : "voice match uncertain - no answer accepted"
     };
   }
   const token = mapAnswerToken(transcript);

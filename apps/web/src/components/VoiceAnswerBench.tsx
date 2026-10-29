@@ -141,8 +141,9 @@ export function VoiceAnswerBench() {
           TTS, LibriTTS-R, CC BY 4.0). The enrolled "answerer" is a clip, never your voice.
         </p>
         <p className="tiny">
-          A priori pass criteria: zero false accepts (no answer ever produced from another talker, an
-          unknown voice, overlap, or silence); every accepted answer counted for correct token mapping.
+          A priori pass criteria: zero false accepts on these fixtures (no answer produced from another
+          talker, an unknown voice, overlap, or silence); every accepted answer counted for correct
+          token mapping. A fixture pass is a plumbing check, not a guarantee and not validation.
           Uncertain is a first-class outcome here - overlapped or ambiguous audio must come out
           uncertain, never an attributed answer. Synthetic clips only: this says nothing yet about real
           microphones or real voices. Thresholds unchanged from the speaker-gate bench (accept 0.5,
@@ -187,7 +188,8 @@ export function VoiceAnswerBench() {
             </div>
             <p className="tiny">
               Answers produced: {phase.answers} ({phase.correctAnswers} correct token, {phase.misclassified}{" "}
-              wrong token) · False accepts: {phase.falseAccepts} (must be 0) · Uncertain: {phase.uncertain}.
+              wrong token) · False accepts on these fixtures: {phase.falseAccepts} (fixture result, not
+              a guarantee) · Uncertain: {phase.uncertain}.
             </p>
             <button type="button" className="chip" onClick={() => void run()}>Run it again</button>
           </>
