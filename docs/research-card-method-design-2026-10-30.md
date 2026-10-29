@@ -50,21 +50,32 @@ Does a "perfect" denial-only sequence exist for 52 cards?
    (color, suit, court/number, high/low, odd/even rank): about 5-6 usable
    bits for 52 outcomes - no slack. A perfect first-denial-identifies
    sequence over ALL 52 cards does not exist with natural card attributes.
-- It DOES exist for a curated subset. The show already controls the
-   candidate set it presents (spread construction is ours). For a 12-16
-   card spread, an attribute schedule can be computed where each card
-   uniquely owns one deniable statement - same construction algorithm as a
-   word-PA generator, different attribute alphabet. This is a concrete,
-   bounded build: spread generator + denial-schedule solver + copy.
-- Cost, stated honestly: "any card in the deck" becomes "any card in this
-   spread". Mentalism handles this with forces and equivocation; software
-   must choose: smaller honest spread with denial-only texture, or full
-   deck with questionnaire texture. That choice is a product decision for
-   the user, not an engineering default we should silently make.
-- Alternative card-native channel: rank-name spelling (the rank words ACE
-   through KING are short letter sets; a rank-anagram exists in the
-   literature-adjacent tooling). It inherits the letter-fishing texture the
-   sources warn about, so it is noted, not recommended.
+Measured against the ACTUAL current effect (correcting an earlier version
+   of this section that discussed a hypothetical spread choice): the shipped
+   card effect is already a 12-card spread - "The Twelve", 3 suits
+   (Hearts, Diamonds, Spades) x 4 ranks (Ace-Four) in
+   effects/card/src/cards.ts. No spread-vs-deck fork exists; nothing to
+   escalate.
+
+   Solver results (exhaustive greedy search over natural attributes: suit,
+   rank, color, rank parity, card-name letter membership; run 2026-10-30):
+   - A LINEAR perfect schedule (first denial identifies, the classic word-PA
+     property) does NOT exist for these 12 cards with natural attributes:
+     no attribute has a singleton denial set, so the linear construction
+     stalls immediately. Verified by enumeration, not bit-count intuition.
+   - A BRANCHING statement tree (what practitioners call a branching
+     anagram) DOES exist: worst case 5 statements and 2 denials per card,
+     measured by exhaustive greedy search. Example spine: "not a Heart" ->
+     "not a Diamond" -> rank statements for the Spades branch; each denial
+     branches into a sub-tree.
+   - Texture alternatives exist within the same solver: letter-membership
+     statements ("your card's name has no W" - only the Twos deny) can be
+     mixed in so the flow is not pure attribute elimination. Which texture
+     reads best is a felt-quality question, unvalidated.
+   - Interpretation stays honest: max-2-denials is a measured property of
+     this attribute alphabet on these 12 cards; it is not a proof about
+     other spreads, and the impossibility claim is scoped to LINEAR
+     schedules with THESE natural attributes.
 
 ## The answer channel: nod/shake and voice, with failure limits
 
@@ -80,10 +91,10 @@ what makes light channels viable. Candidate channels:
      looking away) must not register as an answer. Needs a deliberate-motion
      detector (amplitude + speed + dwell) measured against a recorded-motion
      baseline, and an on-screen confirmation echo with an undo.
-   - Cultural validity: the user is in India; the side-to-side head wobble
-     means agreement there, not "no". A shake detector that assumes Western
-     gesture semantics will misread the primary user. Gesture semantics must
-     be calibrated per user or chosen deliberately.
+   - Gesture variation: head-gesture semantics vary by culture and by
+     individual (a side-to-side wobble reads as agreement in some cultures,
+     negation in others). Any gesture channel must be calibrated per person
+     or deliberately chosen - never assumed from demographics.
    - Never an inference channel: nod/shake is an INPUT device (button
      replacement), never a truth/lie or emotion signal. Copy says so.
 2. Voice denial (the speaker gate). PR #22's measured result: on synthetic
