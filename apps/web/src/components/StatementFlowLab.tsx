@@ -45,8 +45,9 @@ export function StatementFlowLab() {
         <p>
           The card effect today asks up to six questions. This prototype tries the progressive-anagram
           texture instead: short claims you only ever confirm or deny. Think of any one of the twelve -
-          a real free choice, no force - and answer honestly. Wrong answers branch the flow; they are
-          never a failure.
+          a real free choice, no force. If a claim is wrong for your card, deny it: a denial changes the
+          next claim, it is never a failure. Answers are taken at face value - a misanswer steers the
+          flow to the wrong card, and the reveal will be honestly wrong.
         </p>
         <p className="tiny">
           Measured on this exact card set by exhaustive solver search: at most{" "}
