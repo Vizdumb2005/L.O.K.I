@@ -23,7 +23,7 @@ function zoneForItem(stage: StageSpec, itemId: string): string | null {
 export const cardEffect: Effect = {
   id: "card-twelve",
   name: "The Twelve",
-  tagline: "Twelve cards. A few claims. One impossible guess.",
+  tagline: "Twelve cards. A few true-or-wrong checks. One reveal - or an honest miss.",
   config: {
     maxProbes: 6,
     commitThreshold: 0.96,

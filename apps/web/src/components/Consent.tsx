@@ -34,8 +34,8 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
           LOKI
         </h1>
         <p className="lede">
-          I will ask you to hold something in your mind. I will make a few claims about it - you
-          only ever say true or wrong. Then I
+          I will ask you to hold something in your mind. You will answer a few true-or-wrong
+          checks - never the card itself. Then I
           will make one guess.
         </p>
         <p className="lede lede-small">
