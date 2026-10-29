@@ -52,8 +52,8 @@ function binaryProbe(
     prompt,
     cost,
     options: [
-      { id: "yes", label: "Yes" },
-      { id: "no", label: "No" }
+      { id: "yes", label: "True of my card" },
+      { id: "no", label: "That's wrong" }
     ],
     likelihood: (itemId, optionId) => {
       const card = CARD_BY_ID.get(itemId);
@@ -64,50 +64,10 @@ function binaryProbe(
   };
 }
 
-function categoricalProbe(
-  id: string,
-  prompt: string,
-  cost: number,
-  options: Array<{ id: string; label: string }>,
-  category: (card: Card) => string
-): Probe {
-  return {
-    id,
-    prompt,
-    cost,
-    options,
-    likelihood: (itemId, optionId) => {
-      const card = CARD_BY_ID.get(itemId);
-      if (!card) return 0;
-      return category(card) === optionId ? 1 : 0;
-    }
-  };
-}
-
 export const CARD_PROBES: Probe[] = [
-  categoricalProbe(
-    "suit",
-    "Don't tell me the card. Just let the symbol come forward - is it hearts, diamonds, or spades?",
-    0.1,
-    [
-      { id: "h", label: "Hearts" },
-      { id: "d", label: "Diamonds" },
-      { id: "s", label: "Spades" }
-    ],
-    (c) => c.suit
-  ),
-  categoricalProbe(
-    "value",
-    "And its rank - ace, two, three, or four?",
-    0.1,
-    [
-      { id: "a", label: "Ace" },
-      { id: "2", label: "Two" },
-      { id: "3", label: "Three" },
-      { id: "4", label: "Four" }
-    ],
-    (c) => c.rank
-  ),
+  // No categorical "which suit / which rank" questions: directly soliciting
+  // the answer is the questionnaire texture the performer method replaces.
+  // Only claims the spectator confirms or denies (docs/research-card-method-design-2026-10-30.md).
   binaryProbe("warm-colour", "Some cards feel warm, some feel cool. Does yours feel like one of the warm ones?", 0.1, (c) => c.red),
   binaryProbe("heart", "Stay with the symbol a moment. Could it be a heart?", 0.12, (c) => c.suit === "h"),
   binaryProbe("diamond", "Could it be a diamond?", 0.12, (c) => c.suit === "d"),

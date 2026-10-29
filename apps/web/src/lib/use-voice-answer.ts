@@ -37,14 +37,19 @@ interface VoiceDeps {
   probeKey: string;
   options: VoiceOption[] | undefined;
   onAnswer: (optionId: string) => void;
-  /** Voice cannot or will not use the mic - release that capture. */
-  onReleaseMic: () => void;
+  /**
+   * Voice cannot or will not run (models failed, enrollment declined or
+   * withdrawn). The mic is a REQUIRED capability of this mode, so this must
+   * end or pause the sensor-enabled performance - never continue it
+   * camera-only with tap answers.
+   */
+  onEndSensorMode: (reason: string) => void;
 }
 
 const ENROLL_SECONDS = 4;
 const ANSWER_SECONDS = 3;
 
-export function useVoiceAnswer({ active, session, probeActive, probeKey, options, onAnswer, onReleaseMic }: VoiceDeps) {
+export function useVoiceAnswer({ active, session, probeActive, probeKey, options, onAnswer, onEndSensorMode }: VoiceDeps) {
   const [state, setState] = useState<VoiceState>("loading");
   const [listening, setListening] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -56,8 +61,8 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
   onAnswerRef.current = onAnswer;
   const optionsRef = useRef(options);
   optionsRef.current = options;
-  const onReleaseMicRef = useRef(onReleaseMic);
-  onReleaseMicRef.current = onReleaseMic;
+  const onEndSensorModeRef = useRef(onEndSensorMode);
+  onEndSensorModeRef.current = onEndSensorMode;
 
   // Load the on-device models once per session entry.
   useEffect(() => {
@@ -68,8 +73,9 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
       setState((s) => (s === "loading" ? "enroll" : s));
     }).catch(() => {
       setState("unavailable");
-      setFeedback("Voice answering could not load on this device, so the microphone was released. Tap answers continue to work.");
-      onReleaseMicRef.current();
+      onEndSensorModeRef.current(
+        "The on-device voice models could not load here, and the sensor-enabled performance requires voice answering - so it has ended, and every sensor was released. The click demo below is the same illusion without sensors."
+      );
     });
   }, [active]);
 
@@ -99,22 +105,23 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
     }
   }, [session]);
 
-  /** Withdraw voice answering entirely: dispose the embedding, release the mic. */
-  const useManual = useCallback(() => {
+  /**
+   * Decline or withdraw voice answering. The mic is a required capability of
+   * this mode, so this ends the sensor-enabled performance (same teardown as
+   * Stop); the click demo remains a separate, clearly labelled choice.
+   */
+  const useManual = useCallback((reason: "declined" | "forgotten") => {
     cancelledRef.current = true;
     session?.forget("voice-embedding");
     embRef.current = null;
     setState("manual");
     setListening(false);
-    setFeedback("Voice answers are off - tap your answers. They are manual answers, not voice.");
-    onReleaseMicRef.current();
+    onEndSensorModeRef.current(
+      reason === "forgotten"
+        ? "Your voice enrollment was withdrawn, and the sensor-enabled performance requires voice answering - so it has ended, and every sensor was released. The click demo below is the same illusion without sensors."
+        : "Voice answering was declined, and the sensor-enabled performance requires it - so it did not start, and every sensor was released. The click demo below is the same illusion without sensors."
+    );
   }, [session]);
-
-  /** Re-open enrollment after a withdrawal (mic is re-acquired by the caller). */
-  const reEnroll = useCallback(() => {
-    setFeedback(null);
-    setState("enroll");
-  }, []);
 
   // One listening cycle per probe. Abstention-first: uncertain clips never
   // become answers; the fallback is an explicitly labelled manual answer.
@@ -127,7 +134,10 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
     listenedKeyRef.current = probeKey;
     cancelledRef.current = false;
     const labels = (optionsRef.current ?? []).map((o) => o.label);
-    const yesNo = labels.length === 2 && /^(yes|y)$/i.test(labels[0] ?? "") && /^(no|n)$/i.test(labels[1] ?? "");
+    const yesNo =
+      labels.length === 2 &&
+      /^(yes|y)$|true|fits|\bright\b|correct/i.test(labels[0] ?? "") &&
+      /^(no|n)$|wrong|false|incorrect/i.test(labels[1] ?? "");
     setListening(true);
     setFeedback(
       yesNo
@@ -188,5 +198,5 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
     };
   }, [probeActive, probeKey, state, session]);
 
-  return { state, listening, feedback, enrolled: state === "ready", enroll, useManual, reEnroll };
+  return { state, listening, feedback, enrolled: state === "ready", enroll, useManual };
 }

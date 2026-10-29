@@ -34,7 +34,8 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
           LOKI
         </h1>
         <p className="lede">
-          I will ask you to hold something in your mind. I will ask a few questions. Then I
+          I will ask you to hold something in your mind. I will make a few claims about it - you
+          only ever say true or wrong. Then I
           will make one guess.
         </p>
         <p className="lede lede-small">
@@ -130,7 +131,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
               onChange={() => setMode("sensor")}
             />
             <span className="effect-choice-copy">
-              <span className="effect-eyebrow">Experimental - camera required</span>
+              <span className="effect-eyebrow">Experimental - camera + mic required</span>
               <span className="effect-title">Sensor-enabled performance</span>
               <span className="effect-blurb">
                 Your camera is used for one bounded purpose: noticing that a face is present during

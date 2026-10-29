@@ -23,7 +23,7 @@ function zoneForItem(stage: StageSpec, itemId: string): string | null {
 export const cardEffect: Effect = {
   id: "card-twelve",
   name: "The Twelve",
-  tagline: "Twelve cards. Five questions. One impossible guess.",
+  tagline: "Twelve cards. A few claims. One impossible guess.",
   config: {
     maxProbes: 6,
     commitThreshold: 0.96,
@@ -106,7 +106,7 @@ export const cardEffect: Effect = {
       confidence >= 0.96
         ? `Your card was the ${item.label}.`
         : `The card that kept returning was the ${item.label}.`,
-    recoverLine: "Two cards are fighting for the same light. Give me one clean answer.",
+    recoverLine: "Two cards are fighting for the same light. One clean answer settles it.",
     missLine: "You beat me. The card stays yours.",
     revealInvite: "Don't tell me. You turn it over - whenever you are ready.",
     revealAction: "Turn it over"

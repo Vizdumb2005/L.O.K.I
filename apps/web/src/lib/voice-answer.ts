@@ -55,8 +55,8 @@ export function mapAnswerToken(transcript: string): AnswerToken | null {
   return null;
 }
 
-const YES_LABEL = /^(yes|y)$/i;
-const NO_LABEL = /^(no|n)$/i;
+const YES_LABEL = /^(yes|y)$|true|fits|\bright\b|correct/i;
+const NO_LABEL = /^(no|n)$|wrong|false|incorrect/i;
 
 /**
  * Match a transcript against the spoken form of each option label.

@@ -110,21 +110,6 @@ export class SensorSession {
     return this.derived.has(key);
   }
 
-  /**
-   * Release ONE sensor whose capture no longer has a function (voice models
-   * failed, or the person chose tap answers). Capture without a purpose is
-   * not allowed to linger. The other sensor stays active.
-   */
-  release(kind: SensorKind): void {
-    const slot = this.slots[kind];
-    if (slot.stream) {
-      for (const track of slot.stream.getTracks()) track.stop();
-    }
-    slot.stream = null;
-    if (slot.state === "active" || slot.state === "requesting") slot.state = "stopped";
-    this.emit();
-  }
-
   /** One-tap stop: every track stopped, every derived state disposed. */
   stopAll(): void {
     for (const kind of ["camera", "mic"] as const) {

@@ -15,7 +15,7 @@ interface PerformanceProps {
   cameraReady: boolean;
   sensorMode?: boolean;
   sensorSession?: SensorSession | null;
-  onStopSensors?: () => void;
+  onStopSensors?: (notice?: string) => void;
   onExit: () => void;
   onOpenLab: () => void;
   onToggleReducedMotion: () => void;
@@ -31,7 +31,7 @@ function phaseLabel(view: SessionView): string {
     case "attune":
       return "Attunement";
     case "probe":
-      return view.progress.answered >= view.progress.max ? "One clean question" : "The reading";
+      return view.progress.answered >= view.progress.max ? "One clean answer" : "The reading";
     case "recover":
       return "A contradiction";
     case "build":
@@ -244,13 +244,13 @@ export function Performance({
     return () => window.removeEventListener("keydown", onKey);
   }, [view, answer, advance, restart, onExit]);
 
-  const micReleasedRef = useRef(false);
-  const releaseMic = useCallback(() => {
-    // Voice lost its function (models failed, or the person chose tap
-    // answers): the microphone capture is released, not left running.
-    micReleasedRef.current = true;
-    sensorSession?.release("mic");
-  }, [sensorSession]);
+  const endSensorMode = useCallback(
+    (reason: string) => {
+      onStopSensors?.(reason);
+    },
+    // eslint-disable-next-line
+    [onStopSensors]
+  );
   const voice = useVoiceAnswer({
     active: sensorMode,
     session: sensorSession ?? null,
@@ -258,7 +258,7 @@ export function Performance({
     probeKey: `${view?.phase ?? ""}:${view?.progress.answered ?? 0}`,
     options: view?.options,
     onAnswer: answer,
-    onReleaseMic: releaseMic
+    onEndSensorMode: endSensorMode
   });
   // Losing REQUIRED capture (camera unplugged, OS revoked the mic) pauses the
   // sensor-enabled performance - it never continues unchanged without a
@@ -271,8 +271,11 @@ export function Performance({
     const watch = (stream: MediaStream | null, kind: "camera" | "mic") => {
       stream?.getTracks().forEach((t) => {
         const h = () => {
-          if (kind === "mic" && micReleasedRef.current) return;
-          onStopSensorsRef.current?.();
+          onStopSensorsRef.current?.(
+            kind === "mic"
+              ? "The microphone capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below is the same illusion without sensors."
+              : "The camera capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below is the same illusion without sensors."
+          );
         };
         t.addEventListener("ended", h);
         subs.push([t, h]);
@@ -307,7 +310,7 @@ export function Performance({
           <span className="sensor-indicator" role="status">
             Mic on - voice answers (experimental). Clips are processed here and discarded.
           </span>
-          <button type="button" className="chip" onClick={onStopSensors}>
+          <button type="button" className="chip" onClick={() => onStopSensors?.()}>
             Stop sensors
           </button>
         </section>
@@ -330,10 +333,13 @@ export function Performance({
               <>
                 <h2 id="voice-enroll-heading">Enroll your voice for this performance</h2>
                 <p className="line">
-                  So I can tell your "true" and "wrong" from other voices in the room. About four
-                  seconds of speech; the voice print is computed in this tab, kept only in memory,
-                  never uploaded, and discarded when you stop or leave. Withdraw it any time with
-                  "Forget my voice". It is not identification or sign-in.
+                  This is an experimental attempt to recognize your enrolled voice when you answer -
+                  it may reject you, or accept another speaker, and it is not reliable separation of
+                  voices in a room, especially when people talk over each other. It has been checked
+                  on synthetic clips only, not yet on a real device. About four seconds of speech;
+                  the voice print is computed in this tab, kept only in memory, never uploaded, and
+                  discarded when you stop or leave. Withdraw it any time with "Forget my voice" -
+                  that ends the sensor performance. It is not identification or sign-in.
                 </p>
                 {voice.feedback && (
                   <p className="prompt-note" role="status">
@@ -344,8 +350,8 @@ export function Performance({
                   <button type="button" className="primary" onClick={() => void voice.enroll()}>
                     Enroll my voice
                   </button>
-                  <button type="button" className="ghost" onClick={voice.useManual}>
-                    Use tap answers instead
+                  <button type="button" className="ghost" onClick={() => voice.useManual("declined")}>
+                    No voice - end the sensor performance
                   </button>
                 </div>
               </>
@@ -427,28 +433,14 @@ export function Performance({
             </span>
           )}
           {voice.enrolled && (
-            <button type="button" className="chip" onClick={voice.useManual}>
+            <button type="button" className="chip" onClick={() => voice.useManual("forgotten")}>
               Forget my voice
-            </button>
-          )}
-          {voice.state === "manual" && (
-            <button
-              type="button"
-              className="chip"
-              onClick={() => {
-                micReleasedRef.current = false;
-                void sensorSession?.acquire("mic").then((s2) => {
-                  if (s2) voice.reEnroll();
-                });
-              }}
-            >
-              Enroll voice
             </button>
           )}
           <button type="button" className="chip" onClick={() => setShowPreview((v) => !v)} aria-pressed={showPreview}>
             {showPreview ? "Hide preview" : "Show preview"}
           </button>
-          <button type="button" className="chip" onClick={onStopSensors}>
+          <button type="button" className="chip" onClick={() => onStopSensors?.()}>
             Stop sensors
           </button>
         </section>

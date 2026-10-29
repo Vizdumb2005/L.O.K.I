@@ -20,8 +20,8 @@ export const EFFECTS: EffectChoice[] = [
     effect: cardEffect,
     eyebrow: "The proof of concept",
     title: "The Twelve",
-    blurb: "A deck of twelve cards. Think of one. Answer a few questions. I will find it — or admit that I cannot.",
-    meta: "12 cards · 6 questions maximum · click demo: no camera",
+    blurb: "A deck of twelve cards. Think of one. Answer my claims - true of your card, or wrong. I will name it - or admit that I cannot.",
+    meta: "12 cards · claims, not questions · click demo: no camera",
     accent: "brass"
   },
   {

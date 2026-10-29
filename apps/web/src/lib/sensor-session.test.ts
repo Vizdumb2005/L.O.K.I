@@ -69,26 +69,3 @@ describe("SensorSession", () => {
   });
 });
 
-describe("release(kind)", () => {
-  it("stops only that sensor's tracks and keeps the other active", async () => {
-    const cam = fakeStream();
-    const mic = fakeStream();
-    const session = new SensorSession({
-      getUserMedia: async (c) => (c.video ? cam : mic)
-    });
-    await session.acquire("camera");
-    await session.acquire("mic");
-    session.release("mic");
-    for (const t of mic.tracks) expect(t.stop).toHaveBeenCalled();
-    for (const t of cam.tracks) expect(t.stop).not.toHaveBeenCalled();
-    expect(session.state("mic")).toBe("stopped");
-    expect(session.state("camera")).toBe("active");
-    expect(session.stream("mic")).toBeNull();
-  });
-
-  it("is idempotent on an idle slot", () => {
-    const session = new SensorSession({ getUserMedia: null });
-    expect(() => session.release("mic")).not.toThrow();
-    expect(session.state("mic")).toBe("idle");
-  });
-});

@@ -85,7 +85,7 @@ export function App() {
     }
   };
 
-  const stopSensors = () => {
+  const stopSensors = (notice?: string) => {
     // One-tap stop: release everything, end the sensor-enabled performance,
     // and land on consent where the click demo is a separate labelled choice.
     // The ref is cleared first so track "ended" events fired by our own
@@ -94,7 +94,7 @@ export function App() {
     sensorRef.current = null;
     session?.stopAll();
     setSensorMode(false);
-    setSensorNotice("Sensors stopped - the camera is released and the sensor-enabled performance has ended. The click demo below is the same illusion without sensors.");
+    setSensorNotice(notice ?? "Sensors stopped - camera and microphone are released and the sensor-enabled performance has ended. The click demo below is the same illusion without sensors.");
     setHasLeft(true);
     setEntered(false);
     setScreen("show");
