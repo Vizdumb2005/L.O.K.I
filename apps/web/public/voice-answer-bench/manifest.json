@@ -1,0 +1,109 @@
+{
+  "clips": [
+    {
+      "file": "enroll-a.wav",
+      "speaker_id": 0,
+      "role": "enrollment",
+      "expected_token": null,
+      "text": "I am choosing one card from the twelve, and I will hold it in my mind while the performer makes claims about it.",
+      "seconds": 4.77
+    },
+    {
+      "file": "a-true-1.wav",
+      "speaker_id": 0,
+      "role": "target_answer",
+      "expected_token": "confirm",
+      "text": "True.",
+      "seconds": 0.46
+    },
+    {
+      "file": "a-true-2.wav",
+      "speaker_id": 0,
+      "role": "target_answer",
+      "expected_token": "confirm",
+      "text": "That's true of my card.",
+      "seconds": 1.06
+    },
+    {
+      "file": "a-true-3.wav",
+      "speaker_id": 0,
+      "role": "target_answer",
+      "expected_token": "confirm",
+      "text": "Yes, that fits.",
+      "seconds": 0.98
+    },
+    {
+      "file": "a-wrong-1.wav",
+      "speaker_id": 0,
+      "role": "target_answer",
+      "expected_token": "deny",
+      "text": "Wrong.",
+      "seconds": 0.46
+    },
+    {
+      "file": "a-wrong-2.wav",
+      "speaker_id": 0,
+      "role": "target_answer",
+      "expected_token": "deny",
+      "text": "That's wrong.",
+      "seconds": 0.64
+    },
+    {
+      "file": "a-wrong-3.wav",
+      "speaker_id": 0,
+      "role": "target_answer",
+      "expected_token": "deny",
+      "text": "No, not mine.",
+      "seconds": 0.99
+    },
+    {
+      "file": "b-true-1.wav",
+      "speaker_id": 1,
+      "role": "non_target_answer",
+      "expected_token": "confirm",
+      "text": "True.",
+      "seconds": 0.42
+    },
+    {
+      "file": "b-wrong-1.wav",
+      "speaker_id": 1,
+      "role": "non_target_answer",
+      "expected_token": "deny",
+      "text": "That's wrong.",
+      "seconds": 0.69
+    },
+    {
+      "file": "b-sentence-1.wav",
+      "speaker_id": 1,
+      "role": "non_target_speech",
+      "expected_token": null,
+      "text": "I think the card might be the three of diamonds.",
+      "seconds": 1.97
+    },
+    {
+      "file": "b-sentence-2.wav",
+      "speaker_id": 1,
+      "role": "non_target_speech",
+      "expected_token": null,
+      "text": "Are we doing the card trick now?",
+      "seconds": 1.31
+    },
+    {
+      "file": "c-true-1.wav",
+      "speaker_id": 2,
+      "role": "unknown_answer",
+      "expected_token": "confirm",
+      "text": "True.",
+      "seconds": 0.38
+    },
+    {
+      "file": "silence.wav",
+      "speaker_id": null,
+      "role": "silence",
+      "expected_token": null,
+      "text": "",
+      "seconds": 2.0
+    }
+  ],
+  "notes": "All clips are SYNTHETIC (Piper TTS, en_US-libritts_r-medium, dataset LibriTTS-R CC BY 4.0). Generated locally; used only to bench the voice answer pipeline. Speaker A (map id 0) is the enrolled answerer; B (id 1) a different talker; C (id 2) an unknown talker."
+}
