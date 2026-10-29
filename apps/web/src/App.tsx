@@ -59,6 +59,19 @@ export function App() {
         );
         return;
       }
+      const mic = await session.acquire("mic");
+      if (!mic) {
+        // The mic is a required capability of this mode (voice answers). Do
+        // not start without it; release the camera that was just opened.
+        session.stopAll();
+        sensorRef.current = null;
+        setSensorNotice(
+          session.state("mic") === "unsupported"
+            ? "This device or browser does not expose microphone capture, so the sensor-enabled performance cannot run. The click demo below is the same illusion without sensors."
+            : `The microphone was not available (${session.error("mic") ?? "permission not granted"}), so the sensor-enabled performance did not start and the camera was released again. The click demo below is the same illusion without sensors.`
+        );
+        return;
+      }
       sensorRef.current = session;
       setSensorMode(true);
       setSensorNotice(null);
@@ -75,8 +88,11 @@ export function App() {
   const stopSensors = () => {
     // One-tap stop: release everything, end the sensor-enabled performance,
     // and land on consent where the click demo is a separate labelled choice.
-    sensorRef.current?.stopAll();
+    // The ref is cleared first so track "ended" events fired by our own
+    // stopAll() do not re-enter this handler.
+    const session = sensorRef.current;
     sensorRef.current = null;
+    session?.stopAll();
     setSensorMode(false);
     setSensorNotice("Sensors stopped - the camera is released and the sensor-enabled performance has ended. The click demo below is the same illusion without sensors.");
     setHasLeft(true);
@@ -88,8 +104,9 @@ export function App() {
     // Leaving or resetting in sensor mode ends the sensor-enabled performance:
     // release the camera and any derived state, same as Stop.
     if (sensorRef.current) {
-      sensorRef.current.stopAll();
+      const session = sensorRef.current;
       sensorRef.current = null;
+      session.stopAll();
       if (sensorMode) setSensorNotice("Sensors stopped - the camera is released and the sensor-enabled performance has ended. The click demo below is the same illusion without sensors.");
       setSensorMode(false);
     }

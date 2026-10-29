@@ -21,6 +21,8 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
   const [cameraOptIn, setCameraOptIn] = useState(false);
   const [mode, setMode] = useState<ShowMode>("click");
   const [presenceConsent, setPresenceConsent] = useState(false);
+  const [micConsent, setMicConsent] = useState(false);
+  const [enrollConsent, setEnrollConsent] = useState(false);
   const sensorsSupported =
     typeof navigator !== "undefined" && typeof navigator.mediaDevices?.getUserMedia === "function";
 
@@ -137,9 +139,10 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
                 and Stop ends the performance and releases the camera.
               </span>
               <span className="effect-blurb">
-                Answering by voice is part of the plan for this mode but is not validated on real
-                devices yet - this build does not capture your microphone, and answers stay on
-                click or key. That requirement is unresolved, not dropped.
+                Your microphone lets you answer by voice: you say "true" or "wrong" to the
+                performer's claims. Audio is processed in this tab and discarded; uncertain
+                hearing falls back to click. This channel passed synthetic-clip checks only -
+                real-device validation is pending, so it is labelled experimental, not proven.
                 {sensorsSupported ? "" : " This device or browser does not expose camera capture."}
               </span>
             </span>
@@ -147,17 +150,46 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
         </fieldset>
 
         {mode === "sensor" && (
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={presenceConsent}
-              onChange={(event) => setPresenceConsent(event.target.checked)}
-            />
-            <span>
-              I allow the camera for <strong>presence only</strong>, exactly as described above -
-              required for the sensor-enabled performance.
-            </span>
-          </label>
+          <>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={presenceConsent}
+                onChange={(event) => setPresenceConsent(event.target.checked)}
+              />
+              <span>
+                I allow the camera for <strong>presence only</strong>, exactly as described above -
+                required for the sensor-enabled performance.
+              </span>
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={micConsent}
+                onChange={(event) => setMicConsent(event.target.checked)}
+              />
+              <span>
+                I allow the microphone for <strong>answering by voice</strong>: short clips are
+                processed in this tab to hear "true" or "wrong", then discarded. Nothing is
+                uploaded. Required for the sensor-enabled performance.
+              </span>
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={enrollConsent}
+                onChange={(event) => setEnrollConsent(event.target.checked)}
+              />
+              <span>
+                I allow a <strong>voice enrollment</strong>: 3-10 seconds of my speech so LOKI can
+                tell my voice from other voices in the room during this performance. The voice
+                print is computed in this tab, kept only in memory, discarded when I stop or
+                leave, never uploaded, and I can withdraw it any time with "Forget my voice". It
+                is not identification or sign-in - and it is still sensitive, which is why nothing
+                is kept. Required for the sensor-enabled performance.
+              </span>
+            </label>
+          </>
         )}
 
         {sensorNotice && (
@@ -169,7 +201,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
         <button
           type="button"
           className="primary"
-          disabled={!understood || (mode === "sensor" && !presenceConsent)}
+          disabled={!understood || (mode === "sensor" && !(presenceConsent && micConsent && enrollConsent))}
           onClick={() => onEnter(effectId, cameraOptIn, mode)}
         >
           {mode === "sensor" ? "Enter with camera" : "Enter the observatory"}
