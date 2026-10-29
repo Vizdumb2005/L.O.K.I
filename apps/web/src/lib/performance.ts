@@ -25,7 +25,7 @@ export interface PerformanceState {
  * One shell around the existing PerformanceSession. The UI does not reach into
  * posterior numbers; it only renders the session's public view, captions and stage.
  */
-export function usePerformance(effect: Effect): PerformanceState {
+export function usePerformance(effect: Effect, presenceEnabled = false): PerformanceState {
   const sessionRef = useRef<PerformanceSession | null>(null);
   const [view, setView] = useState<SessionView | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +36,9 @@ export function usePerformance(effect: Effect): PerformanceState {
       const session = new PerformanceSession(effect, {
         seed: randomSeed(),
         policy: "greedy",
-        cameraEnabled: false,
+        cameraEnabled: presenceEnabled,
         cameraValidated: false,
+        presenceEnabled,
         forceEnabled: false,
         now: () => performance.now()
       });

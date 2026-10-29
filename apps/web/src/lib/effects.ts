@@ -21,7 +21,7 @@ export const EFFECTS: EffectChoice[] = [
     eyebrow: "The proof of concept",
     title: "The Twelve",
     blurb: "A deck of twelve cards. Think of one. Answer a few questions. I will find it — or admit that I cannot.",
-    meta: "12 cards · 6 questions maximum · no camera",
+    meta: "12 cards · 6 questions maximum · click demo: no camera",
     accent: "brass"
   },
   {

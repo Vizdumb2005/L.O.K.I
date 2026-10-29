@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { EFFECTS, type EffectId } from "../lib/effects.js";
 
+export type ShowMode = "click" | "sensor";
+
 interface ConsentProps {
-  onEnter: (effectId: EffectId, cameraOptIn: boolean) => void;
+  onEnter: (effectId: EffectId, cameraOptIn: boolean, mode: ShowMode) => void;
   /** True when returning from a show (Leave/Escape): move focus to the consent heading. */
   restoreFocus?: boolean;
+  /** True when the sensor-enabled performance just stopped or could not start. */
+  sensorNotice?: string | null;
 }
 
-export function Consent({ onEnter, restoreFocus = false }: ConsentProps) {
+export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: ConsentProps) {
   const mainRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (restoreFocus) mainRef.current?.focus({ preventScroll: true });
@@ -15,6 +19,10 @@ export function Consent({ onEnter, restoreFocus = false }: ConsentProps) {
   const [effectId, setEffectId] = useState<EffectId>("card-twelve");
   const [understood, setUnderstood] = useState(false);
   const [cameraOptIn, setCameraOptIn] = useState(false);
+  const [mode, setMode] = useState<ShowMode>("click");
+  const [presenceConsent, setPresenceConsent] = useState(false);
+  const sensorsSupported =
+    typeof navigator !== "undefined" && typeof navigator.mediaDevices?.getUserMedia === "function";
 
   return (
     <main className="consent" id="main" ref={mainRef} tabIndex={-1}>
@@ -58,10 +66,10 @@ export function Consent({ onEnter, restoreFocus = false }: ConsentProps) {
             onChange={(event) => setCameraOptIn(event.target.checked)}
           />
           <span>
-            <strong>Camera lab opt-in (optional).</strong> The show itself never uses the
-            camera. If I visit the lab, frames are processed locally, a visible indicator
-            stays on, nothing is uploaded or stored, and I can release the camera at any
-            time.
+            <strong>Camera lab opt-in (optional).</strong> The click demo never uses the
+            camera; the sensor-enabled mode uses it only as described below. In the lab,
+            frames are processed locally, a visible indicator stays on, nothing is
+            uploaded or stored, and I can release the camera at any time.
           </span>
         </label>
 
@@ -89,13 +97,82 @@ export function Consent({ onEnter, restoreFocus = false }: ConsentProps) {
           ))}
         </fieldset>
 
+        <fieldset className="effect-picker">
+          <legend>How do you want to play</legend>
+          <label className={`effect-choice ${mode === "click" ? "is-selected" : ""}`}>
+            <input
+              type="radio"
+              name="mode"
+              value="click"
+              checked={mode === "click"}
+              onChange={() => setMode("click")}
+            />
+            <span className="effect-choice-copy">
+              <span className="effect-eyebrow">The existing show</span>
+              <span className="effect-title">Click demo</span>
+              <span className="effect-blurb">
+                Answer by click or key. No camera, no microphone. Same method and same
+                cards - without the sensor mode's presence texture.
+              </span>
+            </span>
+          </label>
+          <label
+            className={`effect-choice ${mode === "sensor" ? "is-selected" : ""} ${sensorsSupported ? "" : "is-disabled"}`}
+          >
+            <input
+              type="radio"
+              name="mode"
+              value="sensor"
+              checked={mode === "sensor"}
+              disabled={!sensorsSupported}
+              onChange={() => setMode("sensor")}
+            />
+            <span className="effect-choice-copy">
+              <span className="effect-eyebrow">Experimental - camera required</span>
+              <span className="effect-title">Sensor-enabled performance</span>
+              <span className="effect-blurb">
+                Your camera is used for one bounded purpose: noticing that a face is present during
+                the settling moment. Frames are processed in this tab and discarded immediately; the
+                camera never helps guess your card. A visible indicator stays on while it is active,
+                and Stop ends the performance and releases the camera.
+              </span>
+              <span className="effect-blurb">
+                Answering by voice is part of the plan for this mode but is not validated on real
+                devices yet - this build does not capture your microphone, and answers stay on
+                click or key. That requirement is unresolved, not dropped.
+                {sensorsSupported ? "" : " This device or browser does not expose camera capture."}
+              </span>
+            </span>
+          </label>
+        </fieldset>
+
+        {mode === "sensor" && (
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={presenceConsent}
+              onChange={(event) => setPresenceConsent(event.target.checked)}
+            />
+            <span>
+              I allow the camera for <strong>presence only</strong>, exactly as described above -
+              required for the sensor-enabled performance.
+            </span>
+          </label>
+        )}
+
+        {sensorNotice && (
+          <p className="tiny" role="status">
+            {sensorNotice}
+          </p>
+        )}
+
         <button
           type="button"
           className="primary"
-          disabled={!understood}
-          onClick={() => onEnter(effectId, cameraOptIn)}
+          disabled={!understood || (mode === "sensor" && !presenceConsent)}
+          onClick={() => onEnter(effectId, cameraOptIn, mode)}
         >
-          Enter the observatory
+          {mode === "sensor" ? "Enter with camera" : "Enter the observatory"}
         </button>
         <p className="tiny">
           Best with a quiet room and a screen at arm's length. Captions are always on.

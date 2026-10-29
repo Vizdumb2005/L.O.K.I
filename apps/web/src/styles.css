@@ -1538,3 +1538,36 @@ p {
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+
+.sensor-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid rgba(216, 184, 119, 0.25);
+  border-radius: 8px;
+}
+
+.sensor-preview {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+  transform: scaleX(-1);
+  background: #000;
+}
+
+.sensor-indicator {
+  flex: 1;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.sensor-preview-hidden {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  opacity: 0.01;
+  pointer-events: none;
+}
