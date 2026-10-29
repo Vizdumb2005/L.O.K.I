@@ -1515,3 +1515,26 @@ p {
   background: rgba(244, 234, 215, 0.85);
   transition: left 200ms linear;
 }
+
+.statement-flow .glyphs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 1.4rem;
+  margin: 0.75rem 0;
+}
+
+.statement-flow .glyph.red {
+  color: #c0392b;
+}
+
+.statement-flow .statement {
+  font-size: 1.25rem;
+  margin: 1rem 0;
+}
+
+.statement-flow .row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
