@@ -272,8 +272,8 @@ export function Performance({
         const h = () => {
           onStopSensorsRef.current?.(
             kind === "mic"
-              ? "The microphone capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below is the same illusion without sensors."
-              : "The camera capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below is the same illusion without sensors."
+              ? "The microphone capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below runs without sensors."
+              : "The camera capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below runs without sensors."
           );
         };
         t.addEventListener("ended", h);
