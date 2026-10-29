@@ -25,7 +25,7 @@ export function MicLab() {
   const [running, setRunning] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [state, setState] = useState<VadState>({ levelDb: -120, floorDb: -60, active: false });
+  const [state, setState] = useState<VadState>({ levelDb: -120, floorDb: -60, active: false, phase: "quiet" });
   const [settings, setSettings] = useState<MicSettings | null>(null);
 
   const stop = useCallback(() => {
@@ -37,7 +37,7 @@ export function MicLab() {
     contextRef.current = null;
     vadRef.current.reset();
     setRunning(false);
-    setState({ levelDb: -120, floorDb: -60, active: false });
+    setState({ levelDb: -120, floorDb: -60, active: false, phase: "quiet" });
     setSettings(null);
   }, []);
 
@@ -144,7 +144,13 @@ export function MicLab() {
             <dl>
               <div>
                 <dt>Room signal</dt>
-                <dd>{state.active ? "sound above the room's floor" : "quiet"}</dd>
+                <dd>
+                  {state.phase === "active"
+                    ? "sound above the room's floor"
+                    : state.phase === "settling"
+                      ? "sound just ended (settling)"
+                      : "quiet"}
+                </dd>
               </div>
               <div>
                 <dt>Level</dt>

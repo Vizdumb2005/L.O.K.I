@@ -26,9 +26,11 @@ describe("MicVad", () => {
     // Still active during a brief dip (hangover).
     state = vad.update(-50, 20300);
     expect(state.active).toBe(true);
+    expect(state.phase).toBe("settling"); // hangover is labelled, not hidden
     // Released once the hangover has passed.
     state = vad.update(-50, 20100 + 100 + 460);
     expect(state.active).toBe(false);
+    expect(state.phase).toBe("quiet");
   });
 
   it("does not let the floor chase a sustained loud sound while active", () => {

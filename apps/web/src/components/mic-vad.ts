@@ -27,10 +27,20 @@ export const DEFAULT_VAD_CONFIG: VadConfig = {
   initialFloorDb: -60
 };
 
+export type VadPhase = "active" | "settling" | "quiet";
+
 export interface VadState {
   levelDb: number;
   floorDb: number;
   active: boolean;
+  /**
+   * "active": level is above floor + margin right now.
+   * "settling": sound just ended; still inside the hangover window so the
+   * indicator does not flap. Displayed level can be below the floor here -
+   * that is the hangover, not a contradiction.
+   * "quiet": no sound above the floor.
+   */
+  phase: VadPhase;
 }
 
 /** Convert an RMS amplitude (0..1) to dBFS, floored to avoid -Infinity. */
@@ -83,6 +93,7 @@ export class MicVad {
       this.lastAboveAt = null;
     }
 
-    return { levelDb, floorDb: this.floorDb, active: this.active };
+    const phase: VadPhase = above ? "active" : this.active ? "settling" : "quiet";
+    return { levelDb, floorDb: this.floorDb, active: this.active, phase };
   }
 }
