@@ -63,6 +63,11 @@ export interface SessionView {
   progress: { answered: number; max: number };
   resonance: number;
   reveal?: { id: string; label: string; glyph?: string; probability: number };
+  /**
+   * Present during the reveal when the effect asks the person to perform the reveal
+   * themselves: the stage stays dark behind `invite` until they take `action`.
+   */
+  revealGate?: { invite: string; action: string };
   stage: StageSpec;
   camera: { enabled: boolean; validated: boolean; active: boolean; windowsUsed: number };
   canAdvance: boolean;
@@ -335,6 +340,13 @@ export class PerformanceSession {
       beat: this.phase,
       progress: { answered: this.answered, max: this.effect.config.maxProbes },
       resonance: maxEntropy > 0 ? 1 - entropy / maxEntropy : 1,
+      revealGate:
+        this.phase === "reveal" && this.effect.script().revealInvite
+          ? {
+              invite: sanitizeLine(this.effect.script().revealInvite!, "You turn it over."),
+              action: this.effect.script().revealAction ?? "Turn it over"
+            }
+          : undefined,
       reveal: this.revealCandidate && (this.phase === "reveal" || this.phase === "afterglow")
         ? {
             id: this.revealCandidate.hypothesis.id,

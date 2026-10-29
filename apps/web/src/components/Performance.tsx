@@ -25,9 +25,7 @@ function phaseLabel(view: SessionView): string {
     case "attune":
       return "Attunement";
     case "probe":
-      return view.progress.answered >= view.progress.max
-        ? "Recovery question"
-        : `Question ${view.progress.answered + 1} of ${view.progress.max}`;
+      return view.progress.answered >= view.progress.max ? "One clean question" : "The reading";
     case "recover":
       return "A contradiction";
     case "build":
@@ -58,6 +56,7 @@ export function Performance({
   const [cueIndex, setCueIndex] = useState(0);
   const [indexKey, setIndexKey] = useState("");
   const [patterSource, setPatterSource] = useState<"template" | "llm">("template");
+  const [userRevealed, setUserRevealed] = useState(false);
   const primaryRef = useRef<HTMLButtonElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLParagraphElement>(null);
@@ -77,6 +76,7 @@ export function Performance({
   useEffect(() => {
     setCueIndex(reducedMotion ? lastCue : 0);
     setIndexKey(cueKey);
+    setUserRevealed(false);
   }, [cueKey, reducedMotion]);
 
   // One timer per step, owned by the current index. Skipping changes the index, which clears the
@@ -161,6 +161,7 @@ export function Performance({
           return;
         }
         if (view.phase === "afterglow" || view.phase === "done") restart();
+        else if (revealGated) setUserRevealed(true);
         else if (view.canAdvance) advance();
       }
     };
@@ -179,8 +180,11 @@ export function Performance({
   }
 
   // The target is lit only when the resting reveal cue is on screen, never during the hush beats.
+  // When the effect asks the person to perform the reveal, it also stays dark behind the
+  // invitation until they turn it over themselves.
+  const revealGated = Boolean(view.revealGate) && view.phase === "reveal" && !cuePending && !userRevealed;
   const stageView: SessionView =
-    view.reveal && view.phase === "reveal" && cuePending ? { ...view, reveal: undefined } : view;
+    view.reveal && view.phase === "reveal" && (cuePending || revealGated) ? { ...view, reveal: undefined } : view;
   const isProbe = view.phase === "probe" && view.options;
   const isEnd = view.phase === "afterglow" || view.phase === "done";
   const canContinue = view.canAdvance && !isProbe && !isEnd;
@@ -258,7 +262,7 @@ export function Performance({
         <div className="panel-copy">
           <p className="eyebrow">{view.stage.title}</p>
           <p id="line-heading" ref={lineRef} className="line" aria-live="polite">
-            {cuePending ? cues[effectiveIndex]?.line : displayLine}
+            {cuePending ? cues[effectiveIndex]?.line : revealGated ? view.revealGate!.invite : displayLine}
           </p>
           {reducedMotion && cues.length > 1 && (
             <ul className="cue-trail" aria-label="Earlier lines of this moment">
@@ -294,7 +298,17 @@ export function Performance({
               Skip ahead
             </button>
           )}
-          {canContinue && (
+          {revealGated && (
+            <button
+              ref={primaryRef}
+              type="button"
+              className="primary"
+              onClick={() => setUserRevealed(true)}
+            >
+              {view.revealGate!.action}
+            </button>
+          )}
+          {canContinue && !revealGated && (
             <button
               ref={primaryRef}
               type="button"

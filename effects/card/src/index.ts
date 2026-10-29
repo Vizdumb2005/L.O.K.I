@@ -107,7 +107,9 @@ export const cardEffect: Effect = {
         ? `Your card was the ${item.label}.`
         : `The card that kept returning was the ${item.label}.`,
     recoverLine: "Two cards are fighting for the same light. Give me one clean answer.",
-    missLine: "You beat me. The card stays yours."
+    missLine: "You beat me. The card stays yours.",
+    revealInvite: "Don't tell me. You turn it over - whenever you are ready.",
+    revealAction: "Turn it over"
   }),
 
   stage: () => CARD_STAGE_BASE,
