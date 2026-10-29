@@ -17,7 +17,17 @@ export default defineConfig({
     proxy: { "/api": "http://127.0.0.1:8787" }
   },
   preview: { port: 4173, strictPort: true, host: "127.0.0.1" },
-  build: { outDir: "dist", emptyOutDir: true, sourcemap: true },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+    sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: resolve(root, "index.html"),
+        "ort-smoke": resolve(root, "ort-smoke.html")
+      }
+    }
+  },
   resolve: {
     dedupe: ["three", "react", "react-dom"],
     alias: {
