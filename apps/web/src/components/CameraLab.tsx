@@ -3,6 +3,7 @@ import { DirectionLabel, PointSmoother, ScalarSmoother, StableLatch } from "./ca
 import { MicLab } from "./MicLab.js";
 import { VoiceBench } from "./VoiceBench.js";
 import { SpeakerGateBench } from "./SpeakerGateBench.js";
+import { StatementFlowLab } from "./StatementFlowLab.js";
 import { useGazeCalibration, type CalibrationZoneId } from "./use-gaze-calibration.js";
 
 type Landmark = { x: number; y: number; z: number };
@@ -601,6 +602,8 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
       <VoiceBench />
 
       <SpeakerGateBench />
+
+      <StatementFlowLab />
 
       <footer className="lab-footer">
         <a href="https://www.mediapipe.dev/" target="_blank" rel="noreferrer">
