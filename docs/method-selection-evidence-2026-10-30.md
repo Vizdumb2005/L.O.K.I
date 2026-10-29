@@ -48,13 +48,56 @@ for engine/C) are superseded by this paired table; the conclusions matched.
 - C-tree-order+gate: FOUR blind cards - d-3, d-4, s-3, s-4 commit 0/240
   (all honest misses); others c117-156.
 
-At p=0 (240 seeds/card), engine-claims commits every card 240/240 except
-h-2, which misses 240/240. The entire truthful-case miss rate (~7%) is the
-two of hearts: with epsilon/outlier smoothing, no claim combination
-separates h-2 from d-2 to tau=0.96 within the beat budget. The miss is the
-designed honest-failure path ("You beat me"), never a wrong reveal. A
-discriminating compound claim ("a low heart - the ace or two of hearts")
-would fix it but edges toward naming the card; left as an open decision.
+At p=0 (240 seeds/card), engine-claims committed every card 240/240
+except h-2, which missed 240/240. The entire truthful-case miss rate (~7%)
+was the two of hearts. The miss was the designed honest-failure path ("You
+beat me"), never a wrong reveal. Root cause and the measured remedy are in
+the next section; as of the heart-even remedy below, the p=0 sweep is
+240/240 commits on all twelve cards.
+
+## h-2 remedy (2026-10-30, measured): "An even heart" compound claim
+
+Diagnosis (posterior trajectory and per-probe information gain at the
+recovery state, truthful h-2 run, seed 20261027): after six good picks
+(low-half, even, warm-colour, heart, two, diamond) the posterior caps at
+0.9219 with the remaining mass spread over four rivals (d-2, s-2, h-a,
+h-4 at ~0.0185 each). No single remaining claim lifts the top past 0.94
+(best measured: odd, +0.018), because each claim contradicts only one
+rival and the epsilon/outlier smoothing bounds the per-claim likelihood
+ratio. The defect is aggregate evidence, not probe selection: IG-ranked
+selection was already picking near-optimal probes.
+
+Remedy: one new compound claim parallel in form to the existing two-card
+compounds (heart-high, diamond-low, red-ace, spade-high):
+
+- heart-even: "An even heart - the two or the four." (heart AND even rank:
+  true for h-2 and h-4, false for h-a, d-2, s-2). It contradicts three of
+  the four residual rivals at once and is picked by the unchanged greedy
+  IG policy on its own (trace: chosen at beat 5 of the h-2 path).
+
+Protections unchanged: tau=0.96, epsilon/outlier smoothing, abstention
+path, beat budget 6+1, no card-naming compound (suit+rank together), no
+near-explicit question.
+
+Measured outcome (balanced sweep, 240 seeds/card, same seed schedule as
+above):
+
+- p=0: all twelve cards c240/w0/m0. h-2 fixed (was c0/w0/m240).
+- p=0.10: c116-125/w0-2/m113-123 per card; h-2 c116/w1/m123 - inside the
+  same family range as every other card, no blind spot and no wrong-commit
+  hotspot. meanBeats 6.00-7.00 (unchanged profile).
+- Regenerated full eval (33 cells / 33,000 runs, docs/eval-report.md):
+  shipping cell 535/1000 commits with 6 wrong-of-all at p=0.10 (was
+  496/1000 with 6 wrong before the remedy; commits rose because h-2 can
+  now commit). Gate PASS unchanged - a behavioral floor, not zero-error
+  evidence.
+
+An earlier uncommitted attempt (a low-heart compound) measured no change
+and was reverted without a preserved root cause; the IG instrumentation
+above shows a probe whose likelihood does not vary across cards has
+exactly zero information gain and is never picked, the likely defect in
+that attempt. The shipped probe is defined on the same Card predicates as
+the other compounds and is covered by the contract test (21 claims).
 
 ## Findings
 

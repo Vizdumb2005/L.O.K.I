@@ -25,9 +25,9 @@ describe("card effect contract", () => {
     expect(() => validateEffect(cardEffect)).not.toThrow();
   });
 
-  it("has 12 cards, 20 claim probes and a 3x4 stage", () => {
+  it("has 12 cards, 21 claim probes and a 3x4 stage", () => {
     expect(CARDS).toHaveLength(12);
-    expect(CARD_PROBES).toHaveLength(20);
+    expect(CARD_PROBES).toHaveLength(21);
     expect(new Set(CARDS.map((c) => c.id)).size).toBe(12);
     expect(cardEffect.stage().columns).toBe(4);
     expect(cardEffect.stage().items).toHaveLength(12);

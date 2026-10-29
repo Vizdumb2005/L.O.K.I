@@ -4,7 +4,7 @@
 This report measures a synthetic answer model, not people. It is evidence about the
 implementation's behavior under controlled noise, not proof of real-world accuracy.
 
-**Generated:** 2026-10-29T21:12:32.472Z · **Runs per cell:** 1000 ·
+**Generated:** 2026-10-29T22:54:25.821Z · **Runs per cell:** 1000 ·
 **Seed base:** 20261027 · **Cells:** 33 ·
 **Total runs:** 33000
 
@@ -35,17 +35,17 @@ per-question error probability. Runs are paired by seed across policies. Interva
 
 | Metric | Value |
 |---|---|
-| Commits | 496 / 1000 (49.6%) [46.5%, 52.7%] |
-| Graceful misses | 504 / 1000 (50.4%) |
-| Correct reveals | 490 |
+| Commits | 535 / 1000 (53.5%) [50.4%, 56.6%] |
+| Graceful misses | 465 / 1000 (46.5%) |
+| Correct reveals | 529 |
 | Wrong reveals | 6 |
-| Committed accuracy | 98.8% [97.4%, 99.4%] |
+| Committed accuracy | 98.9% [97.6%, 99.5%] |
 | Wrong-confident reveals, all runs | 0.6% [0.3%, 1.3%] |
-| Wrong-confident reveals, committed runs | 1.2% [0.6%, 2.6%] |
-| Brier score (multiclass) | 0.196 [0.170, 0.222] |
-| Expected calibration error (10 bins) | 0.038 |
-| Mean probes answered | 6.76 [6.74, 6.79] |
-| Mean recoveries | 0.76 |
+| Wrong-confident reveals, committed runs | 1.1% [0.5%, 2.4%] |
+| Brier score (multiclass) | 0.194 [0.168, 0.219] |
+| Expected calibration error (10 bins) | 0.040 |
+| Mean probes answered | 6.72 [6.69, 6.75] |
+| Mean recoveries | 0.72 |
 
 ### Gate decision
 
@@ -53,7 +53,7 @@ The pre-registered gate was **< 3% wrong-confident reveals over all runs** and
 **< 10% over committed reveals**, using the upper end of the 95% interval.
 
 - All runs: 0.6% [0.3%, 1.3%] — **PASS**
-- Committed runs: 1.2% [0.6%, 2.6%] — **PASS**
+- Committed runs: 1.1% [0.5%, 2.4%] — **PASS**
 
 **Gate result: PASS at the nominal 10% answer-error condition.**
 This is a simulation gate. It does not validate the show with people, and it does not
@@ -66,18 +66,18 @@ exhausts its budget without reaching τ.
 
 | Policy | Commits | Wrong | Committed accuracy | Wrong, all runs | Brier | ECE | Mean probes |
 |---|---|---|---|---|---|---|---|
-| greedy | 338 / 1000 (33.8%) | 14 | 95.9% [93.2%, 97.5%] | 1.4% [0.8%, 2.3%] | 0.372 [0.338, 0.406] | 0.038 | 6.83 [6.80, 6.85] |
-| median | 335 / 1000 (33.5%) | 11 | 96.7% [94.2%, 98.2%] | 1.1% [0.6%, 2.0%] | 0.369 [0.335, 0.403] | 0.035 | 6.83 [6.81, 6.85] |
+| greedy | 367 / 1000 (36.7%) | 17 | 95.4% [92.7%, 97.1%] | 1.7% [1.1%, 2.7%] | 0.368 [0.334, 0.402] | 0.038 | 6.80 [6.78, 6.83] |
+| median | 364 / 1000 (36.4%) | 14 | 96.2% [93.6%, 97.7%] | 1.4% [0.8%, 2.3%] | 0.365 [0.331, 0.398] | 0.038 | 6.80 [6.78, 6.83] |
 | fixed | 0 / 1000 (0.0%) | 0 | — | 0.0% [0.0%, 0.4%] | 0.498 [0.465, 0.531] | 0.052 | 7.00 [7.00, 7.00] |
 
 ## 3. Card effect by answer error (greedy)
 
 | Answer error | Commits | Wrong | Committed accuracy | Wrong, all runs | Brier | ECE | Mean probes |
 |---|---|---|---|---|---|---|---|
-| 0% | 923 / 1000 (92.3%) | 0 | 100.0% [99.6%, 100.0%] | 0.0% [0.0%, 0.4%] | 0.001 [0.001, 0.002] | 0.030 | 6.57 [6.54, 6.60] |
-| 5% | 666 / 1000 (66.6%) | 3 | 99.5% [98.7%, 99.8%] | 0.3% [0.1%, 0.9%] | 0.075 [0.060, 0.091] | 0.061 | 6.68 [6.66, 6.71] |
-| 15% | 338 / 1000 (33.8%) | 14 | 95.9% [93.2%, 97.5%] | 1.4% [0.8%, 2.3%] | 0.372 [0.338, 0.406] | 0.038 | 6.83 [6.80, 6.85] |
-| 30% | 148 / 1000 (14.8%) | 46 | 68.9% [61.1%, 75.8%] | 4.6% [3.5%, 6.1%] | 0.920 [0.879, 0.962] | 0.320 | 6.91 [6.90, 6.93] |
+| 0% | 1000 / 1000 (100.0%) | 0 | 100.0% [99.6%, 100.0%] | 0.0% [0.0%, 0.4%] | 0.001 [0.001, 0.001] | 0.028 | 6.50 [6.46, 6.53] |
+| 5% | 723 / 1000 (72.3%) | 3 | 99.6% [98.8%, 99.9%] | 0.3% [0.1%, 0.9%] | 0.074 [0.059, 0.089] | 0.060 | 6.63 [6.60, 6.66] |
+| 15% | 367 / 1000 (36.7%) | 17 | 95.4% [92.7%, 97.1%] | 1.7% [1.1%, 2.7%] | 0.368 [0.334, 0.402] | 0.038 | 6.80 [6.78, 6.83] |
+| 30% | 159 / 1000 (15.9%) | 49 | 69.2% [61.6%, 75.8%] | 4.9% [3.7%, 6.4%] | 0.915 [0.873, 0.956] | 0.313 | 6.90 [6.88, 6.92] |
 
 The show degrades into abstention rather than bluffing as noise rises. At 30% error the
 wrong-confident rate crosses the < 3% gate; those runs are outside the shipping envelope
@@ -90,13 +90,13 @@ condition), 1,000 runs each.
 
 | Condition | Commits | Wrong | Committed accuracy | Wrong, all runs | Brier | ECE | Mean probes | Decision |
 |---|---|---|---|---|---|---|---|---|
-| Soft likelihoods + outlier mixture | 338 / 1000 (33.8%) | 14 | 95.9% [93.2%, 97.5%] | 1.4% [0.8%, 2.3%] | 0.372 [0.338, 0.406] | 0.038 | 6.83 [6.80, 6.85] |  Shipping math. Kept as the reference. |
+| Soft likelihoods + outlier mixture | 367 / 1000 (36.7%) | 17 | 95.4% [92.7%, 97.1%] | 1.7% [1.1%, 2.7%] | 0.368 [0.334, 0.402] | 0.038 | 6.80 [6.78, 6.83] |  Shipping math. Kept as the reference. |
 | Hard elimination | 1000 / 1000 (100.0%) | 479 | 52.1% [49.0%, 55.2%] | 47.9% [44.8%, 51.0%] | 0.958 [0.896, 1.020] | 0.479 | 3.60 [3.57, 3.63] |  Dropped. Confidently wrong on half of all runs. |
-| No outlier mixture | 413 / 1000 (41.3%) | 22 | 94.7% [92.1%, 96.5%] | 2.2% [1.5%, 3.3%] | 0.377 [0.340, 0.413] | 0.075 | 6.58 [6.55, 6.62] |  Dropped. More wrong reveals and worse calibration. |
-| Gaze on (simulated) | 513 / 1000 (51.3%) | 10 | 98.1% [96.4%, 98.9%] | 1.0% [0.5%, 1.8%] | 0.217 [0.190, 0.244] | 0.035 | 6.08 [6.00, 6.16] |  Lab only. Mechanical upper bound, not human evidence. |
-| Force on (prior shift) | 363 / 1000 (36.3%) | 23 | 93.7% [90.7%, 95.7%] | 2.3% [1.5%, 3.4%] | 0.364 [0.331, 0.398] | 0.034 | 6.72 [6.69, 6.76] |  Default off. Modest simulated effect, no human evidence. |
-| Temperature 0.95 | 450 / 1000 (45.0%) | 28 | 93.8% [91.2%, 95.7%] | 2.8% [1.9%, 4.0%] | 0.395 [0.356, 0.434] | 0.089 | 6.40 [6.36, 6.45] |  Dropped. Overconfident and more wrong commits. |
-| Temperature 1.05 | 153 / 1000 (15.3%) | 5 | 96.7% [92.6%, 98.6%] | 0.5% [0.2%, 1.2%] | 0.370 [0.340, 0.400] | 0.033 | 7.00 [7.00, 7.00] |  Dropped. Fewer commits without a clear accuracy gain. |
+| No outlier mixture | 427 / 1000 (42.7%) | 25 | 94.1% [91.5%, 96.0%] | 2.5% [1.7%, 3.7%] | 0.373 [0.337, 0.409] | 0.069 | 6.51 [6.47, 6.55] |  Dropped. More wrong reveals and worse calibration. |
+| Gaze on (simulated) | 526 / 1000 (52.6%) | 8 | 98.5% [97.0%, 99.2%] | 0.8% [0.4%, 1.6%] | 0.216 [0.189, 0.243] | 0.031 | 6.01 [5.93, 6.10] |  Lab only. Mechanical upper bound, not human evidence. |
+| Force on (prior shift) | 388 / 1000 (38.8%) | 23 | 94.1% [91.3%, 96.0%] | 2.3% [1.5%, 3.4%] | 0.361 [0.327, 0.395] | 0.033 | 6.70 [6.67, 6.74] |  Default off. Modest simulated effect, no human evidence. |
+| Temperature 0.95 | 458 / 1000 (45.8%) | 30 | 93.4% [90.8%, 95.4%] | 3.0% [2.1%, 4.3%] | 0.393 [0.354, 0.432] | 0.086 | 6.36 [6.31, 6.41] |  Dropped. Overconfident and more wrong commits. |
+| Temperature 1.05 | 172 / 1000 (17.2%) | 5 | 97.1% [93.4%, 98.8%] | 0.5% [0.2%, 1.2%] | 0.369 [0.338, 0.399] | 0.029 | 7.00 [7.00, 7.00] |  Dropped. Fewer commits without a clear accuracy gain. |
 
 Interpretation:
 
@@ -144,7 +144,7 @@ simulation code.
 ![Reliability diagram for the shipping card configuration](calibration.svg)
 
 Points track the diagonal in the high-confidence region where the show commits. ECE is
-0.038 for the shipping cell. The diagram is generated from the same
+0.040 for the shipping cell. The diagram is generated from the same
 seeded run data as the table, not from a separate demo. Bins with no observations are
 omitted.
 

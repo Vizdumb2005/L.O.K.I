@@ -85,6 +85,7 @@ export const CARD_PROBES: Probe[] = [
   binaryProbe("high-red", "It's a high red card - a red three or four.", 0.25, (c) => c.red && c.rankValue >= 3),
   binaryProbe("low-black", "It's a low black card - a black ace or two.", 0.25, (c) => !c.red && c.rankValue <= 2),
   binaryProbe("heart-high", "A heart, and above a two.", 0.24, (c) => c.suit === "h" && c.rankValue >= 3),
+  binaryProbe("heart-even", "An even heart - the two or the four.", 0.24, (c) => c.suit === "h" && c.rankValue % 2 === 0),
   binaryProbe("diamond-low", "A diamond, below a three.", 0.24, (c) => c.suit === "d" && c.rankValue <= 2),
   binaryProbe("red-ace", "It's a red ace.", 0.26, (c) => c.red && c.rank === "a"),
   binaryProbe("spade-high", "A high spade - the three or the four.", 0.24, (c) => c.suit === "s" && c.rankValue >= 3)

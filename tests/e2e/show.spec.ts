@@ -20,6 +20,7 @@ const THREE_OF_DIAMONDS: Record<string, string> = {
   "It's a high red card - a red three or four.": "True of my card",
   "It's a low black card - a black ace or two.": "That's wrong",
   "A heart, and above a two.": "That's wrong",
+  "An even heart - the two or the four.": "That's wrong",
   "A diamond, below a three.": "That's wrong",
   "It's a red ace.": "That's wrong",
   "A high spade - the three or the four.": "That's wrong"
