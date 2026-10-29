@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { decideAnswer, decideOptionAnswer, gateDecision, mapAnswerToken, matchSpokenOption, TAU_ACCEPT, TAU_REJECT } from "./voice-answer.js";
+import { describe, expect, it, vi } from "vitest";
+import { decideAnswer, decideOptionAnswer, gateDecision, mapAnswerToken, matchSpokenOption, qualifyWebGPU, TAU_ACCEPT, TAU_REJECT } from "./voice-answer.js";
 
 const speech = new Float32Array(16000).fill(0.05);
 
@@ -105,5 +105,43 @@ describe("decideOptionAnswer", () => {
     const d = decideOptionAnswer(new Float32Array(16000), 1, 0.9, "", ["Yes", "No"]);
     expect(d.kind).toBe("uncertain");
     expect(d.reason).toBe("silence");
+  });
+});
+
+describe("qualifyWebGPU", () => {
+  it("refuses when there is no WebGPU at all", async () => {
+    vi.stubGlobal("navigator", {});
+    await expect(qualifyWebGPU()).resolves.toBe(false);
+    vi.unstubAllGlobals();
+  });
+
+  it("refuses a software (fallback) adapter", async () => {
+    vi.stubGlobal("navigator", {
+      gpu: { requestAdapter: async () => ({ info: { isFallbackAdapter: true } }) }
+    });
+    await expect(qualifyWebGPU()).resolves.toBe(false);
+    vi.unstubAllGlobals();
+  });
+
+  it("refuses when the adapter cannot prove hardware (no info)", async () => {
+    vi.stubGlobal("navigator", { gpu: { requestAdapter: async () => ({}) } });
+    await expect(qualifyWebGPU()).resolves.toBe(false);
+    vi.unstubAllGlobals();
+  });
+
+  it("accepts a hardware adapter", async () => {
+    vi.stubGlobal("navigator", {
+      gpu: { requestAdapter: async () => ({ info: { isFallbackAdapter: false } }) }
+    });
+    await expect(qualifyWebGPU()).resolves.toBe(true);
+    vi.unstubAllGlobals();
+  });
+
+  it("refuses when adapter request throws", async () => {
+    vi.stubGlobal("navigator", {
+      gpu: { requestAdapter: async () => { throw new Error("denied"); } }
+    });
+    await expect(qualifyWebGPU()).resolves.toBe(false);
+    vi.unstubAllGlobals();
   });
 });
