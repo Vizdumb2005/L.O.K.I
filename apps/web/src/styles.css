@@ -1563,3 +1563,11 @@ p {
   font-size: 0.85rem;
   opacity: 0.85;
 }
+
+.sensor-preview-hidden {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  opacity: 0.01;
+  pointer-events: none;
+}

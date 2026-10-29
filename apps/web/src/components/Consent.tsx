@@ -66,10 +66,10 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
             onChange={(event) => setCameraOptIn(event.target.checked)}
           />
           <span>
-            <strong>Camera lab opt-in (optional).</strong> The show itself never uses the
-            camera. If I visit the lab, frames are processed locally, a visible indicator
-            stays on, nothing is uploaded or stored, and I can release the camera at any
-            time.
+            <strong>Camera lab opt-in (optional).</strong> The click demo never uses the
+            camera; the sensor-enabled mode uses it only as described below. In the lab,
+            frames are processed locally, a visible indicator stays on, nothing is
+            uploaded or stored, and I can release the camera at any time.
           </span>
         </label>
 
@@ -111,7 +111,8 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
               <span className="effect-eyebrow">The existing show</span>
               <span className="effect-title">Click demo</span>
               <span className="effect-blurb">
-                Answer by click or key. No camera, no microphone - the illusion is the same.
+                Answer by click or key. No camera, no microphone. Same method and same
+                cards - without the sensor mode's presence texture.
               </span>
             </span>
           </label>

@@ -61,6 +61,7 @@ export function Performance({
 }: PerformanceProps) {
   const { view, error, advance, answer, restart } = usePerformance(effect, sensorMode);
   const [presence, setPresence] = useState<"unknown" | "present" | "absent" | "unavailable">("unknown");
+  const [showPreview, setShowPreview] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const attuning = sensorMode && view?.phase === "attune";
 
@@ -302,10 +303,22 @@ export function Performance({
 
       {sensorMode && (
         <section className="sensor-bar" aria-label="Sensor status">
-          <video ref={attachVideo} className="sensor-preview" muted playsInline aria-label="Camera preview - presence only" />
+          {/* The camera runs even with the preview hidden - the indicator, not
+              the thumbnail, is the honesty surface. Preview is a setup aid. */}
+          <video
+            ref={attachVideo}
+            className={showPreview ? "sensor-preview" : "sensor-preview sensor-preview-hidden"}
+            muted
+            playsInline
+            aria-hidden={showPreview ? undefined : true}
+            aria-label="Camera preview - presence only"
+          />
           <span className="sensor-indicator" role="status">
             Camera on - presence only. Frames are processed here and discarded.
           </span>
+          <button type="button" className="chip" onClick={() => setShowPreview((v) => !v)} aria-pressed={showPreview}>
+            {showPreview ? "Hide preview" : "Show preview"}
+          </button>
           <button type="button" className="chip" onClick={onStopSensors}>
             Stop sensors
           </button>

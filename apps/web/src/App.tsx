@@ -25,9 +25,21 @@ export function App() {
 
   const choice = effectChoice(effectId);
 
+  const enteringRef = useRef(false);
   const enter = async (nextEffect: EffectId, nextCameraOptIn: boolean, mode: ShowMode) => {
+    // Guard the async permission window: a second Enter while the browser
+    // prompt is open must not double-acquire.
+    if (enteringRef.current) return;
+    enteringRef.current = true;
+    try {
     setEffectId(nextEffect);
     setCameraOptIn(nextCameraOptIn);
+    // A previous session must never linger across entries.
+    if (sensorRef.current) {
+      sensorRef.current.stopAll();
+      sensorRef.current = null;
+      setSensorMode(false);
+    }
     if (mode === "sensor") {
       // Mandatory capability: the sensor-enabled performance needs the camera.
       // Failure does NOT silently fall back to click - the person chooses.
@@ -55,6 +67,9 @@ export function App() {
     }
     setEntered(true);
     setScreen("show");
+    } finally {
+      enteringRef.current = false;
+    }
   };
 
   const stopSensors = () => {
@@ -70,6 +85,14 @@ export function App() {
   };
 
   const leave = () => {
+    // Leaving or resetting in sensor mode ends the sensor-enabled performance:
+    // release the camera and any derived state, same as Stop.
+    if (sensorRef.current) {
+      sensorRef.current.stopAll();
+      sensorRef.current = null;
+      if (sensorMode) setSensorNotice("Sensors stopped - the camera is released and the sensor-enabled performance has ended. The click demo below is the same illusion without sensors.");
+      setSensorMode(false);
+    }
     setHasLeft(true);
     setEntered(false);
     setScreen("show");
@@ -150,7 +173,7 @@ export function App() {
               An illusion, not mind reading. No lie detection, emotion reading, or diagnosis.
               Human pilot: 0 participants.
             </span>
-            <span>Camera optional and local-only. The show never uses it.</span>
+            <span>Camera is local-only, only in the sensor mode or the lab. Nothing is uploaded.</span>
           </footer>
         </>
       )}
