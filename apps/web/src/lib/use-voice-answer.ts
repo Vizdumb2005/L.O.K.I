@@ -15,11 +15,10 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  decideAnswer,
+  decideOptionAnswer,
   loadVoiceAnswerModels,
   rmsLevel,
   MIN_RMS,
-  type AnswerToken,
   type VoiceAnswerModels
 } from "./voice-answer.js";
 import { recordClip } from "./capture.js";
@@ -44,12 +43,6 @@ interface VoiceDeps {
 
 const ENROLL_SECONDS = 4;
 const ANSWER_SECONDS = 3;
-
-export function mapTokenToOption(token: AnswerToken, options: VoiceOption[] | undefined): VoiceOption | null {
-  if (!options?.length) return null;
-  const want = token === "confirm" ? /yes|true|right|correct|confirm/i : /no|false|wrong|deny/i;
-  return options.find((o) => want.test(o.label) || want.test(o.id)) ?? null;
-}
 
 export function useVoiceAnswer({ active, session, probeActive, probeKey, options, onAnswer, onReleaseMic }: VoiceDeps) {
   const [state, setState] = useState<VoiceState>("loading");
@@ -133,8 +126,14 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
     if (!stream || !modelsP || !emb) return;
     listenedKeyRef.current = probeKey;
     cancelledRef.current = false;
+    const labels = (optionsRef.current ?? []).map((o) => o.label);
+    const yesNo = labels.length === 2 && /^(yes|y)$/i.test(labels[0] ?? "") && /^(no|n)$/i.test(labels[1] ?? "");
     setListening(true);
-    setFeedback('Listening for your answer - say "true" or "wrong", or tap.');
+    setFeedback(
+      yesNo
+        ? 'Listening for your answer - say "true" or "wrong", or tap.'
+        : `Listening for your answer - say one of: ${labels.join(", ")} - or tap.`
+    );
     let retried = false;
     const run = async () => {
       const models = await modelsP;
@@ -162,19 +161,19 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
           transcript = "";
         }
         if (cancelledRef.current) return;
-        const decision = decideAnswer(clip, seconds, sim, transcript);
-        if (decision.kind === "answer" && decision.token) {
-          const option = mapTokenToOption(decision.token, optionsRef.current);
+        const decision = decideOptionAnswer(clip, seconds, sim, transcript, labels);
+        if (decision.kind === "answer" && decision.index !== null) {
+          const option = (optionsRef.current ?? [])[decision.index];
           if (option) {
             setListening(false);
-            setFeedback(`I heard "${decision.token === "confirm" ? "true" : "wrong"}".`);
+            setFeedback(`I heard "${option.label}".`);
             onAnswerRef.current(option.id);
             return;
           }
         }
         if (!retried) {
           retried = true;
-          setFeedback(`I could not hear a clear "true" or "wrong" (${decision.reason}). One more try - or tap your answer instead (a manual answer).`);
+          setFeedback(`I could not hear a clear answer (${decision.reason}). One more try - or tap your answer instead (a manual answer).`);
           continue;
         }
         setListening(false);

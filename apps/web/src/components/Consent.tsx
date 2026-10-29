@@ -139,10 +139,11 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
                 and Stop ends the performance and releases the camera.
               </span>
               <span className="effect-blurb">
-                Your microphone lets you answer by voice: you say "true" or "wrong" to the
-                performer's claims. Audio is processed in this tab and discarded; uncertain
-                hearing falls back to click. This channel passed synthetic-clip checks only -
-                real-device validation is pending, so it is labelled experimental, not proven.
+                Your microphone lets you answer by voice: you speak your answers to the
+                performer's claims (like "true" or "wrong", or the name of a choice). Audio is
+                processed in this tab and discarded; uncertain hearing falls back to click. This
+                channel passed synthetic-clip checks only - real-device validation is pending,
+                so it is labelled experimental, not proven.
                 {sensorsSupported ? "" : " This device or browser does not expose camera capture."}
               </span>
             </span>
@@ -170,7 +171,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
               />
               <span>
                 I allow the microphone for <strong>answering by voice</strong>: short clips are
-                processed in this tab to hear "true" or "wrong", then discarded. Nothing is
+                processed in this tab to hear my spoken answers, then discarded. Nothing is
                 uploaded. Required for the sensor-enabled performance.
               </span>
             </label>
@@ -181,7 +182,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
                 onChange={(event) => setEnrollConsent(event.target.checked)}
               />
               <span>
-                I allow a <strong>voice enrollment</strong>: 3-10 seconds of my speech so LOKI can
+                I allow a <strong>voice enrollment</strong>: about 4 seconds of my speech so LOKI can
                 tell my voice from other voices in the room during this performance. The voice
                 print is computed in this tab, kept only in memory, discarded when I stop or
                 leave, never uploaded, and I can withdraw it any time with "Forget my voice". It
@@ -204,7 +205,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
           disabled={!understood || (mode === "sensor" && !(presenceConsent && micConsent && enrollConsent))}
           onClick={() => onEnter(effectId, cameraOptIn, mode)}
         >
-          {mode === "sensor" ? "Enter with camera" : "Enter the observatory"}
+          {mode === "sensor" ? "Enter with camera + mic" : "Enter the observatory"}
         </button>
         <p className="tiny">
           Best with a quiet room and a screen at arm's length. Captions are always on.
