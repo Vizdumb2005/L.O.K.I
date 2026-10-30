@@ -15,7 +15,7 @@ the auto-caption transcript, [VISUAL t=...] = visible in a sampled frame at
 that timestamp, [TAUGHT] = what a teacher asserts as method (transcript),
 [HYPOTHESIS] = our inference, [ADAPTATION] = proposed digital counterpart,
 feasibility-flagged. Sampled frames show what those timestamps contain; they
-are sparse samples, not proof of what the rest of a video does.
+are sparse samples, not proof of what the rest of a video does, and a single still frame cannot show motion at all.
 
 ## Sources (exact URLs)
 
@@ -23,7 +23,7 @@ Performances:
 1. Derren Brown, "Stephen Fry Amazed By Card Trick - Trick of the Mind" (3 min)
    https://www.youtube.com/watch?v=QI5-NDiY7IM
 2. Derren Brown, "Card Magic And Mind Trickery" (12 min) - the four sampled
-   frames (0:30, 3:20, 7:00, 9:14) all show the same static still image,
+   frames (0:30, 3:20, 7:00, 9:10) all show the same static still image,
    consistent with an audio-over-still upload; see Evidence limits
    https://www.youtube.com/watch?v=NqwHIuDyY7s
 3. Oz Pearlman on the Elvis Duran Show, "Oz Pearlman Guesses the Exact Card
@@ -62,12 +62,12 @@ completely different felt experience.
 [TRANSCRIPT, source 1] "spread the cards... remember one... burn the image of
 that card in your mind", "in your mind not out loud repeat that card to
 yourself over and over". [VISUAL, source 1 t=1:43] the "repeat that card"
-instruction appears in the on-screen caption during a live close-up.
+instruction appears in the on-screen caption of a close-up frame.
 [TRANSCRIPT, source 2] cards checked in new-deck order, shuffled by the
 participant under the table, "at no point... am I going to touch those cards".
 [TRANSCRIPT, source 3] "I took a pack of cards out... put them down and I'm
-never going to touch them again". [VISUAL, source 3 t=2:22] real footage with
-a live participant reaction ("HE'S A WITCH" caption). Fairness theater makes
+never going to touch them again". [VISUAL, source 3 t=2:22] a frame of a live
+participant mid-reaction ("HE'S A WITCH" caption). Fairness theater makes
 the method's hiding place feel empty.
 
 ### Story carries the procedure (time misdirection)
@@ -88,8 +88,8 @@ in the spectator's hands rather than announced by the performer.
 
 ### Wobble, then kicker
 [TRANSCRIPT, source 1] staged apparent failure ("there is no king of
-diamonds"), then the impossible souvenir kicker. [VISUAL, source 1 t=2:28] the
-kicker lands as a visible spectator reaction ("oh for God sake" caption).
+diamonds"), then the impossible souvenir kicker. [VISUAL, source 1 t=2:28] a frame of the
+spectator's reaction at the kicker moment ("oh for God sake" caption).
 [TRANSCRIPT, source 4] Max Maven openly teases method knowledge ("the
 psychological force was three... if I'd gone for one he would have been
 toast... do you want to stay with two?") - daring the spectator to change
@@ -103,9 +103,11 @@ kicker moment.
   spread so the target arrives under the spectator's finger; "aim the deck at
   the place where it's easiest for them to touch your card". A force is
   choreography + timing; the spectator feels a free touch. [VISUAL, source 5
-  t=1:00 and t=2:20] hands spread the deck while the captions give the timing
-  instruction ("spread the cards and try to time it when they want") and "you
-  can touch any card" - the choreography is shown, not just described.
+  t=1:00 and t=2:20] both sampled frames show the same title-overlay image of
+  a spread deck ("The Classic Force"); only the captions and playhead differ,
+  carrying the timing instruction ("spread the cards and try to time it when
+  they want") and "you can touch any card". No spreading movement, break
+  handling, or timing is visible in the sampled frames.
 - [TAUGHT, source 6] Equivoque (magician's choice): every possible answer has
   a prepared interpretation, so any choice advances the same outcome ("the
   trick is that we have a backup sentence for anything that they say"). Rules:
@@ -117,8 +119,9 @@ kicker moment.
   "Psychological Card Forces".
 - [TAUGHT, source 7] Eye-line/gaze of the performer steers audience attention;
   the audience's own wrong prediction is what creates the impact. [VISUAL,
-  source 7 t=1:02] taught to camera with a coin-transfer example ("all my
-  attention went here").
+  source 7 t=1:02] presenter to camera; the caption at that moment references
+  a coin-transfer example ("all my attention went here"). A single frame shows
+  no motion.
 
 ## Integrity rules for our adaptation (from main-agent guardrails)
 
@@ -177,14 +180,14 @@ contain; sparse samples are not universal patterns. Per-source sampling log:
 
 | Source | Sampled timestamps | What the frames showed |
 | --- | --- | --- |
-| 1 | 1:43, 2:28 | live close-up dealing with "repeat that card" caption; spectator kicker reaction ("oh for God sake") - real footage |
-| 2 | 0:30, 3:20, 7:00, 9:14 | the same static still image at all four sampled timestamps, consistent with an audio-over-still upload; other segments were not sampled, so this is not proof the entire video is static - real footage not confirmed |
-| 3 | 2:22 | live participant reaction moment ("HE'S A WITCH" caption) - real footage |
-| 4 | 4:16 | kicker moment, spectator holding the card - real footage |
-| 5 | 1:00, 2:20 | hands spreading the deck with break; captions "spread the cards and try to time it when they want" and "you can touch any card" - real footage, force choreography visible |
-| 6 | 2:31, 5:03 | demonstration seated with a spectator; teaching segment to camera - real footage |
-| 7 | 1:02, 3:20 | to-camera explanation with a coin-transfer example; "MISDIRECTION" title frame at chapter "The psychology of attention" - real footage |
+| 1 | 1:43, 2:28 | two different scenes 45s apart: close-up frame with "repeat that card" caption; spectator reaction frame ("oh for God sake") |
+| 2 | 0:30, 3:20, 7:00, 9:10 | the same static still image at all four sampled timestamps, consistent with an audio-over-still upload; other segments were not sampled, so this is not proof the entire video is static - real footage not confirmed |
+| 3 | 2:22 | participant mid-reaction frame ("HE'S A WITCH" caption); single sample, no motion observable |
+| 4 | 4:16 | spectator holding the card at the kicker moment; single sample, no motion observable |
+| 5 | 1:00, 2:20 | the identical title-overlay deck-spread image ("The Classic Force") at both timestamps; only captions and playhead differ. No spreading movement, break handling, or force choreography visible; moving footage not confirmed |
+| 6 | 2:31, 5:03 | two different setups across samples: demonstration seated with a spectator (2:31); presenter teaching to camera (5:03) |
+| 7 | 1:02, 3:20 | two different scenes: presenter to camera, caption referencing a coin-transfer example; "MISDIRECTION" title frame at chapter "The psychology of attention" |
 
-Unobserved everywhere: audio (no capture path in this environment), unsampled
-segments of every source, and any performer movement outside the sampled
-timestamps.
+Unobserved everywhere: audio (no capture path in this environment),
+continuous motion and delivery timing (still frames at sparse timestamps
+cannot show movement or pacing), and unsampled segments of every source.
