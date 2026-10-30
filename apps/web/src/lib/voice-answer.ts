@@ -117,6 +117,13 @@ interface GpuAdapterInfoLike {
  */
 export async function qualifyWebGPU(): Promise<boolean> {
   if (typeof navigator === "undefined" || !("gpu" in navigator)) return false;
+  // Requesting an adapter can initialize an expensive software graphics
+  // stack before it ever answers. On small devices that allocation alone
+  // is a memory hazard (measured: repeated probing on a 2 GB device
+  // exhausted the browser). Where deviceMemory says the device is small,
+  // take the WASM path without touching WebGPU at all.
+  const memoryGB = (navigator as unknown as { deviceMemory?: number }).deviceMemory;
+  if (typeof memoryGB === "number" && memoryGB <= 4) return false;
   try {
     const gpu = (navigator as unknown as { gpu?: { requestAdapter(): Promise<{ info?: GpuAdapterInfoLike } | null> } }).gpu;
     const adapter = await gpu?.requestAdapter();

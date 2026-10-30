@@ -145,3 +145,25 @@ describe("qualifyWebGPU", () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe("qualifyWebGPU memory gate", () => {
+  it("refuses on small-memory devices without probing the adapter", async () => {
+    let probed = false;
+    vi.stubGlobal("navigator", {
+      deviceMemory: 2,
+      gpu: { requestAdapter: async () => { probed = true; return { info: { isFallbackAdapter: false } }; } }
+    });
+    await expect(qualifyWebGPU()).resolves.toBe(false);
+    expect(probed).toBe(false);
+    vi.unstubAllGlobals();
+  });
+
+  it("still qualifies the adapter on larger devices", async () => {
+    vi.stubGlobal("navigator", {
+      deviceMemory: 8,
+      gpu: { requestAdapter: async () => ({ info: { isFallbackAdapter: false } }) }
+    });
+    await expect(qualifyWebGPU()).resolves.toBe(true);
+    vi.unstubAllGlobals();
+  });
+});
