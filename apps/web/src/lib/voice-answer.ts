@@ -102,6 +102,31 @@ export interface VoiceAnswerModels {
   transcribe: (pcm: Float32Array) => Promise<string>;
 }
 
+interface GpuAdapterInfoLike {
+  isFallbackAdapter?: boolean;
+}
+
+/**
+ * WebGPU is worth its speed only when a real GPU backs it. A software
+ * (fallback) adapter renders Whisper through CPU emulation with a much
+ * higher memory footprint than the plain WASM build - in testing, three
+ * sensor-mode page loads on a software adapter exhausted the browser. When
+ * the adapter cannot prove it is hardware (no adapter, no info API, or an
+ * explicit fallback adapter), take the WASM/q8 path: slower per clip, far
+ * smaller and steadier in memory.
+ */
+export async function qualifyWebGPU(): Promise<boolean> {
+  if (typeof navigator === "undefined" || !("gpu" in navigator)) return false;
+  try {
+    const gpu = (navigator as unknown as { gpu?: { requestAdapter(): Promise<{ info?: GpuAdapterInfoLike } | null> } }).gpu;
+    const adapter = await gpu?.requestAdapter();
+    if (!adapter || !adapter.info) return false;
+    return adapter.info.isFallbackAdapter !== true;
+  } catch {
+    return false;
+  }
+}
+
 /** Load the embedding model and Whisper. Mirrors the PR #21/#22 loading paths. */
 export async function loadVoiceAnswerModels(base: string): Promise<VoiceAnswerModels> {
   const ort = (await import("onnxruntime-web")) as unknown as OrtLike & { env: { wasm: { wasmPaths: string } } };
@@ -116,9 +141,10 @@ export async function loadVoiceAnswerModels(base: string): Promise<VoiceAnswerMo
     return o.embs.data as Float32Array;
   };
   const { pipeline } = await import("@huggingface/transformers");
+  const useWebGPU = await qualifyWebGPU();
   const asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
-    device: "webgpu" in navigator ? "webgpu" : "wasm",
-    dtype: "webgpu" in navigator ? "fp16" : "q8"
+    device: useWebGPU ? "webgpu" : "wasm",
+    dtype: useWebGPU ? "fp16" : "q8"
   } as Record<string, unknown>)) as unknown as (audio: Float32Array, opts?: Record<string, unknown>) => Promise<{ text?: string } | Array<{ text?: string }>>;
   const transcribe = async (pcm: Float32Array) => {
     const o = await asr(pcm, { chunk_length_s: 30, stride_length_s: 5 } as Record<string, unknown>);
