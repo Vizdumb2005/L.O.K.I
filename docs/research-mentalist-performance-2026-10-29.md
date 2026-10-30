@@ -23,7 +23,7 @@ Performances:
 1. Derren Brown, "Stephen Fry Amazed By Card Trick - Trick of the Mind" (3 min)
    https://www.youtube.com/watch?v=QI5-NDiY7IM
 2. Derren Brown, "Card Magic And Mind Trickery" (12 min) - the four sampled
-   frames (0:30, 3:20, 7:00, 9:14) all show the same static still image,
+   frames (0:30, 3:20, 7:00, 9:10) all show the same static still image,
    consistent with an audio-over-still upload; see Evidence limits
    https://www.youtube.com/watch?v=NqwHIuDyY7s
 3. Oz Pearlman on the Elvis Duran Show, "Oz Pearlman Guesses the Exact Card
@@ -178,7 +178,7 @@ contain; sparse samples are not universal patterns. Per-source sampling log:
 | Source | Sampled timestamps | What the frames showed |
 | --- | --- | --- |
 | 1 | 1:43, 2:28 | live close-up dealing with "repeat that card" caption; spectator kicker reaction ("oh for God sake") - real footage |
-| 2 | 0:30, 3:20, 7:00, 9:14 | the same static still image at all four sampled timestamps, consistent with an audio-over-still upload; other segments were not sampled, so this is not proof the entire video is static - real footage not confirmed |
+| 2 | 0:30, 3:20, 7:00, 9:10 | the same static still image at all four sampled timestamps, consistent with an audio-over-still upload; other segments were not sampled, so this is not proof the entire video is static - real footage not confirmed |
 | 3 | 2:22 | live participant reaction moment ("HE'S A WITCH" caption) - real footage |
 | 4 | 4:16 | kicker moment, spectator holding the card - real footage |
 | 5 | 1:00, 2:20 | hands spreading the deck with break; captions "spread the cards and try to time it when they want" and "you can touch any card" - real footage, force choreography visible |
