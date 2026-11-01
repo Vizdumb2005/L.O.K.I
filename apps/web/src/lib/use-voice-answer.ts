@@ -51,6 +51,7 @@ const ANSWER_SECONDS = 3;
 
 export function useVoiceAnswer({ active, session, probeActive, probeKey, options, onAnswer, onEndSensorMode }: VoiceDeps) {
   const [state, setState] = useState<VoiceState>("loading");
+  const [loadStatus, setLoadStatus] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const modelsRef = useRef<Promise<VoiceAnswerModels> | null>(null);
@@ -64,19 +65,34 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
   const onEndSensorModeRef = useRef(onEndSensorMode);
   onEndSensorModeRef.current = onEndSensorMode;
 
-  // Load the on-device models once per session entry.
+  // Load the on-device models once per session entry. Safe under React StrictMode
+  // double-invocation: reuses the in-flight promise and attaches fresh active handlers.
   useEffect(() => {
-    if (!active || modelsRef.current) return;
-    const p = loadVoiceAnswerModels(import.meta.env.BASE_URL);
-    modelsRef.current = p;
-    p.then(() => {
-      setState((s) => (s === "loading" ? "enroll" : s));
-    }).catch(() => {
-      setState("unavailable");
-      onEndSensorModeRef.current(
-        "The on-device voice models could not load here, and the sensor-enabled performance requires voice answering - so it has ended, and every sensor was released. The click demo below runs without sensors."
-      );
-    });
+    if (!active) return;
+    let alive = true;
+    if (!modelsRef.current) {
+      modelsRef.current = loadVoiceAnswerModels(import.meta.env.BASE_URL, (prog) => {
+        setLoadStatus(prog.label);
+      });
+    }
+    modelsRef.current
+      .then(() => {
+        if (!alive) return;
+        setLoadStatus(null);
+        setState((s) => (s === "loading" ? "enroll" : s));
+      })
+      .catch(() => {
+        if (!alive) return;
+        modelsRef.current = null;
+        setLoadStatus(null);
+        setState("unavailable");
+        onEndSensorModeRef.current(
+          "The on-device voice models could not load here, and the sensor-enabled performance requires voice answering - so it has ended, and every sensor was released. The click demo below runs without sensors."
+        );
+      });
+    return () => {
+      alive = false;
+    };
   }, [active]);
 
   const enroll = useCallback(async () => {
@@ -198,5 +214,5 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
     };
   }, [probeActive, probeKey, state, session]);
 
-  return { state, listening, feedback, enrolled: state === "ready", enroll, useManual };
+  return { state, loadStatus, listening, feedback, enrolled: state === "ready", enroll, useManual };
 }

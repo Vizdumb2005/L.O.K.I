@@ -1,15 +1,46 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const root = dirname(fileURLToPath(import.meta.url));
 
+function servePublicOrt() {
+  return {
+    name: "serve-public-ort",
+    configureServer(server: {
+      middlewares: {
+        use: (
+          fn: (
+            req: { url?: string },
+            res: { setHeader: (k: string, v: string) => void; end: (b: Buffer) => void },
+            next: () => void
+          ) => void
+        ) => void;
+      };
+    }) {
+      server.middlewares.use((req, res, next) => {
+        const clean = (req.url ?? "").split("?")[0] ?? "";
+        const match = clean.match(/\/ort\/(ort-wasm[^/]+\.(?:mjs|wasm))$/);
+        if (!match) return next();
+        const file = resolve(root, "public/ort", match[1]!);
+        if (!existsSync(file)) return next();
+        res.setHeader(
+          "Content-Type",
+          file.endsWith(".wasm") ? "application/wasm" : "application/javascript"
+        );
+        res.end(readFileSync(file));
+      });
+    }
+  };
+}
+
 export default defineConfig({
   root,
   // GitHub Pages serves from /<repo>/; the deploy workflow sets LOKI_BASE.
   base: process.env.LOKI_BASE ?? "/",
-  plugins: [react()],
+  plugins: [servePublicOrt(), react()],
   server: {
     port: 4173,
     strictPort: true,

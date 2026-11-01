@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { qualifyWebGPU } from "../lib/voice-answer.js";
 
 /**
  * On-device speech-to-text timing check for the lab.
@@ -74,24 +75,53 @@ export function VoiceBench() {
       setPhase({ kind: "downloading", pct: 0 });
       const { pipeline, env } = await import("@huggingface/transformers");
       env.allowLocalModels = false;
+      const useWebGPU = await qualifyWebGPU();
+      let activeBackend = useWebGPU ? "WebGPU" : "WASM";
       let downloadMs = -1;
-      const transcriber = await pipeline(
-        "automatic-speech-recognition",
-        "onnx-community/whisper-tiny.en",
-        {
-          device: "webgpu" in navigator ? "webgpu" : "wasm",
-          dtype: "webgpu" in navigator ? "fp16" : "q8",
-          progress_callback: (p: { status?: string; progress?: number }) => {
-            if (!alive()) return;
-            if (p.status === "progress" && typeof p.progress === "number") {
-              setPhase({ kind: "downloading", pct: Math.round(p.progress) });
-            } else if (p.status === "ready") {
-              downloadMs = performance.now() - t0;
-              setPhase({ kind: "loading" });
-            }
-          }
-        } as Record<string, unknown>
-      );
+      const progressCallback = (p: { status?: string; progress?: number }) => {
+        if (!alive()) return;
+        if ((p.status === "progress" || p.status === "progress_total") && typeof p.progress === "number") {
+          setPhase({ kind: "downloading", pct: Math.round(p.progress) });
+        } else if (p.status === "ready") {
+          downloadMs = performance.now() - t0;
+          setPhase({ kind: "loading" });
+        }
+      };
+      let transcriber: (audio: Float32Array) => Promise<unknown>;
+      if (useWebGPU) {
+        try {
+          transcriber = (await pipeline(
+            "automatic-speech-recognition",
+            "onnx-community/whisper-tiny.en",
+            {
+              device: "webgpu",
+              dtype: "q8",
+              progress_callback: progressCallback
+            } as Record<string, unknown>
+          )) as unknown as (audio: Float32Array) => Promise<unknown>;
+        } catch {
+          activeBackend = "WASM";
+          transcriber = (await pipeline(
+            "automatic-speech-recognition",
+            "onnx-community/whisper-tiny.en",
+            {
+              device: "wasm",
+              dtype: "q8",
+              progress_callback: progressCallback
+            } as Record<string, unknown>
+          )) as unknown as (audio: Float32Array) => Promise<unknown>;
+        }
+      } else {
+        transcriber = (await pipeline(
+          "automatic-speech-recognition",
+          "onnx-community/whisper-tiny.en",
+          {
+            device: "wasm",
+            dtype: "q8",
+            progress_callback: progressCallback
+          } as Record<string, unknown>
+        )) as unknown as (audio: Float32Array) => Promise<unknown>;
+      }
       if (!alive()) return;
       const loadMs = performance.now() - t0;
       setPhase({ kind: "transcribing" });
@@ -113,7 +143,7 @@ export function VoiceBench() {
       setPhase({
         kind: "done",
         result: {
-          backend: "webgpu" in navigator ? "WebGPU" : "WASM",
+          backend: activeBackend,
           downloadMs: downloadMs >= 0 ? downloadMs : loadMs,
           loadMs,
           clipSeconds: clip.seconds,

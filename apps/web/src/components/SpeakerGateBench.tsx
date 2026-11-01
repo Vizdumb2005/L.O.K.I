@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { qualifyWebGPU } from "../lib/voice-answer.js";
 
 /**
  * Speaker-gate feasibility benchmark (synthetic, bounded).
@@ -202,7 +203,9 @@ export function SpeakerGateBench() {
       ];
 
       const conditions = only ? allConditions.filter((c) => only.includes(c.key)) : allConditions;
-      const { pipeline } = await import("@huggingface/transformers");
+      const { pipeline, env } = await import("@huggingface/transformers");
+      env.allowLocalModels = false;
+      const useWebGPU = await qualifyWebGPU();
       let transcriber: ((audio: Float32Array, opts?: Record<string, unknown>) => Promise<{ text?: string } | Array<{ text?: string }>>) | null = null;
 
       const results: ConditionResult[] = [];
@@ -259,7 +262,15 @@ export function SpeakerGateBench() {
         } else if (cond.ref) {
           if (!transcriber) {
             say("Downloading the Whisper model (one time, ~39 MB)");
-            transcriber = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", { device: "webgpu" in navigator ? "webgpu" : "wasm", dtype: "webgpu" in navigator ? "fp16" : "q8" } as Record<string, unknown>)) as unknown as typeof transcriber;
+            if (useWebGPU) {
+              try {
+                transcriber = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", { device: "webgpu", dtype: "q8" } as Record<string, unknown>)) as unknown as typeof transcriber;
+              } catch {
+                transcriber = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", { device: "wasm", dtype: "q8" } as Record<string, unknown>)) as unknown as typeof transcriber;
+              }
+            } else {
+              transcriber = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", { device: "wasm", dtype: "q8" } as Record<string, unknown>)) as unknown as typeof transcriber;
+            }
           }
           const text = async (audio: Float32Array) => {
             // Long-form: 30 s chunks with 5 s stride; un-chunked calls only

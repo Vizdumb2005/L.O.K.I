@@ -191,8 +191,26 @@ export function Performance({
     };
   }, [view?.line, view?.phase, llmEnabled]);
 
+  const endSensorMode = useCallback(
+    (reason: string) => {
+      onStopSensors?.(reason);
+    },
+    [onStopSensors]
+  );
+  const voice = useVoiceAnswer({
+    active: sensorMode,
+    session: sensorSession ?? null,
+    probeActive: sensorMode && view?.phase === "probe" && Boolean(view?.options),
+    probeKey: `${effect.id}:${view?.phase ?? ""}:${view?.progress.answered ?? 0}`,
+    options: view?.options,
+    onAnswer: answer,
+    onEndSensorMode: endSensorMode
+  });
+  const voiceOverlay =
+    sensorMode && (voice.state === "loading" || voice.state === "enroll" || voice.state === "recording");
+
   useEffect(() => {
-    if (!view) return;
+    if (!view || voiceOverlay) return;
     // Focus follows the moment: first answer in a question, the Skip/Continue control during pauses
     // and payoffs, "Begin again" at the end. Keyboard and screen-reader users never get stranded
     // on a removed element.
@@ -201,10 +219,10 @@ export function Performance({
       (target ?? primaryRef.current)?.focus({ preventScroll: true });
     }, 140);
     return () => window.clearTimeout(timer);
-  }, [view?.phase, view?.progress.answered, cuePending]);
+  }, [view?.phase, view?.progress.answered, cuePending, voiceOverlay]);
 
   useEffect(() => {
-    if (!view) return;
+    if (!view || voiceOverlay) return;
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       // Text-entry controls keep their keys. Buttons keep Space/Enter (native activation), but
@@ -245,23 +263,8 @@ export function Performance({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [view, answer, advance, restart, onExit]);
+  }, [view, voiceOverlay, answer, advance, restart, onExit]);
 
-  const endSensorMode = useCallback(
-    (reason: string) => {
-      onStopSensors?.(reason);
-    },
-    [onStopSensors]
-  );
-  const voice = useVoiceAnswer({
-    active: sensorMode,
-    session: sensorSession ?? null,
-    probeActive: sensorMode && view?.phase === "probe" && Boolean(view?.options),
-    probeKey: `${view?.phase ?? ""}:${view?.progress.answered ?? 0}`,
-    options: view?.options,
-    onAnswer: answer,
-    onEndSensorMode: endSensorMode
-  });
   // Losing REQUIRED capture (camera unplugged, OS revoked the mic) pauses the
   // sensor-enabled performance - it never continues unchanged without a
   // sensor it declared mandatory. Intentional mic release is exempt.
@@ -300,8 +303,6 @@ export function Performance({
 
   // Voice setup gates the sensor-enabled performance: enrollment (or an
   // explicit tap-answers choice) happens before the show content is live.
-  const voiceOverlay =
-    sensorMode && (voice.state === "loading" || voice.state === "enroll" || voice.state === "recording");
   if (voiceOverlay) {
     return (
       <main className="performance" id="main">
@@ -323,6 +324,11 @@ export function Performance({
               <>
                 <h2 id="voice-enroll-heading">Loading the on-device voice models</h2>
                 <p className="line">One moment. The models download into this tab and never leave it.</p>
+                {voice.loadStatus && (
+                  <p className="prompt-note" role="status">
+                    {voice.loadStatus}
+                  </p>
+                )}
               </>
             ) : voice.state === "recording" ? (
               <>

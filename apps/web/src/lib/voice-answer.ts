@@ -134,11 +134,68 @@ export async function qualifyWebGPU(): Promise<boolean> {
   }
 }
 
+export interface VoiceModelProgress {
+  label: string;
+  pct?: number;
+}
+
 /** Load the embedding model and Whisper. Mirrors the PR #21/#22 loading paths. */
-export async function loadVoiceAnswerModels(base: string): Promise<VoiceAnswerModels> {
+export async function loadVoiceAnswerModels(
+  base: string,
+  onProgress?: (progress: VoiceModelProgress) => void
+): Promise<VoiceAnswerModels> {
+  onProgress?.({ label: "Loading on-device speech recognition model…" });
+  const { pipeline, env } = await import("@huggingface/transformers");
+  env.allowLocalModels = false;
+  const useWebGPU = await qualifyWebGPU();
+  const progressCallback = (p: { status?: string; progress?: number }) => {
+    if ((p.status === "progress" || p.status === "progress_total") && typeof p.progress === "number") {
+      onProgress?.({
+        label: `Downloading on-device voice model (${Math.round(p.progress)}%)…`,
+        pct: Math.round(p.progress)
+      });
+    } else if (p.status === "ready") {
+      onProgress?.({ label: "Starting on-device voice session…", pct: 100 });
+    }
+  };
+  type AsrPipeline = (
+    audio: Float32Array,
+    opts?: Record<string, unknown>
+  ) => Promise<{ text?: string } | Array<{ text?: string }>>;
+  let asr: AsrPipeline;
+  if (useWebGPU) {
+    try {
+      // Use q8 quantization on both WebGPU and WASM: whisper-tiny.en's fp16
+      // merged decoder ONNX subgraph fails ONNX Runtime 1.31 graph validation
+      // (outer-scope logits returned directly without an Identity node).
+      asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
+        device: "webgpu",
+        dtype: "q8",
+        progress_callback: progressCallback
+      } as Record<string, unknown>)) as unknown as AsrPipeline;
+    } catch {
+      asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
+        device: "wasm",
+        dtype: "q8",
+        progress_callback: progressCallback
+      } as Record<string, unknown>)) as unknown as AsrPipeline;
+    }
+  } else {
+    asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
+      device: "wasm",
+      dtype: "q8",
+      progress_callback: progressCallback
+    } as Record<string, unknown>)) as unknown as AsrPipeline;
+  }
+
+  onProgress?.({ label: "Loading on-device speaker model…", pct: 100 });
   const ort = (await import("onnxruntime-web")) as unknown as OrtLike & { env: { wasm: { wasmPaths: string } } };
   ort.env.wasm.wasmPaths = `${base}ort/`;
-  const embBytes = new Uint8Array(await (await fetch(`${base}speech-models/wespeaker-resnet34-lm.onnx`)).arrayBuffer());
+  const embRes = await fetch(`${base}speech-models/wespeaker-resnet34-lm.onnx`);
+  if (!embRes.ok) {
+    throw new Error(`Speaker model fetch failed (${embRes.status}).`);
+  }
+  const embBytes = new Uint8Array(await embRes.arrayBuffer());
   const emb = await ort.InferenceSession.create(embBytes, { executionProviders: ["wasm"] });
   const dj = await import("diarization-js");
   const embedPcm = async (pcm: Float32Array) => {
@@ -147,12 +204,6 @@ export async function loadVoiceAnswerModels(base: string): Promise<VoiceAnswerMo
     const o = await emb.run({ feats: t });
     return o.embs.data as Float32Array;
   };
-  const { pipeline } = await import("@huggingface/transformers");
-  const useWebGPU = await qualifyWebGPU();
-  const asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
-    device: useWebGPU ? "webgpu" : "wasm",
-    dtype: useWebGPU ? "fp16" : "q8"
-  } as Record<string, unknown>)) as unknown as (audio: Float32Array, opts?: Record<string, unknown>) => Promise<{ text?: string } | Array<{ text?: string }>>;
   const transcribe = async (pcm: Float32Array) => {
     const o = await asr(pcm, { chunk_length_s: 30, stride_length_s: 5 } as Record<string, unknown>);
     return (Array.isArray(o) ? o.map((c) => c.text ?? "").join(" ") : (o.text ?? "")).trim();
