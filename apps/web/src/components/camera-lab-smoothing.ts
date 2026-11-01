@@ -48,6 +48,49 @@ export class PointSmoother {
   }
 }
 
+/**
+ * Same EMA + hold treatment as PointSmoother, applied to a set of points
+ * tracked by position in the array (e.g. face landmarks by index). Raw
+ * landmarks jitter every detection and vanish on dropped frames; drawing
+ * this smoothed set on every frame keeps the dots steady on the skin
+ * instead of strobing at the detection rate. Missing entries stay missing.
+ */
+export class PointSetSmoother {
+  private values: (Point | null)[] = [];
+  private lastSeen = Number.NEGATIVE_INFINITY;
+
+  constructor(
+    private readonly riseMs = 120,
+    private readonly holdMs = 500
+  ) {}
+
+  update(samples: readonly (Point | null | undefined)[] | null, now: number): (Point | null)[] | null {
+    if (samples) {
+      const fresh = this.values.length === 0 || now - this.lastSeen > this.holdMs * 4;
+      const dt = Math.max(1, now - this.lastSeen);
+      const alpha = 1 - Math.exp(-dt / this.riseMs);
+      this.values = samples.map((sample, index) => {
+        if (!sample) return null;
+        const previous = fresh ? null : this.values[index];
+        if (!previous) return { ...sample };
+        return {
+          x: previous.x + (sample.x - previous.x) * alpha,
+          y: previous.y + (sample.y - previous.y) * alpha
+        };
+      });
+      this.lastSeen = now;
+      return this.values;
+    }
+    if (this.values.length > 0 && now - this.lastSeen <= this.holdMs) return this.values;
+    return null;
+  }
+
+  reset(): void {
+    this.values = [];
+    this.lastSeen = Number.NEGATIVE_INFINITY;
+  }
+}
+
 /** Scalar exponential moving average (brightness and similar readouts). */
 export class ScalarSmoother {
   private value: number | null = null;

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DirectionLabel, PointSmoother, ScalarSmoother, StableLatch } from "./camera-lab-smoothing.js";
+import {
+  DirectionLabel,
+  PointSetSmoother,
+  PointSmoother,
+  ScalarSmoother,
+  StableLatch
+} from "./camera-lab-smoothing.js";
 
 describe("PointSmoother", () => {
   it("passes the first sample through unchanged", () => {
@@ -36,6 +42,48 @@ describe("PointSmoother", () => {
     const reacquired = smoother.update({ x: 10, y: 0 }, 300);
     expect(reacquired).not.toBeNull();
     expect(reacquired!.x).toBeLessThan(10);
+  });
+});
+
+describe("PointSetSmoother", () => {
+  it("passes the first set of points through unchanged, keeping gaps", () => {
+    const smoother = new PointSetSmoother();
+    expect(smoother.update([{ x: 0.1, y: 0.2 }, null, { x: 0.5, y: 0.6 }], 0)).toEqual([
+      { x: 0.1, y: 0.2 },
+      null,
+      { x: 0.5, y: 0.6 }
+    ]);
+  });
+
+  it("dampens per-frame landmark jitter instead of following it onto the skin", () => {
+    const smoother = new PointSetSmoother(120, 500);
+    smoother.update([{ x: 0.5, y: 0.5 }], 0);
+    // Raw detections alternate around the true point every ~70ms, as
+    // MediaPipe does on a still face; the drawn point must barely move.
+    let drawn: { x: number; y: number } | null = null;
+    for (let i = 1; i <= 12; i++) {
+      const jitter = i % 2 === 0 ? 0.03 : -0.03;
+      drawn = smoother.update([{ x: 0.5 + jitter, y: 0.5 - jitter }], i * 70)![0]!;
+    }
+    expect(drawn).not.toBeNull();
+    expect(Math.abs(drawn!.x - 0.5)).toBeLessThan(0.015);
+    expect(Math.abs(drawn!.y - 0.5)).toBeLessThan(0.015);
+  });
+
+  it("holds the last points through a short detection dropout, then expires", () => {
+    const smoother = new PointSetSmoother(120, 500);
+    smoother.update([{ x: 0.3, y: 0.4 }], 0);
+    expect(smoother.update(null, 300)).toEqual([{ x: 0.3, y: 0.4 }]);
+    expect(smoother.update(null, 600)).toBeNull();
+  });
+
+  it("re-acquires without jumping after a dropout inside the hold window", () => {
+    const smoother = new PointSetSmoother(120, 500);
+    smoother.update([{ x: 0, y: 0 }], 0);
+    smoother.update(null, 200);
+    const reacquired = smoother.update([{ x: 0.1, y: 0 }], 300);
+    expect(reacquired![0]!.x).toBeGreaterThan(0);
+    expect(reacquired![0]!.x).toBeLessThan(0.1);
   });
 });
 

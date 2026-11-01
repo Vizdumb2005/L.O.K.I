@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DirectionLabel, PointSmoother, ScalarSmoother, StableLatch } from "./camera-lab-smoothing.js";
+import {
+  DirectionLabel,
+  PointSetSmoother,
+  PointSmoother,
+  ScalarSmoother,
+  StableLatch,
+  type Point
+} from "./camera-lab-smoothing.js";
 import { MicLab } from "./MicLab.js";
 import { VoiceBench } from "./VoiceBench.js";
 import { SpeakerGateBench } from "./SpeakerGateBench.js";
@@ -121,12 +128,25 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
   }, [calibration.state]);
   const stabilizersRef = useRef({
     marker: new PointSmoother(120, 500),
+    landmarks: new PointSetSmoother(120, 500),
     brightness: new ScalarSmoother(250),
     face: new StableLatch(2, 12),
     direction: new DirectionLabel(0.06),
     lastTextUpdate: 0,
     lastBrightnessAt: 0
   });
+
+  // Latest smoothed overlay, redrawn on every animation frame. Detection
+  // only runs every ~70ms; drawing the overlay only on those frames (while
+  // the base video redraws at full frame rate) strobed the landmark dots
+  // and iris marker on the face. Painting this held state each frame keeps
+  // the skin steady between detections.
+  const overlayRef = useRef<{
+    landmarks: (Point | null)[] | null;
+    marker: Point | null;
+    faceStable: boolean;
+    detectionRan: boolean;
+  }>({ landmarks: null, marker: null, faceStable: false, detectionRan: false });
 
   const stop = useCallback(() => {
     calibration.stop();
@@ -148,6 +168,8 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
     setModelSource(null);
     const stabilizers = stabilizersRef.current;
     stabilizers.marker.reset();
+    stabilizers.landmarks.reset();
+    overlayRef.current = { landmarks: null, marker: null, faceStable: false, detectionRan: false };
     stabilizers.brightness.reset();
     stabilizers.face.reset();
     stabilizers.direction.reset();
@@ -301,31 +323,18 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
           let eyeText = faceStable ? "no iris" : "no face";
           let luma: number | null = null;
           if (faceRaw && landmarks) {
-            drawLandmarks(ctx, landmarks, width, height);
+            overlayRef.current.landmarks = stabilizers.landmarks.update(
+              LANDMARK_INDICES.map((index) => landmarks[index] ?? null),
+              now
+            );
             const iris = irisOffset(landmarks);
             const marker = stabilizers.marker.update(
               iris ? { x: clamp01(0.5 + iris.x * 1.1) * width, y: clamp01(0.5 + iris.y * 1.9) * height } : null,
               now
             );
             if (iris) eyeText = stabilizers.direction.update(iris);
-            if (marker) {
-              ctx.strokeStyle = "rgba(216, 184, 119, 0.95)";
-              ctx.lineWidth = 1.5;
-              ctx.beginPath();
-              ctx.arc(marker.x, marker.y, 15, 0, Math.PI * 2);
-              ctx.stroke();
-              ctx.beginPath();
-              ctx.moveTo(marker.x - 23, marker.y);
-              ctx.lineTo(marker.x + 23, marker.y);
-              ctx.moveTo(marker.x, marker.y - 23);
-              ctx.lineTo(marker.x, marker.y + 23);
-              ctx.stroke();
-              ctx.fillStyle = "rgba(7, 17, 15, 0.75)";
-              ctx.fillRect(12, height - 34, 236, 22);
-              ctx.fillStyle = "#d8b877";
-              ctx.font = "11px 'Courier New', monospace";
-              ctx.fillText("RAW IRIS SIGNAL · UNCALIBRATED", 20, height - 19);
-            }
+            overlayRef.current.marker = marker;
+
             luma = stabilizers.brightness.update(
               brightnessOf(ctx, width, height),
               now,
@@ -334,18 +343,12 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
             stabilizers.lastBrightnessAt = now;
             if (iris) calibration.collect(iris.x, iris.y, luma, now);
           } else {
-            stabilizers.marker.update(null, now);
+            overlayRef.current.landmarks = stabilizers.landmarks.update(null, now);
+            overlayRef.current.marker = stabilizers.marker.update(null, now);
           }
-          // The overlay appears only for a sustained loss, not single-frame misses.
-          if (!faceStable) {
-            ctx.fillStyle = "rgba(7, 17, 15, 0.72)";
-            ctx.fillRect(width / 2 - 120, 16, 240, 34);
-            ctx.fillStyle = "#e8dfcc";
-            ctx.font = "13px 'Courier New', monospace";
-            ctx.textAlign = "center";
-            ctx.fillText("NO FACE IN FRAME", width / 2, 38);
-            ctx.textAlign = "left";
-          }
+          overlayRef.current.faceStable = faceStable;
+          overlayRef.current.detectionRan = true;
+
           // Text readouts are throttled: steady values, not a per-frame ticker.
           if (now - stabilizers.lastTextUpdate >= 500) {
             stabilizers.lastTextUpdate = now;
@@ -358,6 +361,41 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
               fps: Math.round(fps)
             }));
           }
+        }
+
+        // Paint the held, smoothed overlay every frame. Painting it only on
+        // detection frames strobed the dots/marker on the skin: the base
+        // video redraws at full frame rate and erases them in between.
+        const overlay = overlayRef.current;
+        if (overlay.landmarks) drawLandmarks(ctx, overlay.landmarks, width, height);
+        if (overlay.marker) {
+          const marker = overlay.marker;
+          ctx.strokeStyle = "rgba(216, 184, 119, 0.95)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(marker.x, marker.y, 15, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(marker.x - 23, marker.y);
+          ctx.lineTo(marker.x + 23, marker.y);
+          ctx.moveTo(marker.x, marker.y - 23);
+          ctx.lineTo(marker.x, marker.y + 23);
+          ctx.stroke();
+          ctx.fillStyle = "rgba(7, 17, 15, 0.75)";
+          ctx.fillRect(12, height - 34, 236, 22);
+          ctx.fillStyle = "#d8b877";
+          ctx.font = "11px 'Courier New', monospace";
+          ctx.fillText("RAW IRIS SIGNAL · UNCALIBRATED", 20, height - 19);
+        }
+        // The banner appears only for a sustained loss, not single-frame misses.
+        if (overlay.detectionRan && !overlay.faceStable) {
+          ctx.fillStyle = "rgba(7, 17, 15, 0.72)";
+          ctx.fillRect(width / 2 - 120, 16, 240, 34);
+          ctx.fillStyle = "#e8dfcc";
+          ctx.font = "13px 'Courier New', monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("NO FACE IN FRAME", width / 2, 38);
+          ctx.textAlign = "left";
         }
 
         rafRef.current = requestAnimationFrame(draw);
@@ -621,23 +659,25 @@ export function CameraLab({ cameraOptIn, onBack, onReviewConsent }: CameraLabPro
   );
 }
 
+/** Landmark indices drawn on the face, in PointSetSmoother array order. */
+const LANDMARK_INDICES = [
+  33, 133, 159, 145, 362, 263, 386, 374, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477
+];
+
 function drawLandmarks(
   ctx: CanvasRenderingContext2D,
-  landmarks: Landmark[],
+  points: readonly (Point | null)[],
   width: number,
   height: number
 ): void {
-  const indices = [
-    33, 133, 159, 145, 362, 263, 386, 374, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477
-  ];
   ctx.fillStyle = "rgba(123, 190, 172, 0.85)";
-  for (const index of indices) {
-    const point = landmarks[index];
+  for (let i = 0; i < LANDMARK_INDICES.length; i++) {
+    const point = points[i];
     if (!point) continue;
     const x = (1 - point.x) * width;
     const y = point.y * height;
     ctx.beginPath();
-    ctx.arc(x, y, index >= 468 ? 2.4 : 1.5, 0, Math.PI * 2);
+    ctx.arc(x, y, LANDMARK_INDICES[i]! >= 468 ? 2.4 : 1.5, 0, Math.PI * 2);
     ctx.fill();
   }
 }
