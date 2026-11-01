@@ -1,40 +1,39 @@
-import type { Effect } from "@loki/effect-api";
 import { cardEffect } from "@loki/effect-card";
 import { exampleEffect } from "@loki/effect-example";
+import type { Effect } from "@loki/effect-api";
 
 export type EffectId = "card-twelve" | "ember-words";
 
 export interface EffectChoice {
   id: EffectId;
-  effect: Effect;
-  eyebrow: string;
   title: string;
+  eyebrow: string;
   blurb: string;
   meta: string;
-  accent: string;
+  effect: Effect;
 }
 
 export const EFFECTS: EffectChoice[] = [
   {
     id: "card-twelve",
-    effect: cardEffect,
-    eyebrow: "The proof of concept",
     title: "The Twelve",
-    blurb: "A deck of twelve cards. Think of one. Answer my claims - true of your card, or wrong. I will name it - or admit that I cannot.",
-    meta: "12 cards · true-or-wrong claims · click demo: no camera",
-    accent: "brass"
+    eyebrow: "Act I · Primary effect",
+    blurb: "Twelve playing cards projected onto a mental screen. Sensory and geometric impressions, then one reveal.",
+    meta: "12 cards · 4 to 6 impressions · abstains below 96%",
+    effect: cardEffect
   },
   {
     id: "ember-words",
-    effect: exampleEffect,
-    eyebrow: "The platform test",
     title: "Ember Words",
-    blurb: "A small second effect built on the same contract. Four words, three questions, one honest guess.",
-    meta: "4 words · 3 questions · plugin proof",
-    accent: "moss"
+    eyebrow: "Act II · Word reading",
+    blurb: "Four archetypal words read through sensory mental-screen impressions on the same showrunner contract.",
+    meta: "4 words · 2 to 3 impressions · abstains below 85%",
+    effect: exampleEffect
   }
 ];
 
 export function effectChoice(id: EffectId): EffectChoice {
-  return EFFECTS.find((choice) => choice.id === id) ?? EFFECTS[0]!;
+  return EFFECTS.find((item) => item.id === id) ?? EFFECTS[0]!;
 }
+
+export const getEffectChoice = effectChoice;

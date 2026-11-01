@@ -23,7 +23,7 @@ function zoneForItem(stage: StageSpec, itemId: string): string | null {
 export const cardEffect: Effect = {
   id: "card-twelve",
   name: "The Twelve",
-  tagline: "Twelve cards. A few true-or-wrong checks. One reveal - or an honest miss.",
+  tagline: "Act I — Twelve cards. Mental-screen impressions. One reveal — or an honest miss.",
   config: {
     maxProbes: 6,
     commitThreshold: 0.96,
@@ -72,18 +72,18 @@ export const cardEffect: Effect = {
       {
         id: "card-think",
         kind: "think",
-        line: "Choose one card from the twelve. Do not say it, click it, or tell me. Hold its face in your mind."
+        line: "Choose one card from the twelve. Do not say it, click it, or tell me. Picture its face projected onto a quiet screen in your mind."
       },
       {
         id: "card-attune",
         kind: "attune",
         when: "camera-on",
-        line: "Let the room settle. Look where you like; this is a performance, not a test."
+        line: "Let the room settle. Hold that mental screen steady in front of you; this is a performance, not a test."
       },
       {
         id: "card-build",
         kind: "build",
-        line: "The noise is falling away."
+        line: "The competing impressions have fallen away."
       },
       {
         id: "card-reveal",
@@ -97,16 +97,16 @@ export const cardEffect: Effect = {
       }
     ],
     buildLines: [
-      "The noise is falling away.",
-      "Two shapes are becoming one.",
-      "I am not guessing now — I am listening to what is left.",
+      "The competing impressions have fallen away.",
+      "Two shapes on the screen are locking into one.",
+      "I am not guessing now — I am staying with the image that remained.",
       "There is only one card still holding the light."
     ],
     revealLine: (item, confidence) =>
       confidence >= 0.96
         ? `Your card was the ${item.label}.`
         : `The card that kept returning was the ${item.label}.`,
-    recoverLine: "Two cards are fighting for the same light. One clean answer settles it.",
+    recoverLine: "Hold on — a second impression crossed the screen and muddied the first. One clean claim settles it.",
     missLine: "You beat me. The card stays yours.",
     revealInvite: "Don't tell me. You turn it over - whenever you are ready.",
     revealAction: "Turn it over"

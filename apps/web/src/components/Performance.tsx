@@ -7,6 +7,7 @@ import type { SessionView } from "@loki/showrunner";
 import type { SensorSession } from "../lib/sensor-session.js";
 import { createPresenceDetector } from "../lib/presence.js";
 import { useVoiceAnswer } from "../lib/use-voice-answer.js";
+import type { EffectId } from "../lib/effects.js";
 
 interface PerformanceProps {
   effect: Effect;
@@ -16,6 +17,7 @@ interface PerformanceProps {
   sensorMode?: boolean;
   sensorSession?: SensorSession | null;
   onStopSensors?: (notice?: string) => void;
+  onSelectEffect?: (effectId: EffectId) => void;
   onExit: () => void;
   onOpenLab: () => void;
   onToggleReducedMotion: () => void;
@@ -55,6 +57,7 @@ export function Performance({
   sensorMode = false,
   sensorSession = null,
   onStopSensors,
+  onSelectEffect,
   onExit,
   onOpenLab,
   onToggleReducedMotion,
@@ -555,6 +558,11 @@ export function Performance({
               <button ref={primaryRef} type="button" className="primary" onClick={restart}>
                 Begin again
               </button>
+              {effect.id === "card-twelve" && onSelectEffect && (
+                <button type="button" className="ghost" onClick={() => onSelectEffect("ember-words")}>
+                  Continue to Act II: Ember Words
+                </button>
+              )}
               <button type="button" className="ghost" onClick={onExit}>
                 Leave the room
               </button>

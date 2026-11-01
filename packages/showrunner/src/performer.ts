@@ -17,14 +17,30 @@ export interface Cue {
 }
 
 const ACK_TEMPLATES: readonly string[] = [
-  "{label}. I will hold on to that.",
-  "Mm. {label}.",
-  "{label}. Thank you.",
-  "{label}. That is useful.",
-  "Good. {label}."
+  "{label} — hold that part of the image steady.",
+  "Good. {label} — keep that in focus.",
+  "{label}. That part of the picture locks in.",
+  "Mm — {label}. Stay right with that.",
+  "{label}. Good, let that impression settle."
 ];
 
-const REPEAT_ACK_TEMPLATES: readonly string[] = ["{label} again. I heard you.", "{label}, once more. Noted."];
+const DENIAL_ACK_TEMPLATES: readonly string[] = [
+  "{label} — good, push that competing image out of the way.",
+  "{label}. Let that decoy impression drop from the frame.",
+  "Good — {label}. Clearing that noise sharpens what remains.",
+  "{label}. Set that false echo aside and hold the real one.",
+  "Mm, {label} — I was catching a side impression; let it fade."
+];
+
+const REPEAT_ACK_TEMPLATES: readonly string[] = [
+  "{label} again — the focus tightens.",
+  "{label}, once more. That thread is holding."
+];
+
+const REPEAT_DENIAL_ACK_TEMPLATES: readonly string[] = [
+  "{label} again — good, keep pushing the noise aside.",
+  "{label}, once more — stripping away the decoy."
+];
 
 const HUSH_LINES: readonly string[] = ["Let it be quiet for a moment.", "I am going to say it now."];
 const CONCEDE_LINE = "I cannot hold it clearly enough to say.";
@@ -49,6 +65,10 @@ function rng(seed: number): () => number {
 
 function safeLabelKey(label: string): string {
   return label.trim().toLowerCase();
+}
+
+function isDenialLabel(label: string): boolean {
+  return /\b(no|wrong|not|neither|false|none)\b/i.test(label);
 }
 
 function joinLabels(labels: string[]): string {
@@ -76,11 +96,19 @@ export class Performer {
   acknowledge(label: string): Cue {
     const safeLabel = label.replace(/[{}]/g, "").trim();
     const repeated = safeLabelKey(safeLabel) !== "" && safeLabelKey(safeLabel) === this.lastLabel;
+    const denial = isDenialLabel(safeLabel);
     this.lastLabel = safeLabelKey(safeLabel);
-    const pool = repeated ? REPEAT_ACK_TEMPLATES : ACK_TEMPLATES;
+    const pool = repeated
+      ? denial
+        ? REPEAT_DENIAL_ACK_TEMPLATES
+        : REPEAT_ACK_TEMPLATES
+      : denial
+        ? DENIAL_ACK_TEMPLATES
+        : ACK_TEMPLATES;
+    const poolOffset = (repeated ? 100 : 0) + (denial ? 200 : 0);
     let index = Math.floor(this.random() * pool.length);
-    // Never the same template twice in a row; repeat acks live in their own pool and offset the key.
-    const key = (i: number) => (repeated ? 100 + i : i);
+    // Never the same template twice in a row; each pool offsets its key.
+    const key = (i: number) => poolOffset + i;
     if (key(index) === this.lastAck) index = (index + 1) % pool.length;
     this.lastAck = key(index);
     const template = pool[index]!;

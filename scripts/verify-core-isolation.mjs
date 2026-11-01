@@ -54,7 +54,8 @@ try {
 
   const typecheck = spawnSync("npx", ["tsc", "-p", "tsconfig.core.json", "--noEmit"], {
     cwd: root,
-    stdio: "inherit"
+    stdio: "inherit",
+    shell: process.platform === "win32"
   });
   if (typecheck.status !== 0) {
     throw new Error(`core typecheck failed with status ${typecheck.status}`);
@@ -62,7 +63,8 @@ try {
 
   const tests = spawnSync("npx", ["vitest", "run", "packages", "effects/_example"], {
     cwd: root,
-    stdio: "inherit"
+    stdio: "inherit",
+    shell: process.platform === "win32"
   });
   if (tests.status !== 0) {
     throw new Error(`core tests failed with status ${tests.status}`);

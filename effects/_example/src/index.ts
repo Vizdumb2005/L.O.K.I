@@ -13,9 +13,11 @@ type Word = Hypothesis & {
 };
 
 /**
- * A tiny second effect that proves the plugin contract. Four words are
- * separated by three designed questions about their spelling; no core code
- * knows about words, and the same session/simulator harness runs it unchanged.
+ * Act II — Ember Words: a four-word sensory & archetypal image reading that
+ * proves the plugin contract. Four words are separated by three balanced
+ * mental-screen imagery impressions (pairwise Hamming distance 2) and two
+ * four-way sensory projections; no core code knows about words, and the same
+ * session/simulator harness runs it unchanged.
  */
 const WORDS: Word[] = [
   { id: "sun", label: "Sun", glyph: "☀" },
@@ -72,30 +74,45 @@ function choiceProbe(
 }
 
 const PROBES: Probe[] = [
-  probe("ends-n", "Does the word end in the letter n?", 0.1, (w) => letters(w).endsWith("n")),
-  probe("has-m", "Does the word contain the letter m?", 0.14, (w) => letters(w).includes("m")),
-  probe("odd-length", "Does the word have an odd number of letters?", 0.14, (w) => letters(w).length % 2 === 1),
+  probe(
+    "ends-n",
+    "Hold the image of your word on that mental screen. It is one of the two permanent lights of the sky — the Sun or the Moon, ruling day or night — not a passing comet or an earthly bloom.",
+    0.1,
+    (w) => letters(w).endsWith("n")
+  ),
+  probe(
+    "has-m",
+    "The scene around your image is dark — you are looking up into the night sky at the Moon or a streaking Comet, not standing in warm daylight.",
+    0.14,
+    (w) => letters(w).includes("m")
+  ),
+  probe(
+    "odd-length",
+    "There is fierce heat and active fire coming off the image — blazing solar light or a burning streak across space, the Sun or the Comet — rather than the quiet coolness of Moon or Flower.",
+    0.14,
+    (w) => letters(w).length % 2 === 1
+  ),
   choiceProbe(
     "first-letter",
-    "Which letter does the word start with: S, M, C or F?",
+    "Let the atmosphere around the image fill the screen — what pulls at your senses first: blazing daylight, silver night, a streaking tail, or living petals.",
     0.18,
     [
-      { id: "s", label: "S" },
-      { id: "m", label: "M" },
-      { id: "c", label: "C" },
-      { id: "f", label: "F" }
+      { id: "s", label: "Daylight" },
+      { id: "m", label: "Night" },
+      { id: "c", label: "Streak" },
+      { id: "f", label: "Petals" }
     ],
     (w) => letters(w)[0]!
   ),
   choiceProbe(
     "letter-count",
-    "How many letters does the word have: 3, 4, 5 or 6?",
+    "Trace the outline of the image in your mind's eye — its silhouette is a golden disc, a pale crescent, a bright tail, or an opening bloom.",
     0.18,
     [
-      { id: "3", label: "3" },
-      { id: "4", label: "4" },
-      { id: "5", label: "5" },
-      { id: "6", label: "6" }
+      { id: "3", label: "Disc" },
+      { id: "4", label: "Crescent" },
+      { id: "5", label: "Tail" },
+      { id: "6", label: "Bloom" }
     ],
     (w) => String(letters(w).length)
   )
@@ -104,7 +121,7 @@ const PROBES: Probe[] = [
 export const exampleEffect: Effect = {
   id: "ember-words",
   name: "Ember Words",
-  tagline: "Four words, three spelling questions, one small illusion.",
+  tagline: "Act II — Four words, sensory mental-screen impressions, one quiet reading.",
   config: {
     maxProbes: 3,
     commitThreshold: 0.85,
@@ -125,23 +142,33 @@ export const exampleEffect: Effect = {
       {
         id: "words-invite",
         kind: "invite",
-        line: "A spelling-based mentalism illusion, not mind reading. Three questions, then a guess."
+        line: "Act II — a sensory word illusion, not mind reading. Picture the image of one word on your mental screen."
       },
-      { id: "words-think", kind: "think", line: "Choose one word from the four. Keep it to yourself." },
-      { id: "words-build", kind: "build", line: "The word is taking shape." },
+      {
+        id: "words-think",
+        kind: "think",
+        line: "Choose one word from the four. Keep it to yourself and picture what it looks and feels like."
+      },
+      {
+        id: "words-attune",
+        kind: "attune",
+        when: "camera-on",
+        line: "Let the image of your word fill the quiet screen in front of you."
+      },
+      { id: "words-build", kind: "build", line: "The competing images have faded." },
       { id: "words-reveal", kind: "reveal", line: "The word is waiting." },
-      { id: "words-afterglow", kind: "afterglow", line: "You chose it. I only narrowed the room." }
+      { id: "words-afterglow", kind: "afterglow", line: "You held the image. I only followed the light." }
     ],
-    buildLines: ["The word is taking shape.", "Only one shape is left in the light."],
+    buildLines: ["The competing images have faded.", "Only one image is left glowing on the screen."],
     revealLine: (item) => `Your word was ${item.label}.`,
-    recoverLine: "Two words are overlapping. Give me one clean answer.",
+    recoverLine: "Two images are overlapping on the screen. Give me one clean answer to separate them.",
     missLine: "You beat me. The word stays yours."
   }),
   stage: () => ({
     renderer: "grid",
     columns: 2,
     title: "Ember Words",
-    instructions: "Choose one word. Do not say it out loud.",
+    instructions: "Choose one word. Do not say it out loud. Picture its image in your mind.",
     items: WORDS.map((w) => ({ hypothesisId: w.id, label: w.label, glyph: w.glyph }))
   }),
   validate: () => validateEffect(exampleEffect)

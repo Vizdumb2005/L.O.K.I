@@ -58,6 +58,13 @@ describe("toy effect", () => {
     expect(exampleEffect.config.maxProbes).toBe(3);
   });
 
+  it("uses sensory mental-screen impressions rather than spelling or letter questions", () => {
+    for (const probe of exampleEffect.probes()) {
+      expect(probe.prompt.trim().endsWith("?")).toBe(false);
+      expect(probe.prompt).not.toMatch(/\bletter\b|\bspell/i);
+    }
+  });
+
   it("reveals every word through the same harness with no errors", () => {
     for (const word of WORDS) {
       const session = runWord(word.id);

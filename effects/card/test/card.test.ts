@@ -34,6 +34,15 @@ describe("card effect contract", () => {
     expect(CARDS.some((c) => c.id === CARD_FORCE_TARGET)).toBe(true);
   });
 
+  it("uses mental-screen visual impressions rather than questions or naked taxonomic guesses", () => {
+    for (const probe of CARD_PROBES) {
+      expect(probe.prompt.trim().endsWith("?")).toBe(false);
+      expect(probe.prompt).not.toMatch(/^It's (the|a) /i);
+      expect(probe.prompt).not.toMatch(/^The symbol is a /i);
+      expect(probe.options.map((o) => o.label)).toEqual(["True of my card", "That's wrong"]);
+    }
+  });
+
   it("keeps every probe likelihood row-stochastic", () => {
     for (const probe of CARD_PROBES) {
       for (const card of CARDS) {

@@ -51,6 +51,17 @@ describe("performer cues", () => {
     }
   });
 
+  it("pivots on denial labels as clearing competing noise while locking affirmative labels", () => {
+    const performer = new Performer(19);
+    const denial = performer.acknowledge("That's wrong");
+    expect(denial.line).toContain("That's wrong");
+    expect(denial.line).toMatch(/competing|decoy|noise|false echo|side impression/i);
+
+    const affirm = performer.acknowledge("True of my card");
+    expect(affirm.line).toContain("True of my card");
+    expect(affirm.line).toMatch(/steady|focus|locks in|stay right|settle/i);
+  });
+
   it("builds a staged reveal (>=3 cues, last rests) and honest miss (>=2 cues, last rests)", () => {
     const performer = new Performer(3);
     const reveal = performer.revealSequence("It was X.");

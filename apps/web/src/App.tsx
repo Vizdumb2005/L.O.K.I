@@ -32,54 +32,54 @@ export function App() {
     if (enteringRef.current) return;
     enteringRef.current = true;
     try {
-    setEffectId(nextEffect);
-    setCameraOptIn(nextCameraOptIn);
-    // A previous session must never linger across entries.
-    if (sensorRef.current) {
-      sensorRef.current.stopAll();
-      sensorRef.current = null;
-      setSensorMode(false);
-    }
-    if (mode === "sensor") {
-      // Mandatory capability: the sensor-enabled performance needs the camera.
-      // Failure does NOT silently fall back to click - the person chooses.
-      const session = new SensorSession({
-        getUserMedia:
-          typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia
-            ? (c) => navigator.mediaDevices.getUserMedia(c)
-            : null
-      });
-      const stream = await session.acquire("camera");
-      if (!stream) {
+      setEffectId(nextEffect);
+      setCameraOptIn(nextCameraOptIn);
+      // A previous session must never linger across entries.
+      if (sensorRef.current) {
+        sensorRef.current.stopAll();
         sensorRef.current = null;
-        setSensorNotice(
-          session.state("camera") === "unsupported"
-            ? "This device or browser does not expose camera capture, so the sensor-enabled performance cannot run. The click demo below runs without sensors."
-            : `The camera was not available (${session.error("camera") ?? "permission not granted"}), so the sensor-enabled performance did not start. Nothing was captured. The click demo below runs without sensors.`
-        );
-        return;
+        setSensorMode(false);
       }
-      const mic = await session.acquire("mic");
-      if (!mic) {
-        // The mic is a required capability of this mode (voice answers). Do
-        // not start without it; release the camera that was just opened.
-        session.stopAll();
-        sensorRef.current = null;
-        setSensorNotice(
-          session.state("mic") === "unsupported"
-            ? "This device or browser does not expose microphone capture, so the sensor-enabled performance cannot run. The click demo below runs without sensors."
-            : `The microphone was not available (${session.error("mic") ?? "permission not granted"}), so the sensor-enabled performance did not start and the camera was released again. The click demo below runs without sensors.`
-        );
-        return;
+      if (mode === "sensor") {
+        // Mandatory capability: the sensor-enabled performance needs the camera.
+        // Failure does NOT silently fall back to click - the person chooses.
+        const session = new SensorSession({
+          getUserMedia:
+            typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia
+              ? (c) => navigator.mediaDevices.getUserMedia(c)
+              : null
+        });
+        const stream = await session.acquire("camera");
+        if (!stream) {
+          sensorRef.current = null;
+          setSensorNotice(
+            session.state("camera") === "unsupported"
+              ? "This device or browser does not expose camera capture, so the sensor-enabled performance cannot run. The click demo below runs without sensors."
+              : `The camera was not available (${session.error("camera") ?? "permission not granted"}), so the sensor-enabled performance did not start. Nothing was captured. The click demo below runs without sensors.`
+          );
+          return;
+        }
+        const mic = await session.acquire("mic");
+        if (!mic) {
+          // The mic is a required capability of this mode (voice answers). Do
+          // not start without it; release the camera that was just opened.
+          session.stopAll();
+          sensorRef.current = null;
+          setSensorNotice(
+            session.state("mic") === "unsupported"
+              ? "This device or browser does not expose microphone capture, so the sensor-enabled performance cannot run. The click demo below runs without sensors."
+              : `The microphone was not available (${session.error("mic") ?? "permission not granted"}), so the sensor-enabled performance did not start and the camera was released again. The click demo below runs without sensors.`
+          );
+          return;
+        }
+        sensorRef.current = session;
+        setSensorMode(true);
+        setSensorNotice(null);
+      } else {
+        setSensorMode(false);
       }
-      sensorRef.current = session;
-      setSensorMode(true);
-      setSensorNotice(null);
-    } else {
-      setSensorMode(false);
-    }
-    setEntered(true);
-    setScreen("show");
+      setEntered(true);
+      setScreen("show");
     } finally {
       enteringRef.current = false;
     }
@@ -176,6 +176,7 @@ export function App() {
           sensorMode={sensorMode}
           sensorSession={sensorRef.current}
           onStopSensors={stopSensors}
+          onSelectEffect={(nextId) => setEffectId(nextId)}
           onExit={leave}
           onOpenLab={() => setScreen("lab")}
           onToggleReducedMotion={() => setReducedMotion((value) => !value)}

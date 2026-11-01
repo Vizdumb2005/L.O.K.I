@@ -325,3 +325,136 @@ simulator results and an explicit external-validity warning. `docs/ethics.md` co
 protocol and consent language for running a pilot later. The demo may show the presenter
 as a consenting performer, but that is a demo, not a measured study, and is labeled as
 such.
+
+
+---
+
+## 9. Live 1:1 mentalism method comparison (Cards First, Then Words) — 2026-11-01
+
+**Question.** Why does the `main @ c2364e2` flow still retain an Akinator / quiz feel even
+after phrasing card prompts as declarative claims, and which candidate method produces a
+convincing live 1:1 mentalism performance (cards first, then words) without breaking
+information-source honesty, sensor consent, or mistake-handling safeguards?
+
+**Sources opened**
+
+- Attached research brief & report (`loki_mentalism_youtube_research.md`): analysis of
+  Derren Brown (*Invisible Deal*, *Russian Roulette*, *Enigma* "Mental Screen"), Peter
+  Turner (*Guess What?*, *Playing Cards in Mentalism*, "Dare to be Bold" denial-pivot),
+  Spidey (*Hypnotic Mind Reading* geometry/weight narrowing), Oz Pearlman (*AGT*), Colin
+  McLeod (*The Epiphany*), Banachek (*Psychological Subtlety*), and Dai Vernon (*Out of
+  Sight, Out of Mind*, published by Lewis Ganson in *More Inner Secrets of Card Magic*).
+- Internal quantitative evidence: `docs/method-selection-evidence-2026-10-30.md`,
+  `docs/research-card-method-design-2026-10-30.md`,
+  `docs/research-mentalist-performance-2026-10-29.md`.
+- Literature & practitioner sources on progressive anagram error vulnerability and
+  denial-pivot framing:
+  - Conjuring Credits / Vanishing Inc. documentation of Dai Vernon's *Out of Sight, Out of
+    Mind* subset-flash elimination mechanic.
+  - Peter Turner's *Playing Cards in Mentalism* / "Dare to be Bold" methodology on treating
+    a spectator denial as pushing a competing decoy thought off the mental screen rather
+    than acknowledging a failed guess.
+  - Derren Brown's "Mental Screen" visualization routine (projecting a thought-of card onto
+    an imaginary screen to focus sensory attributes—color temperature, geometry, density).
+  - Progressive anagram / branching word effect error-handling literature (*The Jerx*,
+    *Magic Show Tips*): why single-check branching trees collapse under a single spectator
+    memory lapse or mis-answer unless backed by soft-likelihood redundancy and semantic
+    pivots.
+
+**What it says (Candidate Comparison: Information Source vs. Mistake Handling)**
+
+See `docs/research-live-mentalism-method-comparison-2026-11-01.md` for full derivations.
+
+1. **Candidate 1 — Visual-Stream Subset Timing (Dai Vernon *Out of Sight, Out of Mind*
+   adaptation, recommended by the attached report):**
+   - *Where it gets its information:* Flashes a rapid stream of 6 cards (~400ms/card) and
+     asks "Did you see your card pass?" ($1.0\text{ bit}$, $12 \to 6$), repeats or filters
+     to 3 cards ($1.0\text{ bit}$, $6 \to 3$), takes an intentional 1-card guess/miss to
+     pivot ($3 \to 2$, $\approx 0.58\text{ bits}$), and asks 1 final binary contrast
+     ($2 \to 1$, $1.0\text{ bit}$).
+   - *How it handles mistakes:* **Fails both perceptual robustness and Bayesian safety.**
+     First, a 400ms visual stream converts a calm mentalism reading into a visual vigilance
+     test: if a spectator blinks, hesitates, or confuses `3♦` with `4♦`, the first bit flips
+     with zero parity check. Second, under LOKI's mandatory `tau = 0.96` soft-likelihood
+     engine ($\epsilon = 0.10$, $w_{\text{out}} = 0.06$), a 4-step path containing an
+     intentional 1-of-3 denial ($2/3$ likelihood split) reaches a maximum posterior of only
+     $P(h) \approx 0.812 < 0.96$ on the 8 non-guessed cards—causing **0% commit rate on
+     two-thirds of the deck** unless additional probes are asked. Without the `tau = 0.96`
+     gate, raw subset elimination yields **32.4% wrong confident reveals at $p=0.10$** and
+     **45.0% at $p=0.15$**. Third, rapid flashing violates `prefers-reduced-motion` and
+     breaks screen-reader / keyboard accessibility (`silent-choices` static roster).
+   - *Verdict:* **Rejected as the primary engine.**
+
+2. **Candidate 2 — Verbal Equivoque / Magician's Choice:**
+   - *Where it gets its information:* Does not infer a freely chosen card; instead, it
+     forces a preselected target by reinterpreting the user's subset choices post-hoc
+     ("keep what you touched" vs "discard what you touched").
+   - *How it handles mistakes:* Contradicts the spectator's real silent choice from the
+     12-card table and violates Integrity Rule #2 (`docs/research-mentalist-performance-2026-10-29.md`).
+   - *Verdict:* **Rejected.**
+
+3. **Candidate 3 — Deterministic Branching Statement Tree / Progressive Anagram
+   (`statement-tree.ts`):**
+   - *Where it gets its information:* Fixed binary decision tree ($\le 5$ statements, $\le 2$
+     denials) where each denial branches to a smaller subset.
+   - *How it handles mistakes:* Zero parity redundancy (`32.4%` wrong confident reveals at
+     $p=0.10$ un-gated; 4 blind cards `d-3`, `d-4`, `s-3`, `s-4` with `0/240` commits when
+     gated by $\tau = 0.96$).
+   - *Verdict:* **Retained only in `/statement-lab` for side-by-side comparison; rejected
+     for the live show.**
+
+4. **Candidate 4 — Baseline Claim-Renamed Flow (`main @ c2364e2`):**
+   - *Where it gets its information:* Active EIG selection (`selectProbe`) over 21 binary
+     card claims and 5 orthographic word questions.
+   - *How it handles mistakes:* Passes all error-protection gates (`83.9%` commit, `0.60%`
+     wrong at $p=0.05$; `6.96% < 10%` wrong at $p=0.15$).
+   - *Why it still feels like Akinator:*
+     1. `cards.ts` still contains naked taxonomic guesses disguised as statements (`"It's a
+        heart."`, `"It's a diamond."`, `"It's a spade."`, `"It's the ace."`, `"It's the
+        two."`, `"It's the three."`, `"It's the four."`).
+     2. `Ember Words` (`effects/_example/src/index.ts`) literally asks spelling/orthography
+        questions (`"Does the word end in the letter n?"`, `"Does the word contain the
+        letter m?"`, `"Which letter does the word start with: S, M, C or F?"`, `"How many
+        letters does the word have: 3, 4, 5 or 6?"`).
+     3. `performer.ts` acknowledges denials (`"That's wrong"`, `"No"`) with flat database
+        confirmations (`"That's wrong. I will hold on to that."`, `"Good. That's wrong."`)
+        rather than a mentalist **Denial Pivot** (treating a denial as clearing a competing
+        or decoy image from the mental screen).
+     4. There is no two-act show arc (Cards First $\to$ Words Second) and `Ember Words`
+        lacks the spectator-performed reveal gate (`"Turn it over"`).
+
+5. **Candidate 5 (Selected & Implemented) — Two-Act Soft-Bayesian Mental-Screen &
+   Sensory Reading with Polarity-Aware Denial Pivot:**
+   - *Where it gets its information:* Exclusively from the spectator's spoken (speaker-gated
+     WebRTC VAD + WeSpeaker + Whisper) or manual responses to experiential/visual-projection
+     impressions, scored by the calibrated soft-likelihood Bayesian engine ($\tau = 0.96$
+     cards, $\tau = 0.85$ words, $\epsilon = 0.10$, $w_{\text{out}} = 0.06$). Camera remains
+     strictly presence-only (never claimed to read minds or cards); speaker gating is framed
+     honestly as utterance gating, never waveform voice separation.
+   - *How it handles mistakes:* Preserves 100% of the soft-likelihood error resilience,
+     surprise-triggered contradiction recovery (`recover` beat framed as two overlapping
+     impressions), and calibrated honest abstention (`miss` beat framed as the spectator's
+     focus beating the performer).
+   - *Key architectural changes over `c2364e2`:*
+     - **Act I (`The Twelve` cards):** Replaces all naked rank/suit guesses with Derren
+       Brown / Spidey mental-screen projection impressions (ink warmth, curved vs angular
+       geometry, solitary center vs paired symmetry vs triad/four-corner structure) that
+       lead with sensory imagery while keeping an explicit card-property anchor so the
+       spectator never misinterprets a claim.
+     - **Act II (`Ember Words`):** Replaces all 5 orthographic/spelling questions with
+       sensory/archetypal imagery impressions (permanent sky light vs living/passing form,
+       night-sky darkness vs daylight, blazing heat vs cool stillness, elemental pull, and
+       mind's-eye silhouette) while preserving the exact information-theoretic partitions
+       (3 balanced binary probes with pairwise Hamming distance 2 + 2 4-way probes) and
+       adding the spectator-performed reveal gate (`"Turn it over"`).
+     - **Performer Layer (`performer.ts`):** Adds polarity-aware acknowledgement templates
+       (while remaining 100% domain-neutral and satisfying all P1–P11 invariants) so denials
+       trigger a Peter Turner-style **Denial Pivot** (*clearing a competing impression from
+       the frame*) and confirmations lock the image in.
+     - **Two-Act Continuity & Mandatory Sensor Framing:** `Stage.tsx` bridges Act I (`The
+       Twelve`) directly into Act II (`Ember Words`), and `Consent.tsx` highlights the
+       mandatory camera + mic requirement for the live sensor performance while retaining
+       honest per-purpose consent and manual fallback.
+
+**Confidence.** High for mathematical error rates and information-source boundaries; medium
+for perceived theatrical feel pending real-device human feedback.

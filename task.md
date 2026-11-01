@@ -262,3 +262,35 @@ branch): domain-neutral `Performer` in packages/showrunner producing timed cues
 (acknowledge, recap, build, staged reveal, staged honest miss), session `cues` in the view,
 UI cue player with Skip ahead and a reduced-motion trail. Engine untouched (provenance
 exact). Felt liveness is a pilot question, not proven.
+
+
+## Live 1:1 mentalism performance & anti-Akinator method upgrade (2026-11-01)
+
+Critically evaluated the attached YouTube mentalism research report and compared five
+candidate methods on information source and mistake handling (documented in
+`docs/research-live-mentalism-method-comparison-2026-11-01.md` and `docs/research.md` §9).
+Rejected the visual-stream subset-flash recommendation (`Out of Sight, Out of Mind`
+adaptation) because single-check flash timing adds perceptual error, violates
+`prefers-reduced-motion` and screen-reader parity, and under `tau = 0.96` soft-likelihood
+safeguards reaches only `P(h) = 0.812 < 0.96` on 8/12 cards after an intentional 1-of-3
+miss (or yields 32.4% wrong reveals at `p = 0.10` if ungated).
+
+Implemented the Two-Act Soft-Bayesian Mental-Screen & Sensory Reading with Denial Pivot:
+1. **Performer Denial Pivot (`packages/showrunner/src/performer.ts`):** Domain-neutral
+   polarity-aware acknowledgement templates treat denials (`"That's wrong"`, `"No"`) as
+   clearing a competing decoy impression from the frame, and affirmations as locking the
+   image in, while preserving all P1–P11 invariants.
+2. **Act I — `The Twelve` (`effects/card/src/cards.ts`, `index.ts`):** Replaced naked
+   suit/rank guesses (`"It's a heart."`, `"It's the ace."`, etc.) with 21 mental-screen
+   visual-projection and geometric cold-reading impressions while preserving the exact
+   membership matrix, probe costs, and soft-likelihood safeguards (`tau = 0.96`,
+   `epsilon = 0.10`, `outlierWeight = 0.06`).
+3. **Act II — `Ember Words` (`effects/_example/src/index.ts`):** Replaced all 5
+   orthographic/spelling questions (`"Does the word end in the letter n?"`, etc.) with
+   sensory/archetypal mental-screen impressions and single-word spoken labels (`Daylight`,
+   `Night`, `Streak`, `Petals`; `Disc`, `Crescent`, `Tail`, `Bloom`), preserving the exact
+   Hamming-distance-2 binary partitions and safety parameters (`tau = 0.85`).
+4. **Act I → Act II Continuity (`apps/web/src/components/Performance.tsx`):** Added direct
+   `"Continue to Act II: Ember Words"` transition at the end of `The Twelve` while keeping
+   mandatory camera + mic sensor consent, presence-only camera boundary, and speaker-gating
+   honesty intact.
