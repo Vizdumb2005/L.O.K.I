@@ -13,6 +13,7 @@ import { SpeakerGateBench } from "./SpeakerGateBench.js";
 import { StatementFlowLab } from "./StatementFlowLab.js";
 import { VoiceAnswerBench } from "./VoiceAnswerBench.js";
 import { useGazeCalibration, type CalibrationZoneId } from "./use-gaze-calibration.js";
+import { localMediaPipePaths } from "../lib/mediapipe-paths.js";
 
 type Landmark = { x: number; y: number; z: number };
 interface FaceLandmarkerLike {
@@ -34,8 +35,8 @@ async function createFaceLandmarker(): Promise<{
   const attempts = [
     {
       source: "local" as const,
-      wasm: "/mediapipe/wasm",
-      model: "/mediapipe/face_landmarker.task"
+      wasm: localMediaPipePaths(import.meta.env.BASE_URL ?? "/").wasm,
+      model: localMediaPipePaths(import.meta.env.BASE_URL ?? "/").model
     },
     { source: "cdn" as const, wasm: WASM_CDN, model: MODEL_URL }
   ];

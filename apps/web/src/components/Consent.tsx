@@ -4,14 +4,15 @@ import { EFFECTS, type EffectId } from "../lib/effects.js";
 export type ShowMode = "click" | "sensor";
 
 interface ConsentProps {
-  onEnter: (effectId: EffectId, cameraOptIn: boolean, mode: ShowMode) => void;
+  onEnter: (effectId: EffectId, cameraOptIn: boolean, mode: ShowMode, hostedVoiceOptIn?: boolean) => void;
+  hostedVoiceConfigured?: boolean;
   /** True when returning from a show (Leave/Escape): move focus to the consent heading. */
   restoreFocus?: boolean;
   /** True when the sensor-enabled performance just stopped or could not start. */
   sensorNotice?: string | null;
 }
 
-export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: ConsentProps) {
+export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, hostedVoiceConfigured = false }: ConsentProps) {
   const mainRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (restoreFocus) mainRef.current?.focus({ preventScroll: true });
@@ -23,6 +24,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
   const [presenceConsent, setPresenceConsent] = useState(false);
   const [micConsent, setMicConsent] = useState(false);
   const [enrollConsent, setEnrollConsent] = useState(false);
+  const [hostedVoiceOptIn, setHostedVoiceOptIn] = useState(false);
   const sensorsSupported =
     typeof navigator !== "undefined" && typeof navigator.mediaDevices?.getUserMedia === "function";
 
@@ -45,7 +47,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
         <div className="consent-rule" />
         <p className="fine-print">
           LOKI does not detect lies, emotions, identity, or any medical condition. It is not
-          a diagnostic or safety tool. No account is required. Nothing is uploaded.
+          a diagnostic or safety tool. No account is required. {hostedVoiceOptIn ? "Hosted voice is opted in: audio will leave this device as described below. Camera video never leaves this device." : "Nothing is uploaded."}
         </p>
       </section>
 
@@ -191,6 +193,14 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
                 is kept. Required for the sensor-enabled performance.
               </span>
             </label>
+            {hostedVoiceConfigured && (
+              <label className="check">
+                <input type="checkbox" checked={hostedVoiceOptIn} onChange={(e) => setHostedVoiceOptIn(e.target.checked)} />
+                <span>
+                  <strong>Hosted voice (optional, off by default).</strong> If I check this, my microphone audio leaves this device over an encrypted connection to a zero-retention provider, is processed in flight only, is not stored or used for training, and the session is destroyed when the show ends, when I use Forget my voice, or when I close the tab. Camera video never leaves this device. The on-device voice remains available without this.
+                </span>
+              </label>
+            )}
           </>
         )}
 
@@ -204,7 +214,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null }: 
           type="button"
           className="primary"
           disabled={!understood || (mode === "sensor" && !(presenceConsent && micConsent && enrollConsent))}
-          onClick={() => onEnter(effectId, cameraOptIn, mode)}
+          onClick={() => onEnter(effectId, cameraOptIn, mode, hostedVoiceOptIn)}
         >
           {mode === "sensor" ? "Enter with camera + mic" : "Enter the observatory"}
         </button>

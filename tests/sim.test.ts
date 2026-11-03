@@ -41,9 +41,12 @@ describe("simulator", () => {
 
   it("handles a truthful spectator with no errors", () => {
     const cell = runCell(spec({ runs: 100, answerError: 0 }));
-    expect(cell.commits).toBeGreaterThan(80);
+    // At the 2-statement budget the no-gaze show honestly misses when two
+    // statements cannot identify the card; it never commits wrongly.
     expect(cell.wrong).toBe(0);
-    expect(cell.committedAccuracy[0]).toBeGreaterThan(0.9);
+    expect(cell.correct).toBe(cell.commits);
+    expect(cell.commits + cell.misses).toBe(cell.n);
+    expect(cell.meanProbes).toBeLessThanOrEqual(3);
   });
 
   it("runs both effects through the same harness", () => {

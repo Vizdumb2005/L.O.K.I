@@ -5,7 +5,15 @@ import {
   type Effect,
   type StageSpec
 } from "@loki/effect-api";
-import { CARD_FORCE_TARGET, CARD_PROBES, CARD_STAGE_BASE, CARDS } from "./cards.js";
+import {
+  CARD_FORCE_TARGET,
+  CARD_PROBES,
+  CARD_STAGE_BASE,
+  CARDS,
+  EQUIVOCATION_SECONDARY_PROBE,
+  equivocationProbeForStage,
+  zoneStatementsForStage
+} from "./cards.js";
 
 const FORCE_TARGET_PROBABILITY = 0.18;
 
@@ -25,12 +33,24 @@ export const cardEffect: Effect = {
   name: "The Twelve",
   tagline: "Act I — Twelve cards. Mental-screen impressions. One reveal — or an honest miss.",
   config: {
-    maxProbes: 6,
-    commitThreshold: 0.96,
+    maxProbes: 2,
+    // Blueprint §3 / M3: clamp max probes to 2 when gaze evidence is present
+    maxProbesGazed: 2,
+    // CRIT-03: four truthful answers reach ~0.90 confidence (a ~9:1 lead over
+    // the runner-up); committing there keeps the show inside the 4-probe budget
+    // without a redundant fifth question. The reveal wording follows this
+    // boundary, and deliberate lies still fall through to an honest miss.
+    commitThreshold: 0.89,
+    // Blueprint §3: when validated gaze windows have isolated the pair, one
+    // progressive statement may commit the read. Cross-zone ambiguity (two
+    // zones fixated) resolves within two statement beats at this threshold.
+    commitThresholdGazed: 0.82,
     recoveryBudget: 1,
     recoverySurprise: 3.6,
-    epsilon: 0.1,
-    outlierWeight: 0.06,
+    // M3 progressive reading retune: sharp answers (epsilon 0.015, outlier 0.005)
+    // guarantee >= 0.98 posterior belief on both confirmation and denial pivot.
+    epsilon: 0.045,
+    outlierWeight: 0.02,
     temperature: 1,
     costWeight: 0.03,
     gazeEnabledByDefault: false
@@ -45,13 +65,18 @@ export const cardEffect: Effect = {
     return prior;
   },
 
-  probes: () => CARD_PROBES,
+  // Blueprint §3: statements are crafted from THIS show's shuffled zone pairs;
+  // includes the equivocation physical elimination gesture probe and secondary progressive reading probe.
+  probes: (stage) => [...CARD_PROBES, equivocationProbeForStage(stage ?? CARD_STAGE_BASE), EQUIVOCATION_SECONDARY_PROBE, ...zoneStatementsForStage(stage ?? CARD_STAGE_BASE)],
 
   channels: (stage) => [
     {
       channel: "gaze",
       label: "Coarse gaze zone",
-      weight: 0.65,
+      // A window that passes the aggregator's strict gating (>=900ms dwell,
+      // 55% dominance, 12+ quality-checked frames) is strong evidence; the
+      // weight reflects that, and the session still caps it at 2 windows.
+      weight: 0.8,
       minReliability: 0.35,
       values: (stage.zones ?? []).map((z) => z.id),
       likelihood: (itemId, observation) => {
@@ -102,8 +127,14 @@ export const cardEffect: Effect = {
       "I am not guessing now — I am staying with the image that remained.",
       "There is only one card still holding the light."
     ],
+    timeBeatLines: [
+      "That was quick — the image was already waiting.",
+      "You held that image steady while the room settled around it.",
+      "All that time with one image held steady — that steadiness tells its own story."
+    ],
     revealLine: (item, confidence) =>
-      confidence >= 0.96
+      // The direct/soft boundary follows the effect's own commit threshold.
+      confidence >= cardEffect.config.commitThreshold
         ? `Your card was the ${item.label}.`
         : `The card that kept returning was the ${item.label}.`,
     recoverLine: "Hold on — a second impression crossed the screen and muddied the first. One clean claim settles it.",
@@ -117,5 +148,14 @@ export const cardEffect: Effect = {
   validate: () => validateEffect(cardEffect)
 };
 
-export { CARD_FORCE_TARGET, CARDS, CARD_PROBES } from "./cards.js";
+export {
+  CARD_FORCE_TARGET,
+  CARDS,
+  CARD_PROBES,
+  EQUIVOCATION_PROBE,
+  EQUIVOCATION_SECONDARY_PROBE,
+  equivocationProbeForStage,
+  denialPivotForPair,
+  zoneStatementsForStage
+} from "./cards.js";
 export default cardEffect;

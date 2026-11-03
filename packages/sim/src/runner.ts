@@ -73,11 +73,14 @@ export function runOne(options: RunOptions & { trueId?: string }): RunResult {
     }
     if (phase === "probe") {
       const view = session.snapshot();
-      const probe = effect.probes().find((p) => p.id === view.probeId);
+      // Blueprint §3: the session builds stage-crafted probes; look them up
+      // against THIS session's shuffled stage, not the base layout.
+      const probe = effect.probes(session.stage).find((p) => p.id === view.probeId);
       if (!probe) throw new Error(`sim: session asked unknown probe ${view.probeId}`);
       probeOrdinal += 1;
       const option = chooseAnswer(probe, trueId, spectator, probeOrdinal, random);
       session.answer(option);
+      session.clearAck();
       if (session.phaseName === "build") {
         session.advance();
         break;

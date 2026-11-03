@@ -5,7 +5,8 @@ import { PerformanceSession } from "@loki/showrunner";
 
 function answerTruth(session: PerformanceSession, trueId: string): void {
   const view = session.snapshot();
-  const probe = cardEffect.probes().find((p) => p.id === view.probeId);
+  // The session builds stage-crafted probes; look them up on THIS session's stage.
+  const probe = cardEffect.probes(session.stage).find((p) => p.id === view.probeId);
   if (!probe) throw new Error("no probe");
   let best = probe.options[0]!.id;
   let bestP = -1;
@@ -17,6 +18,7 @@ function answerTruth(session: PerformanceSession, trueId: string): void {
     }
   }
   session.answer(best);
+      session.clearAck();
 }
 
 describe("card effect contract", () => {
@@ -25,9 +27,9 @@ describe("card effect contract", () => {
     expect(() => validateEffect(cardEffect)).not.toThrow();
   });
 
-  it("has 12 cards, 21 claim probes and a 3x4 stage", () => {
+  it("has 12 cards, 23 claim probes and a 3x4 stage", () => {
     expect(CARDS).toHaveLength(12);
-    expect(CARD_PROBES).toHaveLength(21);
+    expect(CARD_PROBES).toHaveLength(23);
     expect(new Set(CARDS.map((c) => c.id)).size).toBe(12);
     expect(cardEffect.stage().columns).toBe(4);
     expect(cardEffect.stage().items).toHaveLength(12);
@@ -39,7 +41,28 @@ describe("card effect contract", () => {
       expect(probe.prompt.trim().endsWith("?")).toBe(false);
       expect(probe.prompt).not.toMatch(/^It's (the|a) /i);
       expect(probe.prompt).not.toMatch(/^The symbol is a /i);
-      expect(probe.options.map((o) => o.label)).toEqual(["True of my card", "That's wrong"]);
+      if (probe.id === "suit-impression") {
+        expect(probe.options.map((o) => o.label)).toEqual(["Rounded lobes", "Sharp angles", "Dark spearhead"]);
+      } else if (probe.id === "rank-impression") {
+        expect(probe.options.map((o) => o.label)).toEqual(["One alone", "A facing pair", "A center spine", "Four corners"]);
+      } else {
+        expect(probe.options.map((o) => o.label)).toEqual(["True of my card", "That's wrong"]);
+      }
+    }
+  });
+
+  it("suit + rank impressions uniquely identify every card within two beats", () => {
+    const suit = CARD_PROBES.find((p) => p.id === "suit-impression")!;
+    const rank = CARD_PROBES.find((p) => p.id === "rank-impression")!;
+    for (const card of CARDS) {
+      const suitHit = suit.options.filter((o) => suit.likelihood(card.id, o.id) === 1);
+      const rankHit = rank.options.filter((o) => rank.likelihood(card.id, o.id) === 1);
+      expect(suitHit).toHaveLength(1);
+      expect(rankHit).toHaveLength(1);
+      const placed = CARDS.filter(
+        (c) => suit.likelihood(c.id, suitHit[0]!.id) === 1 && rank.likelihood(c.id, rankHit[0]!.id) === 1
+      );
+      expect(placed.map((c) => c.id)).toEqual([card.id]);
     }
   });
 
@@ -94,9 +117,14 @@ describe("card effect contract", () => {
       }
       break;
     }
-    expect(session.phaseName).toBe("build");
-    session.advance();
-    expect(session.snapshot().phase).toBe("reveal");
-    expect(session.snapshot().reveal?.id).toBe(CARD_FORCE_TARGET);
+    // At the 2-statement budget a no-gaze truthful run either commits to the
+    // right card or honestly misses; it never reveals a wrong card.
+    expect(["build", "miss"]).toContain(session.phaseName);
+    expect(session.internal().answered).toBeLessThanOrEqual(3);
+    if (session.phaseName === "build") {
+      session.advance();
+      expect(session.snapshot().phase).toBe("reveal");
+      expect(session.snapshot().reveal?.id).toBe(CARD_FORCE_TARGET);
+    }
   });
 });

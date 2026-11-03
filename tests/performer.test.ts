@@ -13,12 +13,14 @@ function play(effect: Effect, seed: number, pick: (n: number) => number): Sessio
     const view = session.snapshot();
     if (view.phase === "probe" && view.options) {
       session.answer(view.options[pick(guard) % view.options.length]!.id);
+      views.push(session.snapshot()); // capture WITH ackCue before clearing
+      session.clearAck();
     } else if (view.phase === "done") {
       break;
     } else {
       session.advance();
+      views.push(session.snapshot());
     }
-    views.push(session.snapshot());
   }
   return views;
 }
@@ -90,9 +92,9 @@ describe.each(effects)("performer through the shared session (%s)", (_name, effe
         expect(last.line).toBe(view.line);
         expect(last.holdMs).toBe(0);
         view.cues.slice(0, -1).forEach((c: Cue) => expect(c.holdMs).toBeGreaterThan(0));
-        if (view.phase === "probe" && view.progress.answered > 0 && view.cues[0]!.kind === "ack") sawAck = true;
+        if (view.phase === "probe" && view.turn > 0 && view.cues[0]!.kind === "ack") sawAck = true;
       }
-      expect(sawAck || views.every((v) => v.phase !== "probe" || v.progress.answered === 0)).toBe(true);
+      expect(sawAck || views.every((v) => v.phase !== "probe" || v.turn === 0)).toBe(true);
     }
   });
 
@@ -128,6 +130,7 @@ describe.each(effects)("performer through the shared session (%s)", (_name, effe
           const option = view.options[guard % view.options.length]!;
           picked.push(option.label);
           session.answer(option.id);
+          session.clearAck();
         } else {
           session.advance();
         }

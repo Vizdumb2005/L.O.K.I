@@ -99,10 +99,16 @@ export function selectProbe(
   return best;
 }
 
+/**
+ * Blueprint v4 §3: when the silent gaze channel has already provided the
+ * equivalent of an answer, a single explicit statement may commit (minProbes 1).
+ * Without gaze the show still requires two explicit answers (minProbes 2).
+ */
 export function commitGate(
   state: BeliefState,
   commitThreshold: number,
-  probesAnswered: number
+  probesAnswered: number,
+  minProbes = 2
 ): boolean {
-  return probesAnswered >= 2 && !state.contradictionActive && maxPosterior(state) >= commitThreshold;
+  return probesAnswered >= minProbes && !state.contradictionActive && maxPosterior(state) >= commitThreshold;
 }

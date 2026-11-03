@@ -1,6 +1,30 @@
 import { describe, expect, it } from "vitest";
 import { PerspectiveCamera, Vector3 } from "three";
-import { cardTargetPosition, stageGridScale } from "./stage-layout.js";
+import { cardPalette, cardTargetPosition, stageGridScale } from "./stage-layout.js";
+
+describe("card suit and element ink palette", () => {
+  it("colors Hearts and Diamonds in crimson red and Spades in dark obsidian ink", () => {
+    const heart = cardPalette("A♥", "Ace of Hearts");
+    const diamond = cardPalette("3♦", "Three of Diamonds");
+    const spade = cardPalette("A♠", "Ace of Spades");
+
+    expect(heart.isRedSuit).toBe(true);
+    expect(diamond.isRedSuit).toBe(true);
+    expect(spade.isRedSuit).toBe(false);
+    expect(heart.glyph).toBe("#9e2a2b");
+    expect(diamond.glyph).toBe("#9e2a2b");
+    expect(spade.glyph).toBe("#16231f");
+  });
+
+  it("assigns distinct elemental ink colors to Ember Words symbols", () => {
+    const sun = cardPalette("☉", "Sun");
+    const moon = cardPalette("☽", "Moon");
+    const comet = cardPalette("☄", "Comet");
+    const flower = cardPalette("❀", "Flower");
+
+    expect(new Set([sun.glyph, moon.glyph, comet.glyph, flower.glyph]).size).toBe(4);
+  });
+});
 
 describe("3D reveal framing", () => {
   it("centers a revealed item regardless of its shuffled slot", () => {
@@ -38,7 +62,6 @@ describe("3D reveal framing", () => {
     }
   });
 });
-
 
 describe("grid framing", () => {
   it("keeps all four-by-three grid corners visible in short desktop and mobile stages", () => {

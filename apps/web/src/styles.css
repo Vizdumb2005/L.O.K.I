@@ -224,7 +224,8 @@ p {
 .chip {
   border: 1px solid var(--line-soft);
   border-radius: 999px;
-  padding: 7px 11px;
+  min-height: 44px;
+  padding: 10px 16px;
   background: rgba(7, 17, 15, 0.35);
   color: var(--muted);
   font-family: var(--mono);
@@ -238,6 +239,12 @@ p {
 .chip[aria-pressed="true"] {
   border-color: rgba(216, 184, 119, 0.55);
   color: var(--gold-bright);
+}
+
+/* MAJ-07: every interactive button offers a >= 44px touch target. */
+button,
+.nav-link {
+  min-height: 44px;
 }
 
 /* ---------- header ---------- */
@@ -359,20 +366,20 @@ p {
   gap: clamp(36px, 7vw, 110px);
   width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
-  padding: clamp(34px, 7vh, 88px) 0 70px;
+  padding: clamp(18px, 3vh, 30px) 0 22px;
   align-items: start;
 }
 
 .consent-hero {
   position: sticky;
-  top: 40px;
-  padding-top: 12px;
+  top: 20px;
+  padding-top: 6px;
 }
 
 .wordmark {
-  margin: 0 0 22px;
+  margin: 0 0 12px;
   font-family: var(--serif);
-  font-size: clamp(82px, 15vw, 190px);
+  font-size: clamp(46px, 6vw, 78px);
   font-weight: 400;
   line-height: 0.76;
   letter-spacing: 0.08em;
@@ -384,26 +391,26 @@ p {
 }
 
 .lede {
-  max-width: 30ch;
-  margin: 0 0 18px;
+  max-width: 34ch;
+  margin: 0 0 10px;
   font-family: var(--serif);
-  font-size: clamp(20px, 2.4vw, 31px);
+  font-size: clamp(16px, 1.5vw, 20px);
   font-weight: 400;
   line-height: 1.32;
   color: var(--cream);
 }
 
 .lede-small {
-  max-width: 42ch;
+  max-width: 46ch;
   color: var(--cream-dim);
-  font-size: clamp(15px, 1.5vw, 18px);
-  line-height: 1.5;
+  font-size: clamp(12.5px, 1.1vw, 14px);
+  line-height: 1.45;
 }
 
 .consent-rule {
   width: 72px;
   height: 1px;
-  margin: 30px 0 20px;
+  margin: 14px 0 12px;
   background: var(--gold);
   opacity: 0.7;
 }
@@ -415,7 +422,7 @@ p {
 
 .consent-panel {
   position: relative;
-  padding: clamp(24px, 3.4vw, 40px);
+  padding: clamp(12px, 1.4vw, 16px);
   border: 1px solid var(--line);
   border-radius: 6px;
   background:
@@ -437,21 +444,21 @@ p {
 }
 
 .consent-panel h2 {
-  margin-bottom: 22px;
+  margin-bottom: 10px;
   font-family: var(--serif);
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 400;
   letter-spacing: 0.01em;
 }
 
 .check {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  margin: 0 0 16px;
+  margin: 0 0 10px;
   color: var(--cream-dim);
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 12.5px;
+  line-height: 1.45;
   cursor: pointer;
 }
 
@@ -475,14 +482,15 @@ p {
 
 .effect-picker {
   display: grid;
-  gap: 10px;
-  margin: 28px 0 24px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 6px;
+  margin: 10px 0 8px;
   padding: 0;
   border: 0;
 }
 
 .effect-picker legend {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   color: var(--gold);
   font-family: var(--mono);
   font-size: 10px;
@@ -493,7 +501,7 @@ p {
 .effect-choice {
   position: relative;
   display: block;
-  padding: 15px 16px;
+  padding: 7px 10px;
   border: 1px solid var(--line-soft);
   border-radius: 4px;
   background: rgba(4, 12, 10, 0.32);
@@ -536,7 +544,7 @@ p {
 .effect-title {
   color: var(--cream);
   font-family: var(--serif);
-  font-size: 22px;
+  font-size: 17px;
   line-height: 1.15;
 }
 
@@ -550,10 +558,10 @@ p {
 
 .effect-blurb {
   grid-column: 1 / -1;
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 10.5px;
+  line-height: 1.35;
 }
 
 .consent-panel .primary {
@@ -561,18 +569,23 @@ p {
 }
 
 .consent-panel .tiny {
-  margin: 14px 0 0;
+  margin: 6px 0 0;
   text-align: center;
+}
+
+/* MAJ-07: the advisory note under the CTA yields space; sensor status stays visible. */
+.consent-panel .primary + .tiny {
+  display: none;
 }
 
 .site-footer {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 24px;
+  gap: 6px 20px;
   justify-content: space-between;
   width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 22px 0 34px;
+  padding: 6px 0 10px;
   border-top: 1px solid var(--line-soft);
   color: var(--muted);
   font-family: var(--mono);
@@ -581,12 +594,64 @@ p {
   line-height: 1.6;
 }
 
+/* ---------- attunement ritual (blueprint §2.2) ---------- */
+
+.attunement-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.attunement-ember {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe9b8 0%, #d8b877 45%, rgba(216, 184, 119, 0) 75%);
+  box-shadow:
+    0 0 18px 8px rgba(216, 184, 119, 0.55),
+    0 0 60px 24px rgba(216, 184, 119, 0.18);
+  transition:
+    left 700ms cubic-bezier(0.4, 0, 0.2, 1),
+    top 700ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: ember-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes ember-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.92;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
+.attunement-note {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  margin: 0;
+  transform: translateX(-50%);
+  color: var(--cream-dim);
+  font-family: var(--serif);
+  font-size: 15px;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+}
+
 /* ---------- performance ---------- */
 
 .performance {
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 16px 0 28px;
+  padding: 12px 0 16px;
 }
 
 .perform-top {
@@ -610,25 +675,6 @@ p {
   font-style: italic;
 }
 
-.dots {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  border: 1px solid rgba(216, 184, 119, 0.44);
-  border-radius: 50%;
-  transition: background 200ms ease, transform 200ms ease;
-}
-
-.dot.is-filled {
-  background: var(--gold);
-  transform: scale(1.25);
-}
-
 .top-actions {
   display: flex;
   flex-wrap: wrap;
@@ -639,7 +685,7 @@ p {
 .stage-shell {
   position: relative;
   overflow: hidden;
-  height: clamp(330px, 50vh, 560px);
+  height: clamp(230px, 28vh, 340px);
   border: 1px solid var(--line);
   border-radius: 6px;
   background:
@@ -696,8 +742,8 @@ p {
 }
 
 .silent-choices {
-  margin-top: 14px;
-  padding: clamp(16px, 2.4vw, 22px);
+  margin-top: 8px;
+  padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background:
@@ -709,23 +755,23 @@ p {
   margin: 0;
   color: var(--cream);
   font-family: var(--serif);
-  font-size: clamp(20px, 2vw, 26px);
+  font-size: clamp(17px, 1.6vw, 21px);
   font-weight: 400;
   line-height: 1.2;
 }
 
 .silent-choices > p {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: var(--cream-dim);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .silent-choice-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 8px;
-  margin: 14px 0 0;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px;
+  margin: 10px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -733,18 +779,20 @@ p {
 .silent-choice {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  min-height: 46px;
-  padding: 10px 12px;
+  min-height: 36px;
+  padding: 6px 10px;
   border: 1px solid rgba(216, 184, 119, 0.24);
   border-radius: 3px;
   background: rgba(7, 17, 15, 0.58);
   color: var(--cream);
   font-size: 16px;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
+.silent-choice.is-red { border-color: rgba(158, 42, 43, 0.36); }
+.silent-choice-glyph.is-red { color: #9e2a2b; }
 .silent-choice-glyph {
   flex: 0 0 auto;
   color: var(--gold);
@@ -774,10 +822,10 @@ p {
 .panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 28px;
+  gap: 22px;
   align-items: end;
-  margin-top: 14px;
-  padding: clamp(18px, 2.8vw, 30px);
+  margin-top: 10px;
+  padding: clamp(14px, 2vw, 22px);
   border: 1px solid var(--line-soft);
   border-radius: 6px;
   background: linear-gradient(160deg, rgba(15, 32, 28, 0.72), rgba(6, 15, 13, 0.72));
@@ -869,10 +917,10 @@ p {
 
 .perf-footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px 22px;
+  flex-wrap: nowrap;
+  gap: 10px 16px;
   justify-content: space-between;
-  padding: 18px 2px 0;
+  padding: 6px 2px 0;
   color: var(--muted);
   font-family: var(--mono);
   font-size: 9px;
@@ -904,6 +952,22 @@ p {
   font-weight: 400;
 }
 
+.flat-avatar-badge {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0 8px;
+}
+
+.flat-mask-svg {
+  filter: drop-shadow(0 2px 8px rgba(216, 184, 119, 0.3));
+}
+
+.flat-eye-glow {
+  filter: drop-shadow(0 0 6px #e68a00);
+}
+
 .flat-stage {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -933,6 +997,14 @@ p {
 
 .flat-glyph {
   font-size: 28px;
+}
+
+.flat-card.is-red .flat-glyph {
+  color: #9e2a2b;
+}
+
+.flat-card.is-red {
+  border-color: rgba(158, 42, 43, 0.42);
 }
 
 .flat-card.is-revealed {
@@ -1225,8 +1297,8 @@ p {
 @media (max-width: 980px) {
   .consent {
     grid-template-columns: 1fr;
-    gap: 34px;
-    padding-top: 26px;
+    gap: 16px;
+    padding-top: 12px;
   }
 
   .consent-hero {
@@ -1234,7 +1306,99 @@ p {
   }
 
   .wordmark {
-    font-size: clamp(80px, 24vw, 150px);
+    font-size: clamp(38px, 12vw, 56px);
+    margin-bottom: 4px;
+  }
+
+  .lede-small {
+    font-size: 11.5px;
+  }
+
+  .consent-rule {
+    margin: 10px 0 8px;
+  }
+
+  /* MAJ-07: phone screens condense descriptive copy. The binding sensor consents
+     stay in their required checkboxes, and the privacy lines already appear in the
+     hero fine-print, so the long marketing blurbs and the duplicated footer drop
+     out of the single-screen invitation. */
+  .effect-blurb,
+  .effect-meta {
+    display: none;
+  }
+
+  .effect-picker legend {
+    margin-bottom: 4px;
+  }
+
+  .effect-picker {
+    margin: 8px 0 6px;
+  }
+
+  .effect-choice {
+    padding: 6px 8px;
+  }
+
+  .effect-title {
+    font-size: 15px;
+  }
+
+  .check {
+    font-size: 11.5px;
+    line-height: 1.35;
+    margin-bottom: 8px;
+  }
+
+  .site-footer {
+    display: none;
+  }
+
+  .consent-hero .fine-print {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .performance {
+    padding: 8px 0 12px;
+  }
+
+  .stage-shell {
+    height: clamp(180px, 24vh, 240px);
+  }
+
+  .silent-choices {
+    margin-top: 8px;
+    padding: 8px 10px;
+  }
+
+  .silent-choices h2 {
+    font-size: 15px;
+  }
+
+  .silent-choices > p {
+    font-size: 11.5px;
+  }
+
+  .silent-choice-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .silent-choice {
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 16px;
+    gap: 6px;
+  }
+
+  .silent-choice-glyph {
+    font-size: 18px;
+  }
+
+  /* The stage instructions already say this; the roster caption yields space. */
+  .silent-choices > p {
+    display: none;
   }
 
   .lede {
@@ -1305,11 +1469,11 @@ p {
 
   .consent {
     width: calc(100% - 28px);
-    padding-bottom: 40px;
+    padding-bottom: 16px;
   }
 
   .consent-panel {
-    padding: 21px 18px;
+    padding: 13px 12px;
   }
 
   .effect-choice-copy {
@@ -1336,16 +1500,12 @@ p {
     padding-bottom: 10px;
   }
 
-  .perform-top .dots {
-    display: none;
-  }
-
   .top-actions {
     justify-content: flex-start;
   }
 
   .stage-shell {
-    height: clamp(300px, 44vh, 420px);
+    height: clamp(190px, 25vh, 240px);
     border-radius: 4px;
   }
 
@@ -1355,8 +1515,25 @@ p {
     font-size: 6.5px;
   }
 
+  /* MAJ-07: dense 2-column wrap at readable 16px so the think beat fits one screen. */
   .silent-choice-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .silent-choice {
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 16px;
+  }
+
+  .silent-choice-glyph {
+    font-size: 15px;
+  }
+
+  .panel {
+    padding: 12px 14px;
+    gap: 12px;
   }
 
   .panel {
@@ -1425,15 +1602,54 @@ p {
 
 @media (max-width: 460px) {
   .wordmark {
-    font-size: 76px;
+    font-size: clamp(34px, 9vw, 42px);
+    margin-bottom: 6px;
   }
 
   .lede {
-    font-size: 21px;
+    font-size: 14px;
+    margin-bottom: 8px;
   }
 
   .consent-panel h2 {
-    font-size: 24px;
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+
+  /* MAJ-07: one phone screen for the whole think beat. */
+  .perf-footer {
+    display: none;
+  }
+
+  .perform-top {
+    margin-bottom: 8px;
+  }
+
+  .silent-choice-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .silent-choice {
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 16px;
+    gap: 6px;
+  }
+
+  .silent-choice-glyph {
+    font-size: 18px;
+  }
+
+  /* The stage instructions already say this; the roster caption yields space. */
+  .silent-choices > p {
+    display: none;
+  }
+
+  .panel {
+    padding: 10px 12px;
+    gap: 10px;
   }
 
   .app-nav .nav-link:nth-child(2) {
@@ -1441,15 +1657,15 @@ p {
   }
 
   .stage-shell {
-    height: 300px;
+    height: clamp(140px, 18vh, 170px);
   }
 
   .line {
-    font-size: 22px;
+    font-size: 17px;
   }
 
   .panel-probe .line {
-    font-size: 20px;
+    font-size: 16px;
   }
 }
 

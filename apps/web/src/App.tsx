@@ -4,6 +4,8 @@ import { Consent, type ShowMode } from "./components/Consent.js";
 import { Performance } from "./components/Performance.js";
 import { effectChoice, type EffectId } from "./lib/effects.js";
 import { SensorSession } from "./lib/sensor-session.js";
+import { resolveHostedVoiceConfig } from "./lib/hosted-voice-policy.js";
+import { useEffect } from "react";
 
 type Screen = "show" | "lab";
 
@@ -21,12 +23,15 @@ export function App() {
   const [llmEnabled, setLlmEnabled] = useState(false);
   const [sensorMode, setSensorMode] = useState(false);
   const [sensorNotice, setSensorNotice] = useState<string | null>(null);
+  const [hostedVoiceOptIn, setHostedVoiceOptIn] = useState(false);
+  const hostedVoiceConfigured = resolveHostedVoiceConfig(import.meta.env as Record<string, string | undefined>).enabled;
   const sensorRef = useRef<SensorSession | null>(null);
 
   const choice = effectChoice(effectId);
 
   const enteringRef = useRef(false);
-  const enter = async (nextEffect: EffectId, nextCameraOptIn: boolean, mode: ShowMode) => {
+  const enter = async (nextEffect: EffectId, nextCameraOptIn: boolean, mode: ShowMode, nextHostedVoiceOptIn = false) => {
+    setHostedVoiceOptIn(nextHostedVoiceOptIn);
     // Guard the async permission window: a second Enter while the browser
     // prompt is open must not double-acquire.
     if (enteringRef.current) return;
@@ -115,6 +120,13 @@ export function App() {
     setScreen("show");
   };
 
+  useEffect(() => {
+    const onHide = () => { sensorRef.current?.stopAll(); };
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("beforeunload", onHide);
+    return () => { window.removeEventListener("pagehide", onHide); window.removeEventListener("beforeunload", onHide); };
+  }, []);
+
   return (
     <div className={`app ${reducedMotion ? "reduce-motion" : ""}`}>
       <a className="skip-link" href="#main">
@@ -170,11 +182,13 @@ export function App() {
       ) : entered ? (
         <Performance
           effect={choice.effect}
+          sealed={choice.sealed}
           reducedMotion={reducedMotion}
           llmEnabled={llmEnabled}
           cameraReady={sensorMode}
           sensorMode={sensorMode}
           sensorSession={sensorRef.current}
+          hostedVoiceOptIn={hostedVoiceOptIn}
           onStopSensors={stopSensors}
           onSelectEffect={(nextId) => setEffectId(nextId)}
           onExit={leave}
@@ -184,9 +198,9 @@ export function App() {
         />
       ) : (
         <>
-          <Consent onEnter={enter} restoreFocus={hasLeft} sensorNotice={sensorNotice} />
+          <Consent onEnter={enter} restoreFocus={hasLeft} sensorNotice={sensorNotice} hostedVoiceConfigured={hostedVoiceConfigured} />
           <footer className="site-footer">
-            <span>LOKI v3 · consent-based performance engine</span>
+            <span>LOKI v4 · {__LOKI_GIT_SHA__} · consent-based performance engine</span>
             <span>
               An illusion, not mind reading. No lie detection, emotion reading, or diagnosis.
               Human pilot: 0 participants.

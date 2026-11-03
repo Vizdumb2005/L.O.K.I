@@ -6,7 +6,7 @@ import { sanitizeLine } from "./patter.js";
  * any particular effect. It only echoes what the person chose, and it never names a
  * hypothesis: the reveal line itself still comes from the effect.
  */
-export type CueKind = "ack" | "prompt" | "recap" | "build" | "hush" | "reveal" | "concede" | "miss" | "line";
+export type CueKind = "ack" | "prompt" | "recap" | "build" | "hush" | "reveal" | "concede" | "miss" | "line" | "hesitate" | "punchline";
 
 export interface Cue {
   id: string;
@@ -46,11 +46,19 @@ const HUSH_LINES: readonly string[] = ["Let it be quiet for a moment.", "I am go
 const CONCEDE_LINE = "I cannot hold it clearly enough to say.";
 const RECAP_EMPTY = "I have what you have given me so far.";
 
-export const ACK_HOLD_MS = 1100;
+export const ACK_HOLD_MS = 650;
 export const RECAP_HOLD_MS = 2200;
 export const BUILD_HOLD_MS = 1600;
 export const HUSH_HOLD_MS = [1700, 1400] as const;
 export const CONCEDE_HOLD_MS = 1600;
+export const HESITATE_HOLD_MS = 1100;
+export const PUNCHLINE_HUSH_MS = 1900;
+
+const HESITATE_LINES: readonly string[] = [
+  "Wait — something else crossed the screen just then.",
+  "Hold on. Another impression is pulling at the edge of this one.",
+  "Wait. Let me stay with what actually remained, not what flickered first."
+];
 
 function rng(seed: number): () => number {
   let a = seed >>> 0;
@@ -80,6 +88,7 @@ function joinLabels(labels: string[]): string {
 export class Performer {
   private readonly random: () => number;
   private lastAck = -1;
+  private lastHesitate = -1;
   private lastLabel = "";
   private counter = 0;
 
@@ -140,16 +149,11 @@ export class Performer {
    * pairs do not fit the line limit.
    */
   recapAnswers(pairs: Array<{ label: string; prompt: string }>): Cue {
+    // CRIT-01 fix: use only short option labels, never raw prompt text, to stay within MAX_PATTER_LENGTH.
     const clean = pairs
-      .map((p) => ({ label: p.label.replace(/[{}]/g, "").trim(), prompt: p.prompt.replace(/[{}"]/g, "").replace(/\s+/g, " ").trim() }))
-      .filter((p) => p.label);
-    for (let take = Math.min(3, clean.length); take >= 1; take--) {
-      const parts = clean.slice(-take).map((p) => (p.prompt ? `${p.label} to "${p.prompt}"` : p.label));
-      const line = `${take < clean.length ? "Lately you said" : "You said"} ${joinLabels(parts)}. All of it was yours.`;
-      const safe = sanitizeLine(line, "");
-      if (safe) return { id: this.nextId("recap"), kind: "recap", line: safe, holdMs: RECAP_HOLD_MS };
-    }
-    return this.recap(clean.map((p) => p.label));
+      .map((p) => p.label.replace(/[{}]/g, "").trim())
+      .filter(Boolean);
+    return this.recap(clean);
   }
 
   /** Reveal: two quiet beats, then the effect's own reveal line, which rests. */
@@ -169,7 +173,29 @@ export class Performer {
     ];
   }
 
-  buildSequence(recap: Cue, buildLine: string): Cue[] {
-    return [recap, { id: this.nextId("build"), kind: "build", line: buildLine, holdMs: 0 }];
+  /** Performed catch of a competing impression. Never names a hypothesis. */
+  hesitate(): Cue {
+    let index = Math.floor(this.random() * HESITATE_LINES.length);
+    if (index === this.lastHesitate) index = (index + 1) % HESITATE_LINES.length;
+    this.lastHesitate = index;
+    return {
+      id: this.nextId("hesitate"),
+      kind: "hesitate",
+      line: sanitizeLine(HESITATE_LINES[index]!, "Wait — let me stay with what remained."),
+      holdMs: HESITATE_HOLD_MS
+    };
+  }
+
+  /** Reveal with a longer held breath before the resting line (sealed shows). */
+  punchlineSequence(revealLine: string): Cue[] {
+    return [
+      { id: this.nextId("hush"), kind: "hush", line: HUSH_LINES[0]!, holdMs: HUSH_HOLD_MS[0] },
+      { id: this.nextId("punchline"), kind: "punchline", line: HUSH_LINES[1]!, holdMs: PUNCHLINE_HUSH_MS },
+      { id: this.nextId("reveal"), kind: "reveal", line: revealLine, holdMs: 0 }
+    ];
+  }
+
+  buildSequence(recap: Cue, buildLine: string, middle: Cue[] = []): Cue[] {
+    return [recap, ...middle, { id: this.nextId("build"), kind: "build", line: buildLine, holdMs: 0 }];
   }
 }

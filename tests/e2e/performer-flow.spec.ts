@@ -9,10 +9,13 @@ async function enter(page: Page): Promise<void> {
 }
 
 async function playToPayoff(page: Page): Promise<void> {
-  for (let i = 0; i < 20; i++) {
-    if (await page.locator("button.choice").first().isVisible().catch(() => false)) {
+  // CRIT-02: input is gated while the acknowledgement cue shows; each digit press
+  // must wait for the next prompt to re-enable the choice buttons.
+  for (let i = 0; i < 60; i++) {
+    const ready = page.locator("button.choice:not([disabled])").first();
+    if (await ready.isVisible().catch(() => false)) {
       await page.keyboard.press("1");
-      await page.waitForTimeout(120);
+      await page.waitForTimeout(150);
       continue;
     }
     const recover = page.getByRole("button", { name: "One clean claim" });
@@ -20,7 +23,8 @@ async function playToPayoff(page: Page): Promise<void> {
       await recover.click();
       continue;
     }
-    return;
+    if (!(await page.locator("button.choice").first().isVisible().catch(() => false))) return;
+    await page.waitForTimeout(150);
   }
 }
 

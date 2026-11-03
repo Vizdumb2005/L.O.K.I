@@ -83,6 +83,7 @@ function driveToReveal(effect: Effect): PerformanceSession {
     const phase = session.phaseName;
     if (phase === "probe") {
       session.answer(session.snapshot().options![0]!.id);
+      session.clearAck();
       continue;
     }
     if (phase === "build") {

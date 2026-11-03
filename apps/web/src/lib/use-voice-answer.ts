@@ -129,6 +129,8 @@ export function useVoiceAnswer({ active, session, probeActive, probeKey, options
   const useManual = useCallback((reason: "declined" | "forgotten") => {
     cancelledRef.current = true;
     session?.forget("voice-embedding");
+    session?.forget("hosted-voice");
+    session?.forget("hosted-voice-buffers");
     embRef.current = null;
     setState("manual");
     setListening(false);

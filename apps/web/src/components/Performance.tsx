@@ -1,21 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Effect } from "@loki/effect-api";
 import { rewritePatter } from "@loki/showrunner";
-import { Stage } from "./Stage.js";
+import { Stage, cardPalette } from "./Stage.js";
 import { usePerformance } from "../lib/performance.js";
 import type { SessionView } from "@loki/showrunner";
 import type { SensorSession } from "../lib/sensor-session.js";
 import { createPresenceDetector } from "../lib/presence.js";
+import { useAttunementGaze } from "../lib/use-attunement-gaze.js";
+import { AttunementOverlay } from "./AttunementOverlay.js";
 import { useVoiceAnswer } from "../lib/use-voice-answer.js";
+import { useHostedVoice } from "../lib/use-hosted-voice.js";
+import { useAvatarDriver } from "../lib/use-avatar-driver.js";
 import type { EffectId } from "../lib/effects.js";
 
 interface PerformanceProps {
   effect: Effect;
+  sealed?: boolean;
   reducedMotion: boolean;
   llmEnabled: boolean;
   cameraReady: boolean;
   sensorMode?: boolean;
   sensorSession?: SensorSession | null;
+  hostedVoiceOptIn?: boolean;
   onStopSensors?: (notice?: string) => void;
   onSelectEffect?: (effectId: EffectId) => void;
   onExit: () => void;
@@ -33,9 +39,11 @@ function phaseLabel(view: SessionView): string {
     case "attune":
       return "Attunement";
     case "probe":
-      return view.progress.answered >= view.progress.max ? "One clean answer" : "The reading";
+      return "The reading";
     case "recover":
-      return "A contradiction";
+      // CRIT-03: only a true contradiction is framed as one. A truthful run that
+      // exhausted the question budget is a tie-break between two impressions.
+      return view.recoveryReason === "contradiction" ? "A contradiction" : "Two impressions remain";
     case "build":
       return "Building the reveal";
     case "reveal":
@@ -51,11 +59,13 @@ function phaseLabel(view: SessionView): string {
 
 export function Performance({
   effect,
+  sealed = false,
   reducedMotion,
   llmEnabled,
   cameraReady,
   sensorMode = false,
   sensorSession = null,
+  hostedVoiceOptIn = false,
   onStopSensors,
   onSelectEffect,
   onExit,
@@ -63,7 +73,11 @@ export function Performance({
   onToggleReducedMotion,
   onToggleLlm
 }: PerformanceProps) {
-  const { view, error, advance, answer, restart } = usePerformance(effect, sensorMode);
+  const { view, error, advance, answer, restart, clearAck, validateCamera, addGaze } = usePerformance(
+    effect,
+    sensorMode,
+    { forceEnabled: sealed }
+  );
   const [presence, setPresence] = useState<"unknown" | "present" | "absent" | "unavailable">("unknown");
   const [showPreview, setShowPreview] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -130,6 +144,23 @@ export function Performance({
       detector?.close();
     };
   }, [attuning, videoMounted]);
+  const gazeActive = Boolean(sensorMode && (view?.phase === "think" || view?.phase === "attune"));
+  // Blueprint v4 §2.2/§2.3: Gaze accumulation starts in "think" and disguised ember
+  // calibration runs during the "attune" beat. Passing it opens the gaze gate; the
+  // buffered think-phase fixations and refixation windows feed the session silently.
+  const attunement = useAttunementGaze({
+    active: gazeActive,
+    phase: view?.phase ?? null,
+    video: videoMounted ? videoRef.current : null,
+    zones: view?.stage.zones ?? [],
+    onValidated: validateCamera,
+    onGazeWindow: addGaze,
+    onComplete: advance
+  });
+
+  const handleExitThink = useCallback(() => {
+    advance();
+  }, [advance]);
   const [displayLine, setDisplayLine] = useState("");
   const [cueIndex, setCueIndex] = useState(0);
   const [indexKey, setIndexKey] = useState("");
@@ -142,8 +173,6 @@ export function Performance({
   const cues = view?.cues ?? [];
   const cueKey = cues.map((c) => c.id).join("|");
   const lastCue = Math.max(0, cues.length - 1);
-  // The index only counts for the cue set it was recorded against; for the first render of a new
-  // set (before the effect below runs) the sequence is at its start, so nothing flashes early.
   const effectiveIndex = indexKey === cueKey ? cueIndex : reducedMotion ? lastCue : 0;
   const cuePending = effectiveIndex < lastCue;
   const cuePendingRef = useRef(false);
@@ -151,11 +180,27 @@ export function Performance({
   cuePendingRef.current = cuePending;
   lastCueRef.current = lastCue;
 
+  const avatarDriver = useAvatarDriver({
+    cuePending,
+    line: view?.line,
+    landmarks: attunement.landmarks,
+    gazeLocked: Boolean(attunement.state.status === "tracking" || (view?.reveal && view?.phase === "reveal")),
+    reducedMotion
+  });
+
   useEffect(() => {
     setCueIndex(reducedMotion ? lastCue : 0);
     setIndexKey(cueKey);
     setUserRevealed(false);
   }, [cueKey, reducedMotion]);
+
+  // CRIT-02: When the cue sequence finishes (cuePending becomes false during probe),
+  // clear the session's ackCue so the next answer is accepted.
+  useEffect(() => {
+    if (!cuePending && view?.phase === "probe" && view.turn > 0) {
+      clearAck();
+    }
+  }, [cuePending, view?.phase, view?.turn, clearAck]);
 
   // One timer per step, owned by the current index. Skipping changes the index, which clears the
   // pending timer, so a late timer can never pull a skipped sequence back to an earlier cue.
@@ -200,12 +245,14 @@ export function Performance({
   const voice = useVoiceAnswer({
     active: sensorMode,
     session: sensorSession ?? null,
-    probeActive: sensorMode && view?.phase === "probe" && Boolean(view?.options),
-    probeKey: `${effect.id}:${view?.phase ?? ""}:${view?.progress.answered ?? 0}`,
+    probeActive: sensorMode && view?.phase === "probe" && Boolean(view?.options) && !cuePendingRef.current,
+    probeKey: `${effect.id}:${view?.phase ?? ""}:${view?.turn ?? 0}`,
     options: view?.options,
     onAnswer: answer,
     onEndSensorMode: endSensorMode
   });
+  const hosted = useHostedVoice({ hostedVoiceOptIn, session: sensorSession ?? null, onError: () => undefined });
+  void hosted;
   const voiceOverlay =
     sensorMode && (voice.state === "loading" || voice.state === "enroll" || voice.state === "recording");
 
@@ -219,7 +266,7 @@ export function Performance({
       (target ?? primaryRef.current)?.focus({ preventScroll: true });
     }, 140);
     return () => window.clearTimeout(timer);
-  }, [view?.phase, view?.progress.answered, cuePending, voiceOverlay]);
+  }, [view?.phase, view?.turn, cuePending, voiceOverlay]);
 
   useEffect(() => {
     if (!view || voiceOverlay) return;
@@ -240,6 +287,8 @@ export function Performance({
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const onControl = Boolean(target?.closest("button, a"));
       if (view.phase === "probe" && view.options) {
+        // CRIT-02: don't accept keyboard answers while the ack cue is still showing
+        if (cuePendingRef.current) return;
         const index = Number(event.key) - 1;
         const option =
           view.options[index] ?? (event.key.toLowerCase() === "y" ? view.options[0] : undefined);
@@ -258,12 +307,15 @@ export function Performance({
         }
         if (view.phase === "afterglow" || view.phase === "done") restart();
         else if (revealGated) setUserRevealed(true);
-        else if (view.canAdvance) advance();
+        else if (view.canAdvance) {
+          if (view.phase === "think") handleExitThink();
+          else advance();
+        }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [view, voiceOverlay, answer, advance, restart, onExit]);
+  }, [view, voiceOverlay, answer, advance, restart, onExit, handleExitThink]);
 
   // Losing REQUIRED capture (camera unplugged, OS revoked the mic) pauses the
   // sensor-enabled performance - it never continues unchanged without a
@@ -376,6 +428,9 @@ export function Performance({
   const revealGated = Boolean(view.revealGate) && view.phase === "reveal" && !cuePending && !userRevealed;
   const stageView: SessionView =
     view.reveal && view.phase === "reveal" && (cuePending || revealGated) ? { ...view, reveal: undefined } : view;
+  // The target face stays dark until the resting reveal line: view.reveal is
+  // only present from the reveal phase, never during build.
+  const targetFaceLit = Boolean(stageView.reveal) && view.phase !== "build";
   const isProbe = view.phase === "probe" && view.options;
   const isEnd = view.phase === "afterglow" || view.phase === "done";
   const canContinue = view.canAdvance && !isProbe && !isEnd;
@@ -398,14 +453,6 @@ export function Performance({
         <div className="perform-id">
           <p className="eyebrow">{effect.name}</p>
           <p className="perform-phase">{phaseLabel(view)}</p>
-        </div>
-        <div className="dots" aria-hidden="true">
-          {Array.from({ length: view.progress.max }, (_, index) => (
-            <span
-              key={index}
-              className={`dot ${index < view.progress.answered ? "is-filled" : ""}`}
-            />
-          ))}
         </div>
         <div className="top-actions">
           <button type="button" className="chip" onClick={onToggleReducedMotion} aria-pressed={reducedMotion}>
@@ -440,6 +487,11 @@ export function Performance({
               Mic on - voice answers (experimental). Clips are processed here and discarded.
             </span>
           )}
+          {hostedVoiceOptIn && (
+            <span className="sensor-indicator" role="status">
+              Mic on - hosted voice (opt-in). Audio leaves this device encrypted, zero-retention. Camera video never leaves this device.
+            </span>
+          )}
           {voice.enrolled && (
             <button type="button" className="chip" onClick={() => voice.useManual("forgotten")}>
               Forget my voice
@@ -454,9 +506,19 @@ export function Performance({
         </section>
       )}
 
-      <section className="stage-shell" aria-label={`${view.stage.title} stage`} data-target-lit={stageView.reveal ? "true" : "false"}>
+      <section className="stage-shell" aria-label={`${view.stage.title} stage`} data-target-lit={targetFaceLit ? "true" : "false"}>
         <div className="stage-vignette" />
-        <Stage effect={effect} view={stageView} reducedMotion={reducedMotion} />
+        <Stage
+          effect={effect}
+          view={stageView}
+          reducedMotion={reducedMotion}
+          audioRms={avatarDriver.audioRms}
+          visemes={avatarDriver.visemes}
+          headPose={avatarDriver.headPose}
+          gazeLocked={avatarDriver.gazeLocked}
+          speaking={avatarDriver.speaking}
+        />
+        {attuning && <AttunementOverlay state={attunement.state} />}
         <div className="stage-caption" aria-hidden="true">
           <span>NOCTURNE OBSERVATORY</span>
           <span>{view.stage.items.length} OBJECTS IN THE LIGHT</span>
@@ -471,14 +533,17 @@ export function Performance({
           <h2 id="silent-choices-heading">Choose privately</h2>
           <p>Hold one in mind. Do not tap or say which one.</p>
           <ul className="silent-choice-list" role="list" aria-label={`${view.stage.title} items`}>
-            {view.stage.items.map((item) => (
-              <li key={item.hypothesisId} className="silent-choice">
-                <span className="silent-choice-glyph" aria-hidden="true">
-                  {item.glyph ?? "·"}
-                </span>
-                <span className="silent-choice-label">{item.label}</span>
-              </li>
-            ))}
+            {view.stage.items.map((item) => {
+              const palette = cardPalette(item.glyph ?? "", item.label);
+              return (
+                <li key={item.hypothesisId} className={`silent-choice ${palette.isRedSuit ? "is-red" : ""}`}>
+                  <span className={`silent-choice-glyph ${palette.isRedSuit ? "is-red" : ""}`} aria-hidden="true">
+                    {item.glyph ?? "·"}
+                  </span>
+                  <span className="silent-choice-label">{item.label}</span>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
@@ -499,6 +564,16 @@ export function Performance({
           {llmEnabled && (view.phase === "build" || view.phase === "afterglow") && (
             <p className="source-line">
               {patterSource === "llm" ? "Optional proxy patter · filtered" : "Bundled patter · offline fallback"}
+            </p>
+          )}
+          {view.sealedCommitment && (
+            <p className="prompt-note" title={view.sealedCommitment}>
+              Sealed before your first answer · {view.sealedCommitment.slice(0, 12)}…
+            </p>
+          )}
+          {view.sealedOpened && (
+            <p className="prompt-note" title={view.sealedOpened.commitment}>
+              Sealed prediction opened: {view.sealedOpened.hypothesisId} · {view.sealedOpened.verified ? "verified" : "did not match"}
             </p>
           )}
           {isProbe && (
@@ -528,6 +603,7 @@ export function Performance({
               key={option.id}
               type="button"
               className="choice"
+              disabled={cuePending}
               onClick={() => answer(option.id)}
             >
               <span className="key">{index + 1}</span>
@@ -554,7 +630,7 @@ export function Performance({
               ref={primaryRef}
               type="button"
               className="primary"
-              onClick={() => (skipOnly ? setCueIndex(lastCue) : advance())}
+              onClick={() => (skipOnly ? setCueIndex(lastCue) : (view.phase === "think" ? handleExitThink() : advance()))}
             >
               {skipOnly ? "Skip ahead" : continueLabel}
             </button>

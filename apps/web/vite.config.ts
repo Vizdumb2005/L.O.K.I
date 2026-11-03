@@ -37,6 +37,9 @@ function servePublicOrt() {
 }
 
 export default defineConfig({
+  define: {
+    __LOKI_GIT_SHA__: JSON.stringify(process.env.GITHUB_SHA?.slice(0, 7) ?? "dev")
+  },
   root,
   // GitHub Pages serves from /<repo>/; the deploy workflow sets LOKI_BASE.
   base: process.env.LOKI_BASE ?? "/",

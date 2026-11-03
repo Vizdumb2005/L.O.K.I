@@ -39,6 +39,7 @@ function probe(
   return {
     id,
     prompt,
+    discourse: "statement",
     cost,
     options: [
       { id: "yes", label: "Yes" },
@@ -63,6 +64,7 @@ function choiceProbe(
   return {
     id,
     prompt,
+    discourse: "statement",
     cost,
     options,
     likelihood: (itemId, optionId) => {
@@ -73,24 +75,18 @@ function choiceProbe(
   };
 }
 
+export const EMBER_FORCE_TARGET = "comet";
+const EMBER_FORCE_PROBABILITY = 0.34;
+
+// Spine order is salience order: Comet-favouring beats first; the four-way
+// projection second so a truthful run genuinely commits within two beats
+// (two binary beats alone reach only ~0.77, below the 0.85 threshold).
 const PROBES: Probe[] = [
-  probe(
-    "ends-n",
-    "Hold the image of your word on that mental screen. It is one of the two permanent lights of the sky — the Sun or the Moon, ruling day or night — not a passing comet or an earthly bloom.",
-    0.1,
-    (w) => letters(w).endsWith("n")
-  ),
   probe(
     "has-m",
     "The scene around your image is dark — you are looking up into the night sky at the Moon or a streaking Comet, not standing in warm daylight.",
     0.14,
     (w) => letters(w).includes("m")
-  ),
-  probe(
-    "odd-length",
-    "There is fierce heat and active fire coming off the image — blazing solar light or a burning streak across space, the Sun or the Comet — rather than the quiet coolness of Moon or Flower.",
-    0.14,
-    (w) => letters(w).length % 2 === 1
   ),
   choiceProbe(
     "first-letter",
@@ -103,6 +99,18 @@ const PROBES: Probe[] = [
       { id: "f", label: "Petals" }
     ],
     (w) => letters(w)[0]!
+  ),
+  probe(
+    "odd-length",
+    "Fierce heat radiates from the image — blazing solar light or a burning streak, the Sun or the Comet, not the quiet coolness of Moon or Flower.",
+    0.14,
+    (w) => letters(w).length % 2 === 1
+  ),
+  probe(
+    "ends-n",
+    "Picture your word on the mental screen — one of the two permanent sky lights, the Sun or the Moon, not a passing comet or bloom.",
+    0.1,
+    (w) => letters(w).endsWith("n")
   ),
   choiceProbe(
     "letter-count",
@@ -123,7 +131,7 @@ export const exampleEffect: Effect = {
   name: "Ember Words",
   tagline: "Act II — Four words, sensory mental-screen impressions, one quiet reading.",
   config: {
-    maxProbes: 3,
+    maxProbes: 2,
     commitThreshold: 0.85,
     recoveryBudget: 1,
     recoverySurprise: 3.6,
@@ -134,7 +142,15 @@ export const exampleEffect: Effect = {
     gazeEnabledByDefault: false
   },
   hypotheses: () => WORDS,
-  prior: () => uniformPrior(WORDS),
+  prior: ({ forceEnabled }) => {
+    if (!forceEnabled) return uniformPrior(WORDS);
+    const rest = (1 - EMBER_FORCE_PROBABILITY) / (WORDS.length - 1);
+    const p = Object.fromEntries(WORDS.map((w) => [w.id, rest]));
+    p[EMBER_FORCE_TARGET] = EMBER_FORCE_PROBABILITY;
+    return p;
+  },
+  forceSpec: ({ forceEnabled }) =>
+    forceEnabled ? { targetId: EMBER_FORCE_TARGET, salience: EMBER_FORCE_PROBABILITY } : null,
   probes: () => PROBES,
   channels: () => [],
   script: () => ({
@@ -160,6 +176,12 @@ export const exampleEffect: Effect = {
       { id: "words-afterglow", kind: "afterglow", line: "You held the image. I only followed the light." }
     ],
     buildLines: ["The competing images have faded.", "Only one image is left glowing on the screen."],
+    revealMode: "sealed",
+    timeBeatLines: [
+      "That image arrived quickly — it was already lit.",
+      "You held that one image glowing while the room went quiet.",
+      "All that time with a single image held in the light — it stayed with you."
+    ],
     revealLine: (item) => `Your word was ${item.label}.`,
     recoverLine: "Two images are overlapping on the screen. Give me one clean answer to separate them.",
     missLine: "You beat me. The word stays yours."

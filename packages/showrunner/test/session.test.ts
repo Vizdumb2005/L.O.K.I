@@ -88,15 +88,19 @@ describe("performance session", () => {
     expect(session.snapshot().phase).toBe("probe");
     expect(session.snapshot().camera.active).toBe(false);
     session.answer("yes");
-    if (session.phaseName === "probe") session.answer("yes");
+    session.clearAck();
+    if (session.phaseName === "probe") { session.answer("yes"); session.clearAck(); }
     expect(["build", "recover"]).toContain(session.phaseName);
     if (session.phaseName === "recover") {
       session.advance();
       session.answer("yes");
+      session.clearAck();
     }
     expect(session.phaseName).toBe("build");
     const build = session.snapshot();
+    // No reveal candidate is exposed before the build completes.
     expect(build.reveal).toBeUndefined();
+    expect(session.internal().revealedId).toBe("a");
     session.advance();
     const reveal = session.snapshot();
     expect(reveal.phase).toBe("reveal");
@@ -116,6 +120,7 @@ describe("performance session", () => {
     session.begin();
     session.chosen();
     session.answer("yes");
+    session.clearAck();
     expect(session.phaseName).toBe("miss");
     expect(session.snapshot().reveal).toBeUndefined();
     session.advance();
@@ -130,11 +135,14 @@ describe("performance session", () => {
     session.begin();
     session.chosen();
     session.answer("no");
+    session.clearAck();
     session.answer("yes");
+    session.clearAck();
     expect(["recover", "miss"]).toContain(session.phaseName);
     if (session.phaseName === "recover") {
       session.advance();
       if (session.snapshot().phase === "probe") session.answer("no");
+      session.clearAck();
       expect(session.phaseName).toBe("miss");
     }
   });
@@ -202,6 +210,7 @@ describe("performance session", () => {
     one.begin();
     one.chosen();
     one.answer("yes");
+    one.clearAck();
     const log = one.exportLog();
     expect(log.layoutSeed).toBe(42);
     expect(log.observations[0]?.channel).toBe("answer");
@@ -226,6 +235,7 @@ describe("recovery and commit gate audit", () => {
         const phase = session.phaseName;
         if (phase === "probe") {
           session.answer(answers[step % answers.length]);
+          session.clearAck();
           step++;
         } else if (phase === "recover") {
           session.advance();
@@ -262,6 +272,7 @@ describe("recovery and commit gate audit", () => {
       const phase = session.phaseName;
       if (phase === "probe") {
         session.answer(steps % 2 === 0 ? "yes" : "no");
+        session.clearAck();
       } else if (phase === "recover") {
         recoveries++;
         session.advance();
@@ -287,6 +298,7 @@ describe("recovery and commit gate audit", () => {
     session.chosen();
     // Answer "yes" to "Is it Alpha?" — posterior for "a" should be high
     session.answer("yes");
+    session.clearAck();
     // Even with a very low threshold, commit requires >= 2 answers
     // After 1 answer, we should still be in probe (or recover/miss), not build
     expect(session.phaseName).not.toBe("build");
@@ -301,6 +313,7 @@ describe("recovery and commit gate audit", () => {
     session.chosen();
     // Answer to get high confidence
     session.answer("yes");
+    session.clearAck();
     const internal = session.internal();
     // The belief state should not have an active contradiction after normal answers
     expect(internal.belief.contradictionActive).toBe(false);
@@ -325,6 +338,7 @@ describe("recovery and commit gate audit", () => {
         continue;
       }
       session.answer(answers[step]);
+      session.clearAck();
       step++;
       const afterAnswer = session.snapshot().phase;
       if (afterAnswer === "build" || afterAnswer === "reveal" || afterAnswer === "miss") {
@@ -417,7 +431,7 @@ describe("audit regressions", () => {
 
   it("keeps a completed reveal in the exported log after the curtain", () => {
     const session = new PerformanceSession(makeEffect());
-    session.begin(); session.chosen(); session.answer("yes"); session.answer("yes");
+    session.begin(); session.chosen(); session.answer("yes"); session.clearAck(); session.answer("yes"); session.clearAck();
     expect(session.phaseName).toBe("build");
     session.advance();
     const revealed = session.exportLog().revealed;
@@ -454,6 +468,122 @@ describe("patter response provenance", () => {
 
 });
 
+
+describe("CRIT-02: ackCue input gating", () => {
+  it("rejects answer() while ackCue is pending (no premature next-probe answer)", () => {
+    let t = 0;
+    // Use high maxProbes + high commitThreshold so we stay in probe after first answer
+    const effect = makeEffect({
+      config: { ...makeEffect().config, maxProbes: 6, commitThreshold: 0.999, recoveryBudget: 0 }
+    });
+    const session = new PerformanceSession(effect, { seed: 4, now: () => (t += 100) });
+    session.begin();
+    session.chosen();
+    expect(session.snapshot().phase).toBe("probe");
+    // Answer first probe — sets ackCue, transitions to next probe
+    session.answer("yes");
+    const before = session.internal().answered;
+    expect(before).toBe(1);
+    // Should still be in probe phase (maxProbes=6, no commit at 0.999 after 1 answer)
+    expect(session.snapshot().phase).toBe("probe");
+    // ackCue is still set, so this answer should be silently rejected
+    session.answer("no");
+    expect(session.internal().answered).toBe(before);
+    // After clearAck(), the next answer works
+    session.clearAck();
+    session.answer("no");
+    expect(session.internal().answered).toBe(before + 1);
+  });
+
+  it("ACK_HOLD_MS is reduced to 650ms or less", async () => {
+    const { ACK_HOLD_MS } = await import("../src/performer.js");
+    expect(ACK_HOLD_MS).toBeLessThanOrEqual(650);
+  });
+
+  it("clearAck() unblocks input after ack display", () => {
+    let t = 0;
+    const session = new PerformanceSession(makeEffect(), { seed: 4, now: () => (t += 100) });
+    session.begin();
+    session.chosen();
+    session.answer("yes");
+    session.clearAck();
+    if (session.snapshot().phase === "probe") {
+      const before = session.internal().answered;
+      session.clearAck();
+      session.answer("no");
+      session.clearAck();
+      expect(session.internal().answered).toBeGreaterThan(before);
+    }
+  });
+});
+
+
+describe("build-phase hiding", () => {
+  it("does not expose the reveal candidate during build; internal() still reports it", () => {
+    let t = 0;
+    const session = new PerformanceSession(makeEffect(), { seed: 4, now: () => (t += 100) });
+    session.begin();
+    session.chosen();
+    session.answer("yes");
+    session.clearAck();
+    if (session.phaseName === "probe") { session.answer("yes"); session.clearAck(); }
+    expect(session.phaseName).toBe("build");
+    const build = session.snapshot();
+    expect(build.reveal).toBeUndefined();
+    const committed = session.internal().revealedId;
+    expect(committed).toBeDefined();
+    session.advance();
+    expect(session.snapshot().phase).toBe("reveal");
+    expect(session.snapshot().reveal?.id).toBe(committed);
+  });
+});
+
+
+describe("CRIT-03: recovery is never framed as a contradiction without one", () => {
+  it("a truthful tie-break at the probe budget is a tie-break, not a contradiction", () => {
+    // High commit threshold + tight budget: truthful answers can exhaust probes
+    // while two candidates remain. That is a tie-break, never an accusation.
+    const effect = makeEffect({
+      config: { ...makeEffect().config, maxProbes: 2, commitThreshold: 0.999, recoveryBudget: 1 }
+    });
+    let t = 0;
+    const session = new PerformanceSession(effect, { seed: 31, now: () => (t += 100) });
+    session.begin();
+    session.chosen();
+    session.answer("yes");
+    session.clearAck();
+    session.answer("yes");
+    session.clearAck();
+    expect(session.phaseName).toBe("recover");
+    const view = session.snapshot();
+    expect(view.recoveryReason).toBe("tie-break");
+  });
+
+  it("genuinely contradictory evidence is framed as a contradiction", () => {
+    const effect = makeEffect({
+      config: { ...makeEffect().config, maxProbes: 2, commitThreshold: 0.98, recoveryBudget: 1, recoverySurprise: 1.2 }
+    });
+    let t = 0;
+    const session = new PerformanceSession(effect, { seed: 32, now: () => (t += 100) });
+    session.begin();
+    session.chosen();
+    session.answer("no");   // contradicts "Is it Alpha?" for a committed Alpha run
+    session.clearAck();
+    session.answer("yes");
+    session.clearAck();
+    if (session.phaseName === "recover") {
+      expect(session.snapshot().recoveryReason).toBe("contradiction");
+    }
+  });
+
+  it("non-recovery phases report no recovery reason", () => {
+    let t = 0;
+    const session = new PerformanceSession(makeEffect(), { seed: 33, now: () => (t += 100) });
+    session.begin();
+    expect(session.snapshot().recoveryReason).toBeNull();
+  });
+});
+
 describe("presence mode", () => {
   it("presenceEnabled gives the attune beat without opening the gaze channel", () => {
     const session = new PerformanceSession(makeEffect(), {
@@ -476,5 +606,15 @@ describe("presence mode", () => {
     session.begin();
     session.chosen();
     expect(session.snapshot().phase).toBe("probe");
+  });
+
+  it("teardown zeroes state, finishes, and is idempotent", () => {
+    const session = new PerformanceSession(makeEffect(), { seed: 7 });
+    session.begin();
+    session.teardown();
+    expect(session.snapshot().finished).toBe(true);
+    expect(session.getGazedZones()).toEqual([]);
+    session.teardown();
+    expect(session.snapshot().finished).toBe(true);
   });
 });

@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   aggregateTrial,
   evaluate,
-  fitCentroids,
   fixedZoneOf,
   predictZone,
   splitFitHeldOut,

@@ -21,7 +21,8 @@ export default defineConfig({
       "@loki/showrunner": resolve(root, "packages/showrunner/src/index.ts"),
       "@loki/sim": resolve(root, "packages/sim/src/index.ts"),
       "@loki/effect-card": resolve(root, "effects/card/src/index.ts"),
-      "@loki/effect-example": resolve(root, "effects/_example/src/index.ts")
+      "@loki/effect-example": resolve(root, "effects/_example/src/index.ts"),
+      "three": resolve(root, "apps/web/node_modules/three")
     }
   }
 });

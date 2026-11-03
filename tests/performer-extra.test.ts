@@ -31,9 +31,10 @@ describe.each(effects)("performer on %s: every answer transition is acknowledged
         const view: SessionView = session.snapshot();
         if (view.phase === "probe" && view.options) {
           const option = view.options[Math.floor(rng() * view.options.length)]!;
-          const answeredBefore = view.progress.answered;
+          const answeredBefore = session.internal().answered;
           session.answer(option.id);
-          const after = session.snapshot();
+          const after = session.snapshot(); // capture WITH ackCue
+          session.clearAck(); // now clear for next iteration
           // Next probe, recovery or payoff: the ack is only on the next probe view.
           let next = after;
           if (next.phase === "recover") {
@@ -42,7 +43,7 @@ describe.each(effects)("performer on %s: every answer transition is acknowledged
           }
           if (next.phase === "probe") {
             const ack = next.cues.find((c) => c.kind === "ack");
-            if (next.progress.answered > answeredBefore && ack) expect(ack.line).toContain(option.label);
+            if (session.internal().answered > answeredBefore && ack) expect(ack.line).toContain(option.label);
           }
           continue;
         }
@@ -68,8 +69,12 @@ describe.each(effects)("performer on %s: every answer transition is acknowledged
           expect(text).toMatch(/cannot|beat me/i);
           break;
         }
-        if (view.phase === "probe" && view.options) session.answer(view.options[Math.floor(rng() * view.options.length)]!.id);
-        else session.advance();
+        if (view.phase === "probe" && view.options) {
+          session.answer(view.options[Math.floor(rng() * view.options.length)]!.id);
+          session.clearAck();
+        } else {
+          session.advance();
+        }
       }
     }
     expect(misses).toBeGreaterThan(0);

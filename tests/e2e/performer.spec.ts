@@ -10,15 +10,21 @@ async function enterCard(page: Page): Promise<void> {
 
 // Answer 1 until the show leaves the probe phase (build or miss).
 async function answerUntilPayoff(page: Page): Promise<void> {
-  for (let i = 0; i < 12; i++) {
-    const choice = page.locator("button.choice").first();
-    if (!(await choice.isVisible().catch(() => false))) {
-      const recover = page.getByRole("button", { name: "One clean claim" });
-      if (await recover.isVisible().catch(() => false)) await recover.click();
-      else return;
+  // CRIT-02: input is gated while the acknowledgement cue shows; wait for the
+  // re-enabled prompt before the next digit press.
+  for (let i = 0; i < 60; i++) {
+    const ready = page.locator("button.choice:not([disabled])").first();
+    if (await ready.isVisible().catch(() => false)) {
+      await page.keyboard.press("1");
+      await page.waitForTimeout(150);
       continue;
     }
-    await page.keyboard.press("1");
+    const recover = page.getByRole("button", { name: "One clean claim" });
+    if (await recover.isVisible().catch(() => false)) {
+      await recover.click();
+      continue;
+    }
+    if (!(await page.locator("button.choice").first().isVisible().catch(() => false))) return;
     await page.waitForTimeout(150);
   }
 }

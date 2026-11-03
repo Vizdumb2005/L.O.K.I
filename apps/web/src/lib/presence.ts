@@ -6,6 +6,8 @@
  * discarded immediately; only a boolean survives each check.
  */
 
+import { localMediaPipePaths } from "./mediapipe-paths.js";
+
 type Landmark = { x: number; y: number; z: number };
 interface FaceLandmarkerLike {
   detectForVideo(video: HTMLVideoElement, timestamp: number): { faceLandmarks: Landmark[][] };
@@ -24,8 +26,10 @@ export interface PresenceDetector {
 
 export async function createPresenceDetector(video: HTMLVideoElement): Promise<PresenceDetector> {
   const vision = await import("@mediapipe/tasks-vision");
+  // MAJ-02: local assets resolve under the deploy BASE_URL, not the site root.
+  const local = localMediaPipePaths(import.meta.env.BASE_URL ?? "/");
   const attempts = [
-    { wasm: "/mediapipe/wasm", model: "/mediapipe/face_landmarker.task" },
+    { wasm: local.wasm, model: local.model },
     { wasm: WASM_CDN, model: MODEL_URL }
   ];
   let lastError: unknown = new Error("no MediaPipe assets available");

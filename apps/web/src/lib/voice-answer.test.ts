@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { decideAnswer, decideOptionAnswer, gateDecision, mapAnswerToken, matchSpokenOption, qualifyWebGPU, TAU_ACCEPT, TAU_REJECT } from "./voice-answer.js";
+import { decideAnswer, decideOptionAnswer, gateDecision, mapAnswerToken, matchSpokenOption, qualifyWebGPU, withTimeout, TAU_ACCEPT, TAU_REJECT } from "./voice-answer.js";
 
 const speech = new Float32Array(16000).fill(0.05);
 
@@ -21,6 +21,23 @@ describe("mapAnswerToken", () => {
     expect(mapAnswerToken("")).toBeNull();
     expect(mapAnswerToken("I think it might be the three of diamonds")).toBeNull();
     expect(mapAnswerToken("Are we doing the card trick now?")).toBeNull();
+  });
+});
+
+describe("withTimeout", () => {
+  it("passes through a step that settles in time", async () => {
+    await expect(withTimeout(Promise.resolve(42), 1000, "testing")).resolves.toBe(42);
+  });
+
+  it("passes through a rejection that arrives in time", async () => {
+    await expect(withTimeout(Promise.reject(new Error("boom")), 1000, "testing")).rejects.toThrow("boom");
+  });
+
+  it("rejects a step that never settles instead of hanging forever", async () => {
+    const never = new Promise<number>(() => undefined);
+    await expect(withTimeout(never, 20, "loading the test model")).rejects.toThrow(
+      "Timed out while loading the test model."
+    );
   });
 });
 

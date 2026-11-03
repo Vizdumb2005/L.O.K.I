@@ -91,7 +91,7 @@ function overlay(
 ): { pcm: Float32Array; regions: Region[] } {
   const base = mix(subject.map((c) => ({ ...c, truth: "subject" as const })));
   const regions = [...base.regions];
-  let at = 0;
+  let _at = 0;
   for (let i = 0; i < bg.length; i++) {
     const start = base.regions[Math.min(i, base.regions.length - 1)].start;
     const b = bg[i].pcm;
@@ -99,7 +99,7 @@ function overlay(
       base.pcm[start + s] = Math.max(-1, Math.min(1, base.pcm[start + s] + b[s] * bgGain));
     }
     regions.push({ start, end: start + b.length, truth: "non_target" });
-    at = start + b.length;
+    _at = start + b.length;
   }
   return { pcm: base.pcm, regions };
 }

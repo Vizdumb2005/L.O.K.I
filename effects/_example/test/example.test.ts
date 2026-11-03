@@ -21,6 +21,7 @@ function answerTruth(session: PerformanceSession, trueId: string, flip: boolean)
     best = probe.options.find((option) => option.id !== best)!.id;
   }
   session.answer(best);
+  session.clearAck();
 }
 
 const binaryProbes = exampleEffect.probes().filter((probe) => probe.options.length === 2);
@@ -55,14 +56,28 @@ describe("toy effect", () => {
     expect(checkEffect(exampleEffect)).toEqual([]);
     expect(WORDS).toHaveLength(4);
     expect(exampleEffect.probes()).toHaveLength(5);
-    expect(exampleEffect.config.maxProbes).toBe(3);
+    expect(exampleEffect.config.maxProbes).toBe(2);
   });
 
   it("uses sensory mental-screen impressions rather than spelling or letter questions", () => {
     for (const probe of exampleEffect.probes()) {
+      expect(probe.discourse).toBe("statement");
       expect(probe.prompt.trim().endsWith("?")).toBe(false);
       expect(probe.prompt).not.toMatch(/\bletter\b|\bspell/i);
     }
+    expect(exampleEffect.probes().map((p) => p.id)).toEqual(["has-m", "first-letter", "odd-length", "ends-n", "letter-count"]);
+    expect(exampleEffect.script().revealMode).toBe("sealed");
+    expect(exampleEffect.script().timeBeatLines).toHaveLength(3);
+  });
+
+  it("declares a salience force for Comet that only lifts the prior", () => {
+    expect(exampleEffect.forceSpec?.({ forceEnabled: true })).toEqual({ targetId: "comet", salience: 0.34 });
+    expect(exampleEffect.forceSpec?.({ forceEnabled: false })).toBeNull();
+    const off = exampleEffect.prior({ forceEnabled: false });
+    const on = exampleEffect.prior({ forceEnabled: true });
+    expect(off["comet"]).toBeCloseTo(0.25);
+    expect(on["comet"]).toBeCloseTo(0.34);
+    expect(Object.values(on).reduce((a, b) => a + b, 0)).toBeCloseTo(1);
   });
 
   it("reveals every word through the same harness with no errors", () => {
@@ -78,7 +93,7 @@ describe("toy effect", () => {
   });
 
   it("preserves the audited safety settings and balanced binary partitions", () => {
-    expect(exampleEffect.config).toMatchObject({ maxProbes: 3, commitThreshold: 0.85, epsilon: 0.1, outlierWeight: 0.06, temperature: 1 });
+    expect(exampleEffect.config).toMatchObject({ maxProbes: 2, commitThreshold: 0.85, epsilon: 0.1, outlierWeight: 0.06, temperature: 1 });
     expect(binaryProbes).toHaveLength(3);
     const codes = WORDS.map((word) => binaryProbes.map((probe) => probe.likelihood(word.id, "yes")));
     for (let i = 0; i < binaryProbes.length; i++) expect(codes.filter((code) => code[i] === 1)).toHaveLength(2);

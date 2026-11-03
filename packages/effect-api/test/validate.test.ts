@@ -122,6 +122,65 @@ describe("effect validation", () => {
   });
 });
 
+
+describe("CRIT-01: probe prompt length enforcement", () => {
+  it("rejects probes whose prompt exceeds MAX_PATTER_LENGTH (180 chars)", () => {
+    const longPrompt = "x".repeat(181);
+    const badProbe: Probe = {
+      id: "too-long",
+      prompt: longPrompt,
+      options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }],
+      cost: 0.1,
+      likelihood: (item, option) => (option === "yes" ? (item === "a" ? 1 : 0) : item === "a" ? 0 : 1)
+    };
+    const effect = makeEffect({ probes: () => [badProbe, probes[1]!] });
+    const issues = checkEffect(effect).join(" ");
+    expect(issues).toContain("prompt length");
+  });
+
+  it("rejects probes whose prompt plus 'One clean claim. ' prefix exceeds MAX_PATTER_LENGTH", () => {
+    // 180 - len("One clean claim. ") = 180 - 17 = 163, so 164+ chars fails with prefix
+    const borderlinePrompt = "y".repeat(164);
+    const badProbe: Probe = {
+      id: "borderline-long",
+      prompt: borderlinePrompt,
+      options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }],
+      cost: 0.1,
+      likelihood: (item, option) => (option === "yes" ? (item === "a" ? 1 : 0) : item === "a" ? 0 : 1)
+    };
+    const effect = makeEffect({ probes: () => [badProbe, probes[1]!] });
+    const issues = checkEffect(effect).join(" ");
+    expect(issues).toContain("recovery prefix");
+  });
+
+  it("accepts probes at the recovery-safe boundary (163 chars)", () => {
+    const safePrompt = "w".repeat(163);
+    const okProbe: Probe = {
+      id: "safe-boundary",
+      prompt: safePrompt,
+      options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }],
+      cost: 0.1,
+      likelihood: (item, option) => (option === "yes" ? (item === "a" ? 0.9 : 0.1) : item === "a" ? 0.1 : 0.9)
+    };
+    const effect = makeEffect({ probes: () => [okProbe, probes[1]!] });
+    expect(checkEffect(effect)).toEqual([]);
+  });
+
+  it("rejects probes at exactly MAX_PATTER_LENGTH because recovery prefix overflows", () => {
+    const exactPrompt = "z".repeat(180);
+    const okProbe: Probe = {
+      id: "exact",
+      prompt: exactPrompt,
+      options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }],
+      cost: 0.1,
+      likelihood: (item, option) => (option === "yes" ? (item === "a" ? 0.9 : 0.1) : item === "a" ? 0.1 : 0.9)
+    };
+    const effect = makeEffect({ probes: () => [okProbe, probes[1]!] });
+    const issues = checkEffect(effect).join(" ");
+    expect(issues).toContain("recovery prefix");
+  });
+});
+
 describe("claim filter", () => {
   it("catches explicit mind-reading and guarantees", () => {
     expect(findBannedClaim("I can read your mind")).not.toBeNull();

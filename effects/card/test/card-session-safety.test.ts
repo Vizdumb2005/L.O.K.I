@@ -77,6 +77,7 @@ describe("card session safety", () => {
     const firstOption = session.snapshot().options?.[0];
     if (!firstOption) throw new Error("expected a card probe option");
     session.answer(firstOption.id);
+      session.clearAck();
 
     expect(session.phaseName).toBe("miss");
     expect(session.snapshot().line).toBe(cardEffect.script().missLine);

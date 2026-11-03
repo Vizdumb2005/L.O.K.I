@@ -3,6 +3,10 @@ import type { Effect, Hypothesis, Probe } from "./types.js";
 
 const EPS = 1e-6;
 
+/** Maximum characters for any patter line. Must match showrunner's MAX_PATTER_LENGTH. */
+const MAX_PATTER_LENGTH = 180;
+const RECOVERY_PREFIX = "One clean claim. ";
+
 function close(a: number, b: number): boolean {
   return Math.abs(a - b) <= EPS;
 }
@@ -10,9 +14,21 @@ function close(a: number, b: number): boolean {
 function checkProbe(probe: Probe, hypotheses: Hypothesis[], issues: string[]): void {
   if (!probe.id.trim()) issues.push("probe id is empty");
   if (!probe.prompt.trim()) issues.push(`probe ${probe.id} has an empty prompt`);
+  if (probe.prompt.trim().length > MAX_PATTER_LENGTH) {
+    issues.push(`probe ${probe.id} prompt length ${probe.prompt.trim().length} exceeds MAX_PATTER_LENGTH (${MAX_PATTER_LENGTH})`);
+  }
+  if ((RECOVERY_PREFIX + probe.prompt.trim()).length > MAX_PATTER_LENGTH) {
+    issues.push(`probe ${probe.id} prompt + recovery prefix exceeds MAX_PATTER_LENGTH (${(RECOVERY_PREFIX + probe.prompt.trim()).length})`);
+  }
   if (probe.options.length < 2) issues.push(`probe ${probe.id} needs at least two options`);
   if (!Number.isFinite(probe.cost) || probe.cost < 0 || probe.cost > 1) {
     issues.push(`probe ${probe.id} cost must be 0..1`);
+  }
+  if (probe.discourse !== undefined && probe.discourse !== "statement" && probe.discourse !== "question") {
+    issues.push(`probe ${probe.id} discourse must be "statement" or "question"`);
+  }
+  if (probe.discourse === "statement" && probe.prompt.trim().endsWith("?")) {
+    issues.push(`probe ${probe.id} is a statement but its prompt ends with "?"`);
   }
   const optionIds = new Set<string>();
   for (const option of probe.options) {
@@ -36,6 +52,15 @@ function checkProbe(probe: Probe, hypotheses: Hypothesis[], issues: string[]): v
       sum += p;
       row.push([option.id, p]);
       optionMax.set(option.id, Math.max(optionMax.get(option.id) ?? 0, p));
+    }
+    // Blueprint §3: targeted channel-hinted probes focus exclusively on candidate pairs;
+    // outside hypotheses have 0 likelihood on all options so they do not absorb mass.
+    if (sum === 0 && probe.channelHint) {
+      continue;
+    }
+    // Magician's Choice physical elimination gesture: both options eliminate non-target cards.
+    if (probe.id.startsWith("card-equivocation")) {
+      continue;
     }
     if (!close(sum, 1)) {
       issues.push(`probe ${probe.id} likelihood row for ${h.id} sums to ${sum.toFixed(4)}, not 1`);
@@ -84,7 +109,9 @@ export function checkEffect(effect: Effect): string[] {
   }
   if (!close(priorSum, 1)) issues.push(`prior sums to ${priorSum.toFixed(6)}, not 1`);
 
-  const probes = effect.probes();
+  const stage = effect.stage();
+  // Blueprint §3: validate the probes as the session will build them (stage-aware).
+  const probes = effect.probes(stage);
   if (probes.length < 2) issues.push("effect needs at least two probes");
   const probeIds = new Set<string>();
   for (const probe of probes) {
@@ -93,7 +120,6 @@ export function checkEffect(effect: Effect): string[] {
     checkProbe(probe, hypotheses, issues);
   }
 
-  const stage = effect.stage();
   const channels = effect.channels(stage);
   const channelIds = new Set<string>();
   for (const channel of channels) {
@@ -191,19 +217,54 @@ export function checkEffect(effect: Effect): string[] {
     const banned = findBannedClaim(line);
     if (banned) issues.push(`${label} contains banned claim ${banned}`);
   }
+  if (script.timeBeatLines !== undefined) {
+    if (script.timeBeatLines.length !== 3) issues.push("script timeBeatLines must have length exactly 3");
+    for (const line of script.timeBeatLines) {
+      if (!line.trim()) issues.push("script timeBeatLines entries must be non-empty");
+      if (line.trim().length > MAX_PATTER_LENGTH) issues.push(`script timeBeatLines entry exceeds MAX_PATTER_LENGTH (${MAX_PATTER_LENGTH})`);
+      const banned = findBannedClaim(line);
+      if (banned) issues.push(`timeBeatLines contains banned claim ${banned}`);
+    }
+  }
+  if (script.revealMode === "sealed") {
+    if (!effect.forceSpec) {
+      issues.push("script revealMode is sealed but effect has no forceSpec");
+    } else {
+      for (const forceEnabled of [true, false] as const) {
+        const spec = effect.forceSpec({ forceEnabled });
+        if (spec !== null) {
+          if (!ids.has(spec.targetId)) issues.push(`forceSpec target ${spec.targetId} is not a known hypothesis`);
+          if (!Number.isFinite(spec.salience) || spec.salience < 0 || spec.salience > 1) {
+            issues.push("forceSpec salience must be 0..1");
+          }
+        }
+      }
+    }
+  }
+  if (script.revealMode === "user-performed") {
+    if (!script.revealInvite?.trim()) issues.push("script revealMode is user-performed but revealInvite is missing");
+    if (!script.revealAction?.trim()) issues.push("script revealMode is user-performed but revealAction is missing");
+  }
 
   const c = effect.config;
   if (!Number.isInteger(c.maxProbes) || c.maxProbes < 1 || c.maxProbes > 12) {
     issues.push("config.maxProbes must be an integer 1..12");
   }
+  if (c.maxProbesGazed !== undefined && (!Number.isInteger(c.maxProbesGazed) || c.maxProbesGazed < 1 || c.maxProbesGazed > 12)) {
+    issues.push("config.maxProbesGazed must be an integer 1..12");
+  }
   if (!(c.commitThreshold > 0.5 && c.commitThreshold < 1)) {
     issues.push("config.commitThreshold must be in (0.5,1)");
+  }
+  if (c.commitThresholdGazed !== undefined && !(c.commitThresholdGazed > 0.5 && c.commitThresholdGazed <= c.commitThreshold)) {
+    issues.push("config.commitThresholdGazed must be in (0.5, commitThreshold]");
   }
   if (!Number.isInteger(c.recoveryBudget) || c.recoveryBudget < 0 || c.recoveryBudget > 3) {
     issues.push("config.recoveryBudget must be an integer 0..3");
   }
   if (!(c.recoverySurprise > 0)) issues.push("config.recoverySurprise must be > 0");
-  if (!(c.epsilon >= 0.05 && c.epsilon <= 0.45)) issues.push("config.epsilon must be 0.05..0.45");
+  // M3 retune: 0.01 is the honest floor - allows sharp answers (0.015) so progressive readings resolve in 1 beat.
+  if (!(c.epsilon >= 0.01 && c.epsilon <= 0.45)) issues.push("config.epsilon must be 0.01..0.45");
   if (!(c.outlierWeight >= 0 && c.outlierWeight <= 0.4)) {
     issues.push("config.outlierWeight must be 0..0.4");
   }

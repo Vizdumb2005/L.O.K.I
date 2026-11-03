@@ -139,6 +139,80 @@ export interface VoiceModelProgress {
   pct?: number;
 }
 
+// Loading deadlines. Every stage of the model load is awaited, and a stage
+// that stalls (a stalled download, a WASM worker that never answers) would
+// otherwise leave the promise unsettled forever: the voice-setup screen sat
+// on "Loading on-device speaker model…" with no error and no way forward.
+// A deadline turns any stall into an ordinary load failure, which the caller
+// already handles by ending sensor mode with an explanation.
+export const ASR_LOAD_TIMEOUT_MS = 240_000;
+export const SPEAKER_DOWNLOAD_TIMEOUT_MS = 60_000;
+export const SPEAKER_SESSION_TIMEOUT_MS = 60_000;
+
+/** Settle with `step`, or reject once `ms` passes. The step is not cancelled. */
+export function withTimeout<T>(step: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Timed out while ${label}.`)), ms);
+    step.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err: unknown) => {
+        clearTimeout(timer);
+        reject(err instanceof Error ? err : new Error(String(err)));
+      }
+    );
+  });
+}
+
+async function downloadSpeakerModel(
+  base: string,
+  onProgress?: (progress: VoiceModelProgress) => void
+): Promise<Uint8Array> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SPEAKER_DOWNLOAD_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${base}speech-models/wespeaker-resnet34-lm.onnx`, { signal: controller.signal });
+    if (!res.ok) {
+      throw new Error(`Speaker model fetch failed (${res.status}).`);
+    }
+    const total = Number(res.headers.get("content-length") ?? 0);
+    if (!res.body || total <= 0) {
+      return new Uint8Array(await res.arrayBuffer());
+    }
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let received = 0;
+    let lastPct = -1;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.byteLength;
+      const pct = Math.floor((received / total) * 100);
+      if (pct !== lastPct) {
+        lastPct = pct;
+        onProgress?.({ label: `Downloading on-device speaker model (${pct}%)…`, pct });
+      }
+    }
+    const bytes = new Uint8Array(received);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return bytes;
+  } catch (err) {
+    if (controller.signal.aborted) {
+      throw new Error("Timed out while downloading the speaker model.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Load the embedding model and Whisper. Mirrors the PR #21/#22 loading paths. */
 export async function loadVoiceAnswerModels(
   base: string,
@@ -162,42 +236,56 @@ export async function loadVoiceAnswerModels(
     audio: Float32Array,
     opts?: Record<string, unknown>
   ) => Promise<{ text?: string } | Array<{ text?: string }>>;
-  let asr: AsrPipeline;
-  if (useWebGPU) {
-    try {
-      // Use q8 quantization on both WebGPU and WASM: whisper-tiny.en's fp16
-      // merged decoder ONNX subgraph fails ONNX Runtime 1.31 graph validation
-      // (outer-scope logits returned directly without an Identity node).
-      asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
-        device: "webgpu",
-        dtype: "q8",
-        progress_callback: progressCallback
-      } as Record<string, unknown>)) as unknown as AsrPipeline;
-    } catch {
+  const loadAsr = async (): Promise<AsrPipeline> => {
+    let asr: AsrPipeline;
+    if (useWebGPU) {
+      try {
+        // Use q8 quantization on both WebGPU and WASM: whisper-tiny.en's fp16
+        // merged decoder ONNX subgraph fails ONNX Runtime 1.31 graph validation
+        // (outer-scope logits returned directly without an Identity node).
+        asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
+          device: "webgpu",
+          dtype: "q8",
+          progress_callback: progressCallback
+        } as Record<string, unknown>)) as unknown as AsrPipeline;
+      } catch {
+        asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
+          device: "wasm",
+          dtype: "q8",
+          progress_callback: progressCallback
+        } as Record<string, unknown>)) as unknown as AsrPipeline;
+      }
+    } else {
       asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
         device: "wasm",
         dtype: "q8",
         progress_callback: progressCallback
       } as Record<string, unknown>)) as unknown as AsrPipeline;
     }
-  } else {
-    asr = (await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", {
-      device: "wasm",
-      dtype: "q8",
-      progress_callback: progressCallback
-    } as Record<string, unknown>)) as unknown as AsrPipeline;
-  }
+    return asr;
+  };
+  const asr = await withTimeout(loadAsr(), ASR_LOAD_TIMEOUT_MS, "loading the speech recognition model");
 
-  onProgress?.({ label: "Loading on-device speaker model…", pct: 100 });
-  const ort = (await import("onnxruntime-web")) as unknown as OrtLike & { env: { wasm: { wasmPaths: string } } };
+  onProgress?.({ label: "Downloading on-device speaker model…", pct: 100 });
+  const ort = (await withTimeout(
+    import("onnxruntime-web"),
+    SPEAKER_SESSION_TIMEOUT_MS,
+    "loading the speaker runtime"
+  )) as unknown as OrtLike & { env: { wasm: { wasmPaths: string; numThreads?: number } } };
   ort.env.wasm.wasmPaths = `${base}ort/`;
-  const embRes = await fetch(`${base}speech-models/wespeaker-resnet34-lm.onnx`);
-  if (!embRes.ok) {
-    throw new Error(`Speaker model fetch failed (${embRes.status}).`);
-  }
-  const embBytes = new Uint8Array(await embRes.arrayBuffer());
-  const emb = await ort.InferenceSession.create(embBytes, { executionProviders: ["wasm"] });
-  const dj = await import("diarization-js");
+  // Single-threaded WASM for the speaker session. The embedding model is
+  // tiny (one short clip per answer), so threads buy nothing here - and the
+  // multi-threaded proxy path is the one stage of this load that can stall
+  // without ever settling on machines where its workers cannot start.
+  ort.env.wasm.numThreads = 1;
+  const embBytes = await downloadSpeakerModel(base, onProgress);
+  onProgress?.({ label: "Starting on-device speaker model…", pct: 100 });
+  const emb = await withTimeout(
+    ort.InferenceSession.create(embBytes, { executionProviders: ["wasm"] }),
+    SPEAKER_SESSION_TIMEOUT_MS,
+    "starting the speaker model"
+  );
+  const dj = await withTimeout(import("diarization-js"), SPEAKER_SESSION_TIMEOUT_MS, "loading the speaker helpers");
   const embedPcm = async (pcm: Float32Array) => {
     const fb = dj.pyannoteFbank(pcm);
     const t = new ort.Tensor("float32", new Float32Array(fb.data), [1, fb.numFrames, fb.numBins]);

@@ -3,10 +3,13 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Effect } from "@loki/effect-api";
 import type { SessionView } from "@loki/showrunner";
-import { cardTargetPosition, stageGridScale } from "./stage-layout.js";
+import { cardPalette, cardTargetPosition, stageGridScale, type CardPalette } from "./stage-layout.js";
+import { BrassMask } from "./BrassMask.js";
+import type { VisemeState, HeadPose } from "./avatar-types.js";
+
+export { cardPalette, type CardPalette };
 
 const GOLD = "#d8b877";
-const INK = "#16231f";
 
 function hash(seed: number): number {
   const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
@@ -20,31 +23,40 @@ function faceTexture(label: string, glyph: string, index: number): THREE.CanvasT
   const ctx = canvas.getContext("2d");
   if (!ctx) return new THREE.CanvasTexture(canvas);
 
+  const palette = cardPalette(glyph, label);
+
   const gradient = ctx.createLinearGradient(0, 0, 512, 716);
-  gradient.addColorStop(0, "#f4ead7");
-  gradient.addColorStop(0.55, "#e8dcc4");
-  gradient.addColorStop(1, "#d9c9ab");
+  gradient.addColorStop(0, palette.tintTop);
+  gradient.addColorStop(0.55, palette.tintMid);
+  gradient.addColorStop(1, palette.tintBottom);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 512, 716);
 
-  ctx.strokeStyle = "rgba(64, 52, 32, 0.45)";
+  ctx.strokeStyle = palette.border;
   ctx.lineWidth = 4;
   ctx.strokeRect(22, 22, 468, 672);
-  ctx.strokeStyle = "rgba(64, 52, 32, 0.18)";
+  ctx.strokeStyle = palette.rule;
   ctx.lineWidth = 1;
   ctx.strokeRect(38, 38, 436, 640);
 
-  ctx.fillStyle = "rgba(70, 54, 28, 0.55)";
-  ctx.font = "500 18px 'Courier New', monospace";
+  ctx.fillStyle = palette.label;
+  ctx.font = "600 30px Georgia, 'Times New Roman', serif";
   ctx.textAlign = "left";
-  ctx.fillText("LOKI · THE OBSERVATORY", 48, 68);
+  ctx.fillText(glyph, 52, 78);
+  ctx.textAlign = "right";
+  ctx.fillText(glyph, 460, 662);
+
+  ctx.fillStyle = "rgba(70, 54, 28, 0.55)";
+  ctx.font = "500 16px 'Courier New', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("LOKI · THE OBSERVATORY", 256, 72);
 
   ctx.textAlign = "center";
-  ctx.fillStyle = INK;
+  ctx.fillStyle = palette.glyph;
   ctx.font = "500 230px Georgia, 'Times New Roman', serif";
   ctx.fillText(glyph, 256, 360);
 
-  ctx.fillStyle = "rgba(22, 35, 31, 0.92)";
+  ctx.fillStyle = palette.label;
   ctx.font = "italic 32px Georgia, 'Times New Roman', serif";
   const words = label.split(" ");
   if (words.length > 2) {
@@ -58,7 +70,7 @@ function faceTexture(label: string, glyph: string, index: number): THREE.CanvasT
   ctx.font = "500 16px 'Courier New', monospace";
   ctx.fillText(`NO. ${String(index + 1).padStart(2, "0")}`, 256, 646);
 
-  ctx.strokeStyle = "rgba(95, 74, 39, 0.28)";
+  ctx.strokeStyle = palette.rule;
   ctx.lineWidth = 1;
   for (let i = 0; i < 26; i++) {
     const y = 100 + hash(i + index * 13) * 520;
@@ -157,13 +169,28 @@ function Card({
   );
 }
 
-interface SceneProps {
+export interface StageProps {
   effect: Effect;
   view: SessionView;
   reducedMotion: boolean;
+  audioRms?: number;
+  visemes?: Partial<VisemeState>;
+  headPose?: Partial<HeadPose> | null;
+  gazeLocked?: boolean;
+  speaking?: boolean;
 }
 
-function Scene({ view, reducedMotion }: SceneProps) {
+export type SceneProps = StageProps;
+
+function Scene({
+  view,
+  reducedMotion,
+  audioRms,
+  visemes,
+  headPose,
+  gazeLocked,
+  speaking
+}: SceneProps) {
   const stage = view.stage;
   const columns = Math.max(1, stage.columns);
   const rows = Math.max(1, Math.ceil(stage.items.length / columns));
@@ -207,6 +234,20 @@ function Scene({ view, reducedMotion }: SceneProps) {
       <directionalLight position={[-6, 2, -4]} intensity={1.1} color="#4da193" />
       <pointLight position={[0, -2.5, 4]} intensity={9} color="#c78e45" distance={12} />
       <pointLight position={[0, 1, 7]} intensity={5} color="#fff1d4" distance={20} />
+
+      {/* Procedural Chiaroscuro Brass Mask Avatar (F13, F14, F15, F16) */}
+      <BrassMask
+        position={[0, 1.85, -1.8]}
+        scale={0.92}
+        audioRms={audioRms}
+        visemes={visemes}
+        headPose={headPose}
+        gazeLocked={gazeLocked}
+        revealPulse={revealPulse.current}
+        phase={view.phase}
+        speaking={speaking}
+        reducedMotion={reducedMotion}
+      />
 
       <group scale={scale} position={[0, 0.05, 0]}>
         {stage.items.map((item, index) => (
@@ -270,15 +311,37 @@ function FlatStage({ view }: { view: SessionView }) {
       role="img"
       aria-label={`${view.stage.title} card table`}
     >
-      {view.stage.items.map((item) => (
-        <div
-          key={item.hypothesisId}
-          className={`flat-card ${view.reveal?.id === item.hypothesisId ? "is-revealed" : ""}`}
-        >
-          <span className="flat-glyph">{item.glyph}</span>
-          <span>{item.label}</span>
-        </div>
-      ))}
+      <div className="flat-avatar-badge" aria-hidden="true">
+        <svg viewBox="0 0 100 120" className="flat-mask-svg" width="48" height="58">
+          <path
+            d="M 20 20 Q 50 10 80 20 Q 90 60 75 95 Q 50 115 25 95 Q 10 60 20 20 Z"
+            fill="#1c2b27"
+            stroke="#d8b877"
+            strokeWidth="2.5"
+          />
+          <circle cx="36" cy="45" r="4.5" fill="#e68a00" className="flat-eye-glow" />
+          <circle cx="64" cy="45" r="4.5" fill="#e68a00" className="flat-eye-glow" />
+          <polygon points="50,42 46,65 54,65" fill="#d8b877" opacity="0.75" />
+          <path d="M 38 82 Q 50 88 62 82" stroke="#d8b877" strokeWidth="2" fill="none" />
+        </svg>
+      </div>
+      {view.stage.items.map((item) => {
+        const palette = cardPalette(item.glyph ?? "", item.label);
+        const focused = view.reveal?.id === item.hypothesisId;
+        return (
+          <div
+            key={item.hypothesisId}
+            className={`flat-card ${palette.isRedSuit ? "is-red" : ""} ${focused ? "is-revealed" : ""}`}
+          >
+            <>
+              <span className="flat-glyph" style={{ color: palette.glyph }}>
+                {item.glyph}
+              </span>
+              <span>{item.label}</span>
+            </>
+          </div>
+        );
+      })}
     </div>
   );
 }

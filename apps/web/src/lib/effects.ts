@@ -10,6 +10,7 @@ export interface EffectChoice {
   eyebrow: string;
   blurb: string;
   meta: string;
+  sealed: boolean;
   effect: Effect;
 }
 
@@ -19,15 +20,17 @@ export const EFFECTS: EffectChoice[] = [
     title: "The Twelve",
     eyebrow: "Act I · Primary effect",
     blurb: "Twelve playing cards projected onto a mental screen. Sensory and geometric impressions, then one reveal.",
-    meta: "12 cards · 4 to 6 impressions · abstains below 96%",
+    meta: "12 cards · 2 impressions · abstains below 89%",
+    sealed: false,
     effect: cardEffect
   },
   {
     id: "ember-words",
     title: "Ember Words",
     eyebrow: "Act II · Word reading",
-    blurb: "Four archetypal words read through sensory mental-screen impressions on the same showrunner contract.",
-    meta: "4 words · 2 to 3 impressions · abstains below 85%",
+    blurb: "Four archetypal words read through sensory mental-screen impressions on the same showrunner contract. One prediction is sealed before your first answer.",
+    meta: "4 words · 2 impressions · sealed prediction · abstains below 85%",
+    sealed: true,
     effect: exampleEffect
   }
 ];
