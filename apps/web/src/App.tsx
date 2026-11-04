@@ -1,12 +1,17 @@
-import { useRef, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { CameraLab } from "./components/CameraLab.js";
 import { Consent, type ShowMode } from "./components/Consent.js";
 import { CountdownStage } from "./components/CountdownStage.js";
-import { Performance } from "./components/Performance.js";
 import { effectChoice, type EffectId } from "./lib/effects.js";
 import { SensorSession } from "./lib/sensor-session.js";
 import { resolveHostedVoiceConfig } from "./lib/hosted-voice-policy.js";
 import { useEffect } from "react";
+
+// The 3D stage pulls in three.js + react-three-fiber (~72% of the bundle).
+// Keep it out of the landing chunk; it prefetches while the visitor reads consent.
+const Performance = lazy(() =>
+  import("./components/Performance.js").then((module) => ({ default: module.Performance }))
+);
 
 type Screen = "show" | "lab";
 
@@ -16,6 +21,13 @@ function prefersReducedMotion(): boolean {
 
 export function App() {
   const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    if (entered) return;
+    const warm = window.setTimeout(() => {
+      void import("./components/Performance.js");
+    }, 1500);
+    return () => window.clearTimeout(warm);
+  }, [entered]);
   const [hasLeft, setHasLeft] = useState(false);
   const [screen, setScreen] = useState<Screen>("show");
   const [effectId, setEffectId] = useState<EffectId>("card-twelve");
@@ -183,7 +195,8 @@ export function App() {
       ) : entered && choice.id === "countdown-force" ? (
         <CountdownStage onExit={leave} />
       ) : entered ? (
-        <Performance
+        <Suspense fallback={<div className="stage-loading" role="status">The stage is being set.</div>}>
+          <Performance
           effect={choice.effect!}
           sealed={choice.sealed}
           reducedMotion={reducedMotion}
@@ -198,7 +211,8 @@ export function App() {
           onOpenLab={() => setScreen("lab")}
           onToggleReducedMotion={() => setReducedMotion((value) => !value)}
           onToggleLlm={() => setLlmEnabled((value) => !value)}
-        />
+          />
+        </Suspense>
       ) : (
         <>
           <Consent onEnter={enter} restoreFocus={hasLeft} sensorNotice={sensorNotice} hostedVoiceConfigured={hostedVoiceConfigured} />
