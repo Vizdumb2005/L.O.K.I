@@ -1823,3 +1823,71 @@ button,
   opacity: 0.01;
   pointer-events: none;
 }
+/* Short desktop viewports (e.g. 1280x720 laptops): keep the landing CTA
+   inside the initial viewport without hiding any consent facts. */
+@media (min-width: 981px) and (max-height: 800px) {
+  .consent {
+    padding-top: 8px;
+    gap: clamp(28px, 4vw, 64px);
+  }
+  .wordmark {
+    font-size: clamp(40px, 4.6vw, 60px);
+    margin-bottom: 8px;
+  }
+  .lede {
+    margin-bottom: 6px;
+  }
+  .consent-panel {
+    padding: 10px 14px;
+  }
+  .consent-panel h2 {
+    margin-bottom: 6px;
+  }
+  .check {
+    margin-bottom: 6px;
+  }
+  .effect-picker legend {
+    margin-bottom: 4px;
+  }
+  .effect-picker {
+    margin: 4px 0 2px;
+  }
+  .consent-panel .primary {
+    margin-top: 8px;
+  }
+  .consent-panel .primary + .tiny {
+    margin-top: 6px;
+    margin-bottom: 0;
+  }
+
+  /* Show beats: keep the primary control inside the initial viewport. */
+  .perform-top {
+    padding-bottom: 6px;
+  }
+  .stage-shell {
+    height: clamp(180px, 26vh, 340px);
+  }
+  .flat-stage {
+    padding: 14px 20px 20px;
+  }
+  .flat-card {
+    min-height: 44px;
+  }
+  .panel-copy .eyebrow {
+    margin-bottom: 4px;
+  }
+  .line {
+    font-size: clamp(18px, 2.2vw, 28px);
+  }
+  .panel-probe .line {
+    font-size: clamp(17px, 2vw, 26px);
+  }
+  .silent-choice {
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 14px;
+  }
+  .panel {
+    padding: 12px 14px;
+  }
+}

@@ -6,6 +6,7 @@ import { expect, test } from "@playwright/test";
 
 const VIEWPORTS = [
   { name: "desktop 1482x910", width: 1482, height: 910 },
+  { name: "laptop 1280x720", width: 1280, height: 720 },
   { name: "mobile 390x844", width: 390, height: 844 }
 ];
 
