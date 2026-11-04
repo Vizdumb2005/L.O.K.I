@@ -21,8 +21,9 @@ not mind reading, and it does not use the camera.”
 
 ## 0:00–0:18 — Consent is the opening shot
 
-**Shot:** the consent screen, desktop, full frame. Cursor moves to the participation
-checkbox, pauses, checks it. The camera box stays unchecked.
+**Shot:** the consent screen, desktop, full frame. Cursor moves to the "I understand
+this is a performance of mentalism" checkbox, pauses, checks it. The camera lab opt-in
+stays unchecked and the mode stays on the click demo.
 
 **Say:**
 
@@ -134,7 +135,7 @@ do not present the gaze ablation as human evidence.
 > reading, diagnosis, or a guaranteed hit. We have zero human participants, so every number
 > is a simulator result. The next step is a pre-registered pilot, not a bigger claim.”
 
-**Final card:** LOKI v3 · an illusion, not mind reading · `docs/eval-report.md`.
+**Final card:** LOKI v4 · an illusion, not mind reading · `docs/eval-report.md`.
 
 ---
 
