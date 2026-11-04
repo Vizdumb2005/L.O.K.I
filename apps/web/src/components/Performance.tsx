@@ -433,8 +433,13 @@ export function Performance({
   // When the effect asks the person to perform the reveal, it also stays dark behind the
   // invitation until they open it themselves.
   const revealGated = Boolean(view.revealGate) && view.phase === "reveal" && !cuePending && !userRevealed;
-  const stageView: SessionView =
-    view.reveal && view.phase === "reveal" && (cuePending || revealGated) ? { ...view, reveal: undefined } : view;
+  // The seal verdict travels with the reveal itself: like the lit target, it
+  // never shows during the hush beats or behind the reveal invitation - only
+  // with the rested reveal line, or with the owned miss line once it rests.
+  const resultGated = (view.phase === "reveal" || view.phase === "miss") && (cuePending || revealGated);
+  const stageView: SessionView = resultGated
+    ? { ...view, reveal: undefined, sealedOpened: undefined }
+    : view;
   // The target face stays dark until the resting reveal line: view.reveal is
   // only present from the reveal phase, never during build.
   const targetFaceLit = Boolean(stageView.reveal) && view.phase !== "build";
@@ -580,9 +585,9 @@ export function Performance({
               Sealed before your first answer · {view.sealedCommitment.slice(0, 12)}…
             </p>
           )}
-          {view.sealedOpened && (
-            <p className="prompt-note" title={view.sealedOpened.commitment}>
-              Sealed prediction opened: {view.sealedOpened.hypothesisId} · {view.sealedOpened.verified ? "verified" : "did not match"}
+          {stageView.sealedOpened && (
+            <p className="prompt-note" title={stageView.sealedOpened.commitment}>
+              Sealed prediction opened: {stageView.sealedOpened.hypothesisId} · {stageView.sealedOpened.verified ? "verified" : "did not match"}
             </p>
           )}
           {isProbe && (

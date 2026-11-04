@@ -275,6 +275,10 @@ test("Ember sensory probes reveal the sealed word Comet at desktop and mobile wi
     await expect(reveal).toBeVisible({ timeout: 15000 });
     await expect(page.getByText(/Sealed before your first answer/)).toBeVisible();
     await page.getByRole("button", { name: "Reveal it" }).click();
+    // No result leakage: the seal verdict stays dark through the hush beats
+    // and lands only with the rested reveal line.
+    await expect(page.locator("#line-heading")).toHaveText("Let it be quiet for a moment.");
+    await expect(page.getByText(/Sealed prediction opened/)).toBeHidden();
     await expect(page.locator("#line-heading")).toHaveText("Your word was Comet.");
     await expect(page.getByText(/Sealed prediction opened: comet/)).toBeVisible();
     await expect(page.locator("canvas, .flat-stage").first()).toBeVisible();
