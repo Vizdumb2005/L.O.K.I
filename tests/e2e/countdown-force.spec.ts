@@ -9,7 +9,7 @@ import { expect, test } from "@playwright/test";
 
 async function enterCountdown(page: import("@playwright/test").Page) {
   await page.goto("/");
-  await page.locator("label.effect-choice", { hasText: "The Countdown" }).click();
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Countdown" }).click();
   await page.locator('input[type="checkbox"]').first().check();
   await page.getByRole("button", { name: /Enter the observatory/i }).click();
   await expect(page.getByTestId("countdown-stage")).toBeVisible();

@@ -88,6 +88,9 @@ async function openCameraLab(page: Page, scenario: Scenario): Promise<void> {
   }, scenario);
 
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.getByRole("checkbox").nth(0).check();
   await page.getByRole("checkbox").nth(1).check();
   await page.getByRole("button", { name: "Enter the observatory" }).click();

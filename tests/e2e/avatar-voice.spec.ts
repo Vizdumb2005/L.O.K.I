@@ -21,6 +21,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
   test("Tier 1 - F01: all probe prompts in active performance stay <= 160 characters", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByText("Ember Words", { exact: true }).click();
@@ -37,6 +40,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
   test("Tier 1 - F02: choice buttons and hotkeys are disabled while cuePending === true", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -55,6 +61,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
 
   test("Tier 1 - F03: red suits render with crimson #9e2a2b ink across stage components", async ({ page }) => {
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
 
@@ -74,6 +83,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
 
   test("Tier 1 - F13: stage renders 3D Canvas and provides graceful fallback to FlatStage", async ({ page }) => {
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
 
@@ -85,6 +97,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
   test("Tier 1 - F14: dynamic amber lantern eyes pulse with audio RMS and flare on gaze lock", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
 
@@ -111,6 +126,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
   test("Tier 1 - F15: real-time audio viseme mouth articulation animates during speech", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
     await page.getByRole("button", { name: "I have chosen" }).click();
@@ -129,6 +147,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
   test("Tier 1 - F16: dynamic gaze reciprocity head pose tracks spectator and clamps safely", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
 
@@ -145,6 +166,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
   test("Tier 2 - Boundary: reducedMotion clamps avatar rotation and attenuates eye pulse", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
 
@@ -176,6 +200,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
 
     await setupHardwareMocks(page, { scenario: "nominal" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByText("Camera lab opt-in (optional).").click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -188,6 +215,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
   test("Tier 1 - F20: Zero Data Retention enforces state purge and memory zeroing on session exit", async ({ page }) => {
     const hw = await setupHardwareMocks(page, { scenario: "nominal" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByText("Camera lab opt-in (optional).").click();
@@ -204,6 +234,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
 
   test("Tier 2 - Boundary: rapid clicking during 1.1s cuePending registers 0 premature answers", async ({ page }) => {
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
     await page.getByRole("button", { name: "I have chosen" }).click();
@@ -224,6 +257,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
 
   test("Tier 2 - Boundary: WebGL context loss triggers seamless DOM FlatStage fallback", async ({ page }) => {
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
 
@@ -245,6 +281,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
 
   test("Tier 3 - Cross-Feature: cuePending hold blocks voice and keyboard while avatar lights pulse", async ({ page }) => {
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
     await page.getByRole("button", { name: "I have chosen" }).click();
@@ -261,6 +300,9 @@ test.describe("Phase 3 & 4: Avatar, Hosted Voice, Privacy & UI Controls", () => 
 
   test("Tier 4 - Real-World: full mentalism show run with clean exit and resource disposal", async ({ page }) => {
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
     await page.getByRole("button", { name: "I have chosen" }).click();

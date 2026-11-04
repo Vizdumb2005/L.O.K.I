@@ -17,32 +17,34 @@ export interface EffectChoice {
 
 export const EFFECTS: EffectChoice[] = [
   {
-    id: "card-twelve",
-    title: "The Twelve",
-    eyebrow: "Act I · Primary effect",
-    blurb: "Twelve playing cards projected onto a mental screen. Sensory and geometric impressions, then one reveal.",
-    meta: "12 cards · 2 impressions · abstains below 89%",
-    sealed: false,
-    effect: cardEffect
-  },
-  {
-    id: "ember-words",
-    title: "Ember Words",
-    eyebrow: "Act II · Word reading",
-    blurb: "Four archetypal words read through sensory mental-screen impressions on the same showrunner contract. One prediction is sealed before your first answer.",
-    meta: "4 words · 2 impressions · sealed prediction · abstains below 85%",
-    sealed: true,
-    effect: exampleEffect
-  },
-  {
     id: "countdown-force",
     title: "The Countdown",
-    eyebrow: "Act III \u00b7 A number becomes a card",
+    eyebrow: "Featured \u00b7 A number becomes a card",
     blurb:
       "Name a number from 10 to 19. Your own deal and count land on the card sealed before you spoke.",
     meta: "52 cards \u00b7 your number \u00b7 sealed prediction \u00b7 method disclosed",
     sealed: true,
     effect: null
+  },
+  {
+    id: "card-twelve",
+    title: "The Twelve",
+    eyebrow: "Act I \u00b7 Primary effect",
+    blurb:
+      "Twelve playing cards projected onto a mental screen. Sensory and geometric impressions, then one reveal - or an honest abstain.",
+    meta: "12 cards \u00b7 6 impressions \u00b7 abstains below 96% \u00b7 retuned 11-04",
+    sealed: true,
+    effect: cardEffect
+  },
+  {
+    id: "ember-words",
+    title: "Ember Words",
+    eyebrow: "Act II \u00b7 Word reading",
+    blurb:
+      "Four archetypal words read through sensory mental-screen impressions on the same showrunner contract. One prediction is sealed before your first answer.",
+    meta: "4 words \u00b7 3 impressions \u00b7 sealed prediction \u00b7 abstains below 85%",
+    sealed: true,
+    effect: exampleEffect
   }
 ];
 

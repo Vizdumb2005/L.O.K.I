@@ -20,6 +20,9 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
   test("Tier 1 - F09: zone progressive cold reading delivers sensory statements targeting candidate pairs", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal", targetZone: "top-left" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -36,6 +39,9 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
   test("Tier 1 - F10: Akinator 6-question binary search is dismantled, capping probes to <= 2 beats", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal", targetZone: "top-left" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -63,6 +69,9 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
   test("Tier 1 - F11: Derren Brown denial pivot absorbs 'no' or hesitation into immediate partner card hit", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal", targetZone: "top-left" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -92,6 +101,9 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
     // full 0.96 bar or an owned miss.
     await setupHardwareMocks(page, { scenario: "collinear-degenerate-anchors", gazeReliability: 0.45 });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await enterObservatoryWithSensors(page);
     await page.waitForTimeout(1100);
@@ -141,6 +153,9 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
   test("Tier 2 - Boundary: double deliberate lie gracefully falls back to honest miss without accusing contradiction", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal", targetZone: "top-left" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -169,6 +184,9 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
   test("Tier 3 - Cross-Feature: progressive reading probe options render with crimson ink styling", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal", targetZone: "mid-left" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -184,6 +202,9 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
   test("Tier 4 - Real-World: full mentalism run with immediate cold-reading confirmation hit", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal", targetZone: "bottom-left" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -207,6 +228,9 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
   test("Tier 4 - Real-World: full mentalism run with denial pivot absorbing hesitation seamlessly", async ({ page }) => {
     await setupHardwareMocks(page, { scenario: "nominal", targetZone: "bottom-right" });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();

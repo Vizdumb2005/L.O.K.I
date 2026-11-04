@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function enter(page: Page): Promise<void> {
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.getByText("I understand this is a", { exact: false }).click();
   await page.getByRole("button", { name: "Enter the observatory" }).click();
   await page.getByRole("button", { name: "I have chosen" }).click();
@@ -74,6 +77,9 @@ test("flow: keyboard only. Digits answer, Space skips the payoff pause, Escape t
 
 test("flow: the same performer shell runs the Ember effect", async ({ page }) => {
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.getByText("I understand this is a", { exact: false }).click();
   await page.getByText("Ember Words", { exact: true }).click();
   await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -118,6 +124,9 @@ async function reachRevealOrMiss(page: Page, tries = 8, truthfulEmber = false): 
 for (const effectName of ["The Twelve", "Ember Words"] as const) {
   test(`flow: ${effectName} target is not lit during the hush beats, only at the resting reveal line`, async ({ page }) => {
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     if (effectName === "Ember Words") await page.getByText("Ember Words", { exact: true }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();

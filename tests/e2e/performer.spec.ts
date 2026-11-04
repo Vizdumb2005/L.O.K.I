@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function enterCard(page: Page): Promise<void> {
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.getByText("I understand this is a", { exact: false }).click();
   await page.getByRole("button", { name: "Enter the observatory" }).click();
   await page.getByRole("button", { name: "I have chosen" }).click();
