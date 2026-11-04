@@ -73,11 +73,15 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
         : null;
     const conductor =
       hosted && voiceChoice === "live" ? conductorRef.current : new ModelConductor({ endpoint: null });
-    void conductor.conduct(beat, trace ?? force.trace(), label).then((l) => {
-      if (live) setLine(l);
+    // Abort the in-flight call when the beat changes or the stage unmounts:
+    // a cancelled beat never spends hosted tokens and never writes stale text.
+    const ctl = new AbortController();
+    void conductor.conduct(beat, trace ?? force.trace(), label, ctl.signal).then((l) => {
+      if (live && !ctl.signal.aborted) setLine(l);
     });
     return () => {
       live = false;
+      ctl.abort();
     };
   }, [beat, trace?.namedNumber, trace?.sealVerified, hosted, voiceChoice]);
 

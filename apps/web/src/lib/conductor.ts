@@ -22,7 +22,7 @@ export interface ConductionLine {
 }
 
 export interface Conductor {
-  conduct(beat: Beat, trace: CountdownTrace, cardLabel: string | null): Promise<ConductionLine>;
+  conduct(beat: Beat, trace: CountdownTrace, cardLabel: string | null, signal?: AbortSignal): Promise<ConductionLine>;
 }
 
 const DIGITS = (n: number) => String(n).split("").join(" + ");
@@ -72,13 +72,14 @@ export interface ModelConductorOptions {
 export class ModelConductor implements Conductor {
   constructor(private readonly opts: ModelConductorOptions) {}
 
-  async conduct(beat: Beat, trace: CountdownTrace, cardLabel: string | null): Promise<ConductionLine> {
+  async conduct(beat: Beat, trace: CountdownTrace, cardLabel: string | null, signal?: AbortSignal): Promise<ConductionLine> {
     const fallback = this.opts.fallback ?? new ScriptedConductor();
     if (!this.opts.endpoint) return fallback.conduct(beat, trace, cardLabel);
     const fetchImpl = this.opts.fetchImpl ?? fetch;
     try {
       const res = await fetchImpl(this.opts.endpoint, {
         method: "POST",
+        signal: signal ?? null,
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           beat,

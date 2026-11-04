@@ -60,6 +60,33 @@ describe("ModelConductor", () => {
     expect(sent).toContain("namedNumber");
     expect(sent).not.toContain("dealOrder");
   });
+
+  it("passes the abort signal through to fetch and stays quiet after abort", async () => {
+    let seenSignal: AbortSignal | null = null;
+    const c = new ModelConductor({
+      endpoint: "http://localhost:1/",
+      fetchImpl: async (_u, init) => {
+        seenSignal = (init?.signal as AbortSignal) ?? null;
+        return new Response(JSON.stringify({ text: "ok" }), { status: 200 });
+      }
+    });
+    const ctl = new AbortController();
+    await c.conduct("deal", TRACE, null, ctl.signal);
+    expect(seenSignal).toBe(ctl.signal);
+
+    const aborted = new ModelConductor({
+      endpoint: "http://localhost:1/",
+      fetchImpl: async (_u, init) => {
+        const sig = init?.signal as AbortSignal | null;
+        if (sig?.aborted) throw new DOMException("aborted", "AbortError");
+        return new Response(JSON.stringify({ text: "ok" }), { status: 200 });
+      }
+    });
+    const ctl2 = new AbortController();
+    ctl2.abort();
+    const line = await aborted.conduct("deal", TRACE, null, ctl2.signal);
+    expect(line.voice).toBe("script");
+  });
 });
 
 describe("ScriptedConductor", () => {
