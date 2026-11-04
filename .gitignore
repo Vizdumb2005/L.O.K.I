@@ -21,3 +21,6 @@ data/skills/
 skills-lock.json
 scripts/neo.mjs
 scripts/neo-client.mjs
+.llm-budget-ledger.json
+scripts/*.js
+packages/*/src/*.js

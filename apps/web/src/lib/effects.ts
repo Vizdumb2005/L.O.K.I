@@ -2,7 +2,7 @@ import { cardEffect } from "@loki/effect-card";
 import { exampleEffect } from "@loki/effect-example";
 import type { Effect } from "@loki/effect-api";
 
-export type EffectId = "card-twelve" | "ember-words";
+export type EffectId = "card-twelve" | "ember-words" | "countdown-force";
 
 export interface EffectChoice {
   id: EffectId;
@@ -11,7 +11,8 @@ export interface EffectChoice {
   blurb: string;
   meta: string;
   sealed: boolean;
-  effect: Effect;
+  /** The showrunner contract effect. Null for stages with their own engine (countdown). */
+  effect: Effect | null;
 }
 
 export const EFFECTS: EffectChoice[] = [
@@ -32,6 +33,16 @@ export const EFFECTS: EffectChoice[] = [
     meta: "4 words · 2 impressions · sealed prediction · abstains below 85%",
     sealed: true,
     effect: exampleEffect
+  },
+  {
+    id: "countdown-force",
+    title: "The Countdown",
+    eyebrow: "Act III \u00b7 A number becomes a card",
+    blurb:
+      "Name any number from 10 to 19. A deal you perform yourself lands on a card that was sealed before you spoke - arithmetic, not mind reading. The full method is disclosed at the end.",
+    meta: "52 cards \u00b7 your number \u00b7 sealed prediction \u00b7 method disclosed",
+    sealed: true,
+    effect: null
   }
 ];
 
