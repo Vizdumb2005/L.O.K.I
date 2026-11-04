@@ -234,4 +234,19 @@ describe("PuterConductor", () => {
     expect(line.voice).toBe("model");
     expect(line.text).not.toContain("\u2014");
   });
+
+  it("allows numbers the scripted reference line cites (invite range), still filters inventions", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    const ok = new PuterConductor({
+      chatImpl: async () => ({ message: { content: "Please name a number between ten and nineteen, whichever you like." } })
+    });
+    const line = await ok.conduct("invite-number", TRACE, null);
+    expect(line.voice).toBe("model");
+    const bad = new PuterConductor({
+      chatImpl: async () => ({ message: { content: "Please name a number between ten and nineteen - seven would be lovely." } })
+    });
+    const filtered = await bad.conduct("invite-number", TRACE, null);
+    expect(filtered.voice).toBe("script");
+    expect(filtered.reason).toBe("filtered");
+  });
 });
