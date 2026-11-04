@@ -161,7 +161,7 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
         It will be opened at the end, whatever happens. If the procedure does not produce the sealed
         card, you will see the miss. An illusion of prediction - no thought is read.{" "}
         {hosted
-          ? "To give the Oracle its live voice, your named number and the state of the act are sent to the model; no camera or microphone is used."
+          ? "To give the Oracle its live written words, your named number and the state of the act are sent to the model - text only, no voice or audio; no camera or microphone is used."
           : "Nothing leaves this page."}
       </p>
       {phase === "seal" && (
@@ -264,7 +264,7 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
           <p style={{ opacity: 0.75, fontSize: "0.85rem" }}>
             An illusion of prediction, honestly performed: no thought was read.{" "}
             {hosted
-              ? "Your named number and the state of the act were sent to the model for its voice; nothing else left this page."
+              ? "Your named number and the state of the act were sent to the model for its written words - text only, no voice or audio; nothing else left this page."
               : "Nothing left this page."}
           </p>
         </>
@@ -314,10 +314,10 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
       </p>
       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
         <button type="button" style={buttonStyle} onClick={() => setVoiceChoice("live")} data-testid="voice-opt-in-live">
-          Use the live voice
+          Use live written words
         </button>
         <button type="button" style={ghostButtonStyle} onClick={() => setVoiceChoice("script")} data-testid="voice-opt-in-script">
-          Keep the scripted voice
+          Keep the scripted words
         </button>
       </div>
     </section>
