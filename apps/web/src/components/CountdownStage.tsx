@@ -48,6 +48,10 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
   const [line, setLine] = useState<ConductionLine | null>(null);
   // Hosted mode requires an explicit spectator opt-in before ANY model call.
   const [voiceChoice, setVoiceChoice] = useState<"pending" | "live" | "script">("pending");
+  // After a failed live attempt (timeout, auth cancelled, SDK down), stop
+  // calling for the rest of the act: no repeated sign-in popups, no repeated
+  // spending attempts. The visible notice stays on the scripted lines.
+  const [liveDown, setLiveDown] = useState(false);
 
   // The Oracle's voice. No live route configured => scripted conduction, always.
   // Two live routes, both behind the same explicit spectator opt-in:
@@ -78,18 +82,20 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
         ? (trace?.sealedTargetId ? (COUNTDOWN_CARD_BY_ID.get(trace.sealedTargetId)?.label ?? null) : null)
         : null;
     const conductor =
-      hosted && voiceChoice === "live" ? conductorRef.current : new ModelConductor({ endpoint: null });
+      hosted && voiceChoice === "live" && !liveDown ? conductorRef.current : new ModelConductor({ endpoint: null });
     // Abort the in-flight call when the beat changes or the stage unmounts:
     // a cancelled beat never spends hosted tokens and never writes stale text.
     const ctl = new AbortController();
-    void conductor.conduct(beat, trace ?? force.trace(), label, ctl.signal).then((l) => {
-      if (live && !ctl.signal.aborted) setLine(l);
+    void conductor.conduct(beat, trace ?? force.trace(), label, ctl.signal, counted).then((l) => {
+      if (!live || ctl.signal.aborted) return; // a late answer never writes stale text
+      setLine(l);
+      if (voiceChoice === "live" && l.voice === "script" && l.reason === "error") setLiveDown(true);
     });
     return () => {
       live = false;
       ctl.abort();
     };
-  }, [beat, trace?.namedNumber, trace?.sealVerified, hosted, voiceChoice]);
+  }, [beat, trace?.namedNumber, trace?.sealVerified, hosted, voiceChoice, liveDown, counted]);
 
   const named = trace?.namedNumber ?? null;
   const steps = named === null ? 0 : countedStepsFor(named);
@@ -142,7 +148,7 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
           words written live by Muse Spark Open
         </span>
       )}
-      {voiceChoice === "live" && line.voice !== "model" && (
+      {voiceChoice === "live" && line.voice !== "model" && (liveDown || line.reason != null) && (
         <span style={{ display: "block", fontSize: "0.7rem", opacity: 0.6, fontStyle: "normal" }} data-testid="oracle-live-unavailable">
           Live writing unavailable. Using the written script.
         </span>
@@ -172,7 +178,7 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
         It will be opened at the end, whatever happens. If the procedure does not produce the sealed
         card, you will see the miss. An illusion of prediction - no thought is read.{" "}
         {hosted
-          ? "To give the Oracle its live written words, your named number and the state of the act are sent to the model - text only, no voice or audio; no camera or microphone is used."
+          ? "To give the Oracle its live written words, your named number and what happens in the act are sent to the model - text only, no voice or audio; the sealed prediction stays on this page until the seal is opened."
           : "Nothing leaves this page."}
       </p>
       {phase === "seal" && (
@@ -275,7 +281,7 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
           <p style={{ opacity: 0.75, fontSize: "0.85rem" }}>
             An illusion of prediction, honestly performed: no thought was read.{" "}
             {hosted
-              ? "Your named number and the state of the act were sent to the model for its written words - text only, no voice or audio; nothing else left this page."
+              ? "Your named number and what happened in the act were sent to the model for its written words - text only, no voice or audio; the sealed prediction was sent only when the seal opened."
               : "Nothing left this page."}
           </p>
         </>
@@ -330,8 +336,8 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
         Turn this on and the Oracle's lines are written live by Meta's Muse Spark Open, through Puter
         (puter.com). Only the number you name and what happens in the act are sent - as text. No
         camera, no microphone, no recording. The first line asks you to sign into your own free Puter
-        account, and the words use your own free allowance. The card work never leaves this page.
-        Keep the scripted words and nothing is sent at all.
+        account, and the words use your own free allowance. The hidden prediction stays on this page
+        until the seal is opened. Keep the scripted words and nothing is sent at all.
       </p>
       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
         <button type="button" style={buttonStyle} onClick={() => setVoiceChoice("live")} data-testid="voice-opt-in-live">
