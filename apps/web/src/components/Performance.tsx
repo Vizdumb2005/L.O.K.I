@@ -24,6 +24,8 @@ interface PerformanceProps {
   hostedVoiceOptIn?: boolean;
   onStopSensors?: (notice?: string) => void;
   onSelectEffect?: (effectId: EffectId) => void;
+  /** The act this one hands off to; rendered as a continue action in the afterglow. */
+  nextEffect?: { id: EffectId; label: string } | null;
   onExit: () => void;
   onOpenLab: () => void;
   onToggleReducedMotion: () => void;
@@ -68,6 +70,7 @@ export function Performance({
   hostedVoiceOptIn = false,
   onStopSensors,
   onSelectEffect,
+  nextEffect = null,
   onExit,
   onOpenLab,
   onToggleReducedMotion,
@@ -328,6 +331,10 @@ export function Performance({
     const watch = (stream: MediaStream | null, kind: "camera" | "mic") => {
       stream?.getTracks().forEach((t) => {
         const h = () => {
+          // stopAll() (Stop, Reset, or an act handoff into the sensorless
+          // Countdown) fires "ended" on purpose: the session already knows it
+          // stopped, so this is not capture loss.
+          if (sensorSession.state(kind) === "stopped") return;
           onStopSensorsRef.current?.(
             kind === "mic"
               ? "The microphone capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below runs without sensors."
@@ -435,7 +442,9 @@ export function Performance({
   const isEnd = view.phase === "afterglow" || view.phase === "done";
   const canContinue = view.canAdvance && !isProbe && !isEnd;
   // Reveal and miss are the payoff: the first press only skips ahead to the line, never past it.
-  const skipOnly = cuePending && (view.phase === "reveal" || view.phase === "miss");
+  // During cue playback the primary action skips to the rested line; only the
+  // rested build screen earns the "Reveal it" label (no double reveal promise).
+  const skipOnly = cuePending && (view.phase === "reveal" || view.phase === "miss" || view.phase === "build");
   const continueLabel =
     view.phase === "think"
       ? "I have chosen"
@@ -640,9 +649,9 @@ export function Performance({
               <button ref={primaryRef} type="button" className="primary" onClick={restart}>
                 Begin again
               </button>
-              {effect.id === "card-twelve" && onSelectEffect && (
-                <button type="button" className="ghost" onClick={() => onSelectEffect("ember-words")}>
-                  Continue to Act II: Ember Words
+              {nextEffect && onSelectEffect && (
+                <button type="button" className="ghost" onClick={() => onSelectEffect(nextEffect.id)}>
+                  {nextEffect.label}
                 </button>
               )}
               <button type="button" className="ghost" onClick={onExit}>

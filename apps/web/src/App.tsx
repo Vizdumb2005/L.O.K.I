@@ -103,6 +103,21 @@ export function App() {
     }
   };
 
+  const selectEffect = (nextId: EffectId) => {
+    // Consent scope across act handoffs: the Countdown runs sensorless, so a
+    // live capture has no consumer there - release it and continue click-only.
+    // Between showrunner acts (Twelve, Ember) the sensor-enabled performance
+    // the person entered covers both, so the mode is retained.
+    if (nextId === "countdown-force" && sensorRef.current) {
+      const session = sensorRef.current;
+      sensorRef.current = null;
+      session.stopAll();
+      setSensorMode(false);
+      setSensorNotice("Sensors stopped - the camera is released; the Countdown runs without sensors.");
+    }
+    setEffectId(nextId);
+  };
+
   const stopSensors = (notice?: string) => {
     // One-tap stop: release everything, end the sensor-enabled performance,
     // and land on consent where the click demo is a separate labelled choice.
@@ -193,7 +208,11 @@ export function App() {
           onReviewConsent={leave}
         />
       ) : entered && choice.id === "countdown-force" ? (
-        <CountdownStage onExit={leave} />
+        <CountdownStage
+          onExit={leave}
+          onSelectEffect={selectEffect}
+          nextEffect={choice.next ?? null}
+        />
       ) : entered ? (
         <Suspense fallback={<div className="stage-loading" role="status">The stage is being set.</div>}>
           <Performance
@@ -206,7 +225,8 @@ export function App() {
           sensorSession={sensorRef.current}
           hostedVoiceOptIn={hostedVoiceOptIn}
           onStopSensors={stopSensors}
-          onSelectEffect={(nextId) => setEffectId(nextId)}
+          onSelectEffect={selectEffect}
+          nextEffect={choice.next ?? null}
           onExit={leave}
           onOpenLab={() => setScreen("lab")}
           onToggleReducedMotion={() => setReducedMotion((value) => !value)}

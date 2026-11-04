@@ -26,7 +26,7 @@ stage is the documented degradation path, not a mock-up.*
   the stage; the core knows none of them.
 - A **measured prototype**: 33,000 seeded simulator runs, 95% intervals, calibration, and
   ablations. The shipping card gate passes at a nominal 10% answer-error condition.
-  Results confirmed on a held-out seed (99999). 507 unit tests. Verified in a
+  Results confirmed on a held-out seed (99999). 511 unit tests. Verified in a
   real browser (BrowserOS neo / Chromium 155): consent, card show, toy effect, and
   camera denial all pass.
 - **Local by default**: no account, analytics, database, or upload. The default build

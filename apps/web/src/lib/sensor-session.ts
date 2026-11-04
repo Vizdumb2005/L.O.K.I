@@ -114,11 +114,13 @@ export class SensorSession {
   stopAll(): void {
     for (const kind of ["camera", "mic"] as const) {
       const slot = this.slots[kind];
+      // Mark before stopping: track.stop() can dispatch "ended" synchronously,
+      // and watchers must see this teardown as intentional, not capture loss.
+      if (slot.state === "active" || slot.state === "requesting") slot.state = "stopped";
       if (slot.stream) {
         for (const track of slot.stream.getTracks()) track.stop();
       }
       slot.stream = null;
-      if (slot.state === "active" || slot.state === "requesting") slot.state = "stopped";
     }
     for (const dispose of this.derived.values()) dispose();
     this.derived.clear();
