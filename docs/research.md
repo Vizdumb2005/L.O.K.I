@@ -314,6 +314,8 @@ whether an unlisted model alias also works; low for unstated submission-format r
 
 ---
 
+Live check (Nov 4, 2026, signed-in free account): two synthetic text-only calls to `meta/muse-spark-open` via the official Puter.js SDK succeeded. The served model is a reasoning-style model: hidden reasoning consumed ~200-250 completion tokens before any content, so small `max_tokens` budgets return empty content. Measured cost: 0.0341 and 0.125 cents per call, metered against the account's free 1,000-credit monthly allowance (Free plan; upgrade is an explicit opt-in button). Served under the Meta Muse label; weights identity not independently verifiable from the client.
+
 ## 6. Deadline and submission window
 
 **Question.** What is the exact deadline in the builder's timezone?

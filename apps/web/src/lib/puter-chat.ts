@@ -114,7 +114,7 @@ export async function puterChat(
     const response = await Promise.race([
       chat(messages, {
         model: options.model ?? PUTER_MODEL,
-        max_tokens: options.max_tokens ?? 120,
+        max_tokens: options.max_tokens ?? 640, // reasoning-model headroom: ~200-250 hidden reasoning tokens precede content
         temperature: options.temperature ?? 0.8
       }),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), timeoutMs))

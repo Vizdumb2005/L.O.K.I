@@ -33,7 +33,8 @@ export async function rewritePatterViaPuter(
         content: `Beat: ${payload.beat}. Tone: ${payload.tone}. Line to rewrite: "${payload.template}"`
       }
     ],
-    { model: PUTER_MODEL, max_tokens: 80, temperature: 0.8, timeoutMs: options.timeoutMs, chatImpl: options.chatImpl }
+    // max_tokens 512: reasoning-model headroom (observed ~243 hidden reasoning tokens on a trivial live call before content)
+    { model: PUTER_MODEL, max_tokens: 512, temperature: 0.8, timeoutMs: options.timeoutMs, chatImpl: options.chatImpl }
   );
   if ("error" in result) return { line: fallback, source: "template", reason: result.error };
   const safe = sanitizeLine(result.text, fallback);
