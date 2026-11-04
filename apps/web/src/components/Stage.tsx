@@ -1,9 +1,10 @@
-import { Component, useMemo, useRef, useState, type ReactNode } from "react";
+import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Effect } from "@loki/effect-api";
 import type { SessionView } from "@loki/showrunner";
 import { cardPalette, cardTargetPosition, stageGridScale, type CardPalette } from "./stage-layout.js";
+import { createFaceTexture, disposeFaceTexture, hash } from "./face-texture.js";
 import { BrassMask } from "./BrassMask.js";
 import type { VisemeState, HeadPose } from "./avatar-types.js";
 
@@ -11,80 +12,6 @@ export { cardPalette, type CardPalette };
 
 const GOLD = "#d8b877";
 
-function hash(seed: number): number {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
-
-function faceTexture(label: string, glyph: string, index: number): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 716;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.CanvasTexture(canvas);
-
-  const palette = cardPalette(glyph, label);
-
-  const gradient = ctx.createLinearGradient(0, 0, 512, 716);
-  gradient.addColorStop(0, palette.tintTop);
-  gradient.addColorStop(0.55, palette.tintMid);
-  gradient.addColorStop(1, palette.tintBottom);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 512, 716);
-
-  ctx.strokeStyle = palette.border;
-  ctx.lineWidth = 4;
-  ctx.strokeRect(22, 22, 468, 672);
-  ctx.strokeStyle = palette.rule;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(38, 38, 436, 640);
-
-  ctx.fillStyle = palette.label;
-  ctx.font = "600 30px Georgia, 'Times New Roman', serif";
-  ctx.textAlign = "left";
-  ctx.fillText(glyph, 52, 78);
-  ctx.textAlign = "right";
-  ctx.fillText(glyph, 460, 662);
-
-  ctx.fillStyle = "rgba(70, 54, 28, 0.55)";
-  ctx.font = "500 16px 'Courier New', monospace";
-  ctx.textAlign = "center";
-  ctx.fillText("LOKI · THE OBSERVATORY", 256, 72);
-
-  ctx.textAlign = "center";
-  ctx.fillStyle = palette.glyph;
-  ctx.font = "500 230px Georgia, 'Times New Roman', serif";
-  ctx.fillText(glyph, 256, 360);
-
-  ctx.fillStyle = palette.label;
-  ctx.font = "italic 32px Georgia, 'Times New Roman', serif";
-  const words = label.split(" ");
-  if (words.length > 2) {
-    ctx.fillText(words.slice(0, 2).join(" "), 256, 540);
-    ctx.fillText(words.slice(2).join(" "), 256, 578);
-  } else {
-    ctx.fillText(label, 256, 558);
-  }
-
-  ctx.fillStyle = "rgba(67, 51, 25, 0.55)";
-  ctx.font = "500 16px 'Courier New', monospace";
-  ctx.fillText(`NO. ${String(index + 1).padStart(2, "0")}`, 256, 646);
-
-  ctx.strokeStyle = palette.rule;
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 26; i++) {
-    const y = 100 + hash(i + index * 13) * 520;
-    ctx.beginPath();
-    ctx.moveTo(48 + hash(i * 3) * 120, y);
-    ctx.lineTo(464 - hash(i * 5) * 120, y);
-    ctx.stroke();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 4;
-  return texture;
-}
 
 interface CardProps {
   label: string;
@@ -111,7 +38,9 @@ function Card({
 }: CardProps) {
   const group = useRef<THREE.Group>(null);
   const face = useRef<THREE.MeshStandardMaterial>(null);
-  const texture = useMemo(() => faceTexture(label, glyph, index), [label, glyph, index]);
+  const texture = useMemo(() => createFaceTexture(label, glyph, index), [label, glyph, index]);
+  // Imperatively created textures are not auto-disposed by r3f; release GPU memory on unmount.
+  useEffect(() => () => disposeFaceTexture(texture), [texture]);
   const col = index % columns;
   const row = Math.floor(index / columns);
   const x = (col - (columns - 1) / 2) * 1.58;
