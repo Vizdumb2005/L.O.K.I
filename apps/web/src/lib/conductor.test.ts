@@ -175,4 +175,63 @@ describe("PuterConductor", () => {
       expect(line.text).toBe(scriptedLine("deal", TRACE, null));
     }
   });
+
+  it("labels stepsToCount and stepsCompleted explicitly in the payload", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    let body = "";
+    const c = new PuterConductor({
+      chatImpl: async (m) => {
+        body = String(m[1]?.content);
+        return "A line.";
+      }
+    });
+    await c.conduct("count", TRACE, null, undefined, 2);
+    expect(body).toContain('"stepsToCount":4');
+    expect(body).toContain('"stepsCompleted":2');
+    expect(body).not.toContain("countedSteps");
+  });
+
+  it("filters lines that invent or swap counts", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    const c = new PuterConductor({
+      chatImpl: async () => ({ message: { content: "Seven cards are already dealt - seven is your number." } })
+    });
+    const line = await c.conduct("deal", TRACE, null);
+    expect(line.voice).toBe("script");
+    expect(line.reason).toBe("filtered");
+  });
+
+  it("filters pre-reveal lines that name a card, allows them at reveal", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    const c = new PuterConductor({
+      chatImpl: async () => ({ message: { content: "The Four of Hearts is waiting for you." } })
+    });
+    const early = await c.conduct("deal", TRACE, null);
+    expect(early.voice).toBe("script");
+    expect(early.reason).toBe("filtered");
+    const reveal = await c.conduct("reveal", TRACE, "Four of Hearts");
+    expect(reveal.voice).toBe("model");
+  });
+
+  it("marks transport failures with reason error", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    const c = new PuterConductor({
+      chatImpl: async () => {
+        throw new Error("timeout");
+      }
+    });
+    const line = await c.conduct("deal", TRACE, null);
+    expect(line.voice).toBe("script");
+    expect(line.reason).toBe("error");
+  });
+
+  it("normalizes em dashes in model lines", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    const c = new PuterConductor({
+      chatImpl: async () => ({ message: { content: "Thirteen - heard\u2014honored exactly." } })
+    });
+    const line = await c.conduct("deal", TRACE, null);
+    expect(line.voice).toBe("model");
+    expect(line.text).not.toContain("\u2014");
+  });
 });

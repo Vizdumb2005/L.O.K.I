@@ -21,10 +21,18 @@ export interface ConductionLine {
   beat: Beat;
   text: string;
   voice: Voice;
+  /** On a script-voice line after a live attempt: why the model line was not used. */
+  reason?: "error" | "filtered";
 }
 
 export interface Conductor {
-  conduct(beat: Beat, trace: CountdownTrace, cardLabel: string | null, signal?: AbortSignal): Promise<ConductionLine>;
+  conduct(
+    beat: Beat,
+    trace: CountdownTrace,
+    cardLabel: string | null,
+    signal?: AbortSignal,
+    stepsCompleted?: number
+  ): Promise<ConductionLine>;
 }
 
 const DIGITS = (n: number) => String(n).split("").join(" + ");
@@ -111,6 +119,46 @@ export class ModelConductor implements Conductor {
 }
 
 
+
+const NUMBER_WORDS: Record<string, number> = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+  ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16,
+  seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20
+};
+
+/**
+ * Every number the model mentions must be one it was given: the named number,
+ * the total steps to count, or the steps completed so far. A line that invents
+ * or swaps counts (the live "five steps counted so far" at zero) is filtered.
+ */
+export function numbersConsistent(
+  text: string,
+  namedNumber: number | null,
+  stepsToCount: number | null,
+  stepsCompleted: number
+): boolean {
+  const allowed = new Set<number>([namedNumber, stepsToCount, stepsCompleted].filter((v): v is number => v !== null));
+  // Card names carry their own number words ("Four of Hearts"); they are
+  // governed by the seal-timing rule, not the count rule.
+  const withoutCards = text.replace(new RegExp(CARD_NAME_RE.source, "gi"), " ");
+  for (const m of withoutCards.matchAll(/\d+/g)) {
+    if (!allowed.has(Number(m[0]))) return false;
+  }
+  const lower = ` ${withoutCards.toLowerCase()} `;
+  for (const [word, value] of Object.entries(NUMBER_WORDS)) {
+    if (value < 3) continue; // "one"/"two" are idiomatic ("one card at a time")
+    if (new RegExp(`\\b${word}\\b`).test(lower) && !allowed.has(value)) return false;
+  }
+  return true;
+}
+
+const CARD_NAME_RE = /\b(ace|two|three|four|five|six|seven|eight|nine|ten|jack|queen|king)\s+of\s+(hearts|diamonds|clubs|spades)\b/i;
+
+/** True when the line names a specific card. Never allowed before the seal opens. */
+export function namesCard(text: string): boolean {
+  return CARD_NAME_RE.test(text);
+}
+
 export interface PuterConductorOptions {
   chatImpl?: PuterChatImpl;
   timeoutMs?: number;
@@ -129,15 +177,26 @@ const MAX_CONDUCT_LINE = 320;
 export class PuterConductor implements Conductor {
   constructor(private readonly opts: PuterConductorOptions = {}) {}
 
-  async conduct(beat: Beat, trace: CountdownTrace, cardLabel: string | null): Promise<ConductionLine> {
+  async conduct(
+    beat: Beat,
+    trace: CountdownTrace,
+    cardLabel: string | null,
+    _signal?: AbortSignal,
+    stepsCompleted?: number
+  ): Promise<ConductionLine> {
     const fallback = this.opts.fallback ?? new ScriptedConductor();
     const scripted = await fallback.conduct(beat, trace, cardLabel);
+    const withReason = (reason: "error" | "filtered"): ConductionLine => ({ ...scripted, reason });
     const state = {
       beat,
       cardLabel,
       trace: {
         namedNumber: trace.namedNumber,
-        countedSteps: trace.countedSteps,
+        // Explicit labels: the engine's countedSteps is the TOTAL the spectator
+        // must count, not a progress count. Conflating them made the model
+        // claim "five steps counted so far" before any card was counted.
+        stepsToCount: trace.countedSteps,
+        stepsCompleted: stepsCompleted ?? 0,
         producedCardId: beat === "reveal" || beat === "miss" ? trace.producedCardId : null,
         sealedTargetId: beat === "reveal" || beat === "miss" ? trace.sealedTargetId : null,
         sealVerified: trace.sealVerified,
@@ -151,20 +210,24 @@ export class PuterConductor implements Conductor {
           content:
             "You are the Oracle in LOKI, a consent-based mentalism performance. Write the performer's " +
             "line for the current beat from the public state of the act. Rules: one or two sentences, " +
-            "under 300 characters, plain text, no URLs, no braces. Never claim mind reading, lie " +
+            "under 300 characters, plain text, no URLs, no braces, no em dashes. Never claim mind reading, lie " +
             "detection, emotion reading, certainty, or a guaranteed result; the act is an illusion " +
             "and the number is honored exactly as named. Keep every number and card name in the state " +
-            "exactly as given."
+            "exactly as given. stepsToCount is how many cards the spectator must count in total; " +
+            "stepsCompleted is how many they have counted so far - never confuse the two. " +
+            "Before the reveal beat, no card has been produced or named: never name or hint at any card."
         },
         { role: "user", content: `Scripted line for reference: "${scripted.text}". Public state: ${JSON.stringify(state)}` }
       ],
       { model: PUTER_MODEL, temperature: 0.8, timeoutMs: this.opts.timeoutMs, chatImpl: this.opts.chatImpl }
     );
-    if ("error" in result) return scripted;
+    if ("error" in result) return withReason("error");
     const text = result.text.replace(/\s+/g, " ").trim();
-    if (!text || text.length > MAX_CONDUCT_LINE) return scripted;
-    if (/https?:\/\//i.test(text) || /[{}]/.test(text)) return scripted;
-    if (findBannedClaim(text)) return scripted;
-    return { beat, text, voice: "model" };
+    if (!text || text.length > MAX_CONDUCT_LINE) return withReason("filtered");
+    if (/https?:\/\//i.test(text) || /[{}]/.test(text)) return withReason("filtered");
+    if (findBannedClaim(text)) return withReason("filtered");
+    if (!numbersConsistent(text, trace.namedNumber, trace.countedSteps, stepsCompleted ?? 0)) return withReason("filtered");
+    if (beat !== "reveal" && beat !== "miss" && namesCard(text)) return withReason("filtered");
+    return { beat, text: text.replace(/\u2014/g, "-"), voice: "model" };
   }
 }

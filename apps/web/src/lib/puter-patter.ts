@@ -37,7 +37,7 @@ export async function rewritePatterViaPuter(
     { model: PUTER_MODEL, max_tokens: 512, temperature: 0.8, timeoutMs: options.timeoutMs, chatImpl: options.chatImpl }
   );
   if ("error" in result) return { line: fallback, source: "template", reason: result.error };
-  const safe = sanitizeLine(result.text, fallback);
+  const safe = sanitizeLine(result.text.replace(/\u2014/g, "-"), fallback);
   if (safe === fallback && result.text.trim() !== fallback) {
     return { line: fallback, source: "template", reason: "rejected" };
   }
