@@ -39,16 +39,25 @@ Grounded against Modal's own docs (not Baseten's):
    account's Usage/Credits view.
 4. Set a workspace spend limit of $0 out-of-pocket if the dashboard allows
    (defense in depth; account change - confirmed with the user first).
-5. Reservation policy on this route: the guard reserves the FULL THEORETICAL
-   MAXIMUM per call - actual input byte ceiling (provable from our own
-   payload) plus the endpoint's maximum completion tokens - with NO reliance
-   on max_tokens being honored, until Modal's own documentation (not
-   Baseten's, not an experiment) confirms the cap contract. At 262,144 max
-   completion that reservation is ~$1.12/call, inside the $3 ceiling; if the
-   endpoint's true max completion is unverified, no call is made. An
-   empirical completion_tokens <= max_tokens observation is extra evidence
-   only - it can never establish a billing upper bound, and no call is made
-   to "prove" safety.
+5. Reservation policy on this route (grounded 11-04): the guard reserves
+   the actual input byte ceiling (provable from our own payload) plus
+   max_tokens at the output price. The max_tokens cap is contractual, not
+   empirical: Modal advertises an OpenAI-compatible Chat Completions API
+   (modal.com/docs/guide/endpoints.md), and the OpenAI Chat Completions
+   reference defines max_tokens as "the maximum number of tokens that can
+   be generated in the chat completion... used to control costs" (reasoning
+   included per the max_completion_tokens definition). At max_tokens=140
+   the output reservation is $0.000595/call. The unpublished server-side
+   max completion (aggregator-claimed 262,144) is NOT load-bearing: we
+   never request more than 140 output tokens, so the ceiling above the
+   request cannot change the bill. Residual risk - Modal silently
+   dishonoring its advertised API contract - is bounded structurally, not
+   by docs: no payment method on the workspace (verified), awarded credits
+   confirmed covering the Shared Endpoint before the first call, a $0
+   out-of-pocket spend limit where the dashboard allows (step 4), and the
+   fail-closed ledger reconciling actuals after every call. An empirical
+   completion_tokens <= max_tokens observation remains evidence only and
+   is never the bound.
 6. Only then: conductor test calls, each reserved against the $3 cumulative
    ledger ceiling.
 
