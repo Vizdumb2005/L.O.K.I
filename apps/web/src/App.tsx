@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { CameraLab } from "./components/CameraLab.js";
 import { Consent, type ShowMode } from "./components/Consent.js";
+import { CountdownStage } from "./components/CountdownStage.js";
 import { Performance } from "./components/Performance.js";
 import { effectChoice, type EffectId } from "./lib/effects.js";
 import { SensorSession } from "./lib/sensor-session.js";
@@ -179,9 +180,11 @@ export function App() {
           onBack={() => setScreen("show")}
           onReviewConsent={leave}
         />
+      ) : entered && choice.id === "countdown-force" ? (
+        <CountdownStage onExit={leave} />
       ) : entered ? (
         <Performance
-          effect={choice.effect}
+          effect={choice.effect!}
           sealed={choice.sealed}
           reducedMotion={reducedMotion}
           llmEnabled={llmEnabled}

@@ -120,6 +120,9 @@ async function playToEnd(page: Page): Promise<void> {
 
 test("consent gate explains the illusion and keeps the camera off", async ({ page }) => {
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
 
   await expect(page.getByRole("heading", { name: "LOKI", exact: true })).toBeVisible();
   await expect(page.getByText("It is an illusion, not mind reading.")).toBeVisible();
@@ -139,6 +142,9 @@ test("consent gate explains the illusion and keeps the camera off", async ({ pag
 
 test("a full no-camera show reaches a reveal or an honest miss and offers Act II", async ({ page }) => {
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.getByText("I understand this is a", { exact: false }).click();
   await page.getByRole("button", { name: "Enter the observatory" }).click();
 
@@ -158,6 +164,9 @@ test("a full no-camera show reaches a reveal or an honest miss and offers Act II
 
 test("the toy effect runs through the same shell", async ({ page }) => {
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.getByText("I understand this is a", { exact: false }).click();
   await page.getByText("Ember Words", { exact: true }).click();
   await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -180,6 +189,9 @@ test("camera denial is handled without breaking the show", async ({ page }) => {
   });
 
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.getByText("I understand this is a", { exact: false }).click();
   await page.getByText("Camera lab opt-in (optional).").click();
   await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -194,6 +206,9 @@ test("camera denial is handled without breaking the show", async ({ page }) => {
 
 test("desktop and mobile screenshots are captured for inspection", async ({ page }) => {
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.screenshot({ path: "docs/screenshots/consent-desktop.png", fullPage: true });
 
   await page.getByText("I understand this is a", { exact: false }).click();
@@ -210,6 +225,9 @@ test("desktop and mobile screenshots are captured for inspection", async ({ page
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.screenshot({ path: "docs/screenshots/consent-mobile.png", fullPage: true });
   await page.getByText("I understand this is a", { exact: false }).click();
   await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -221,6 +239,9 @@ test("Ember sensory probes reveal the sealed word Comet at desktop and mobile wi
   for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByText("Ember Words", { exact: true }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -258,6 +279,9 @@ test("silent choice exposes readable generic labels without capturing a selectio
   for (const effect of [{ name: "The Twelve", count: 12 }, { name: "Ember Words", count: 4 }]) {
     await page.setViewportSize({ width: 360, height: 800 });
     await page.goto("/");
+    // The featured default is now the countdown act; these flows exercise the
+    // showrunner acts, so select The Twelve explicitly.
+    await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
     await page.getByText("I understand this is a", { exact: false }).click();
     await page.getByText(effect.name, { exact: true }).click();
     await page.getByRole("button", { name: "Enter the observatory" }).click();
@@ -282,6 +306,9 @@ test("silent choice exposes readable generic labels without capturing a selectio
 
 test("keyboard-only: number keys answer while an answer button has focus", async ({ page }) => {
   await page.goto("/");
+  // The featured default is now the countdown act; these flows exercise the
+  // showrunner acts, so select The Twelve explicitly.
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
   await page.getByText("I understand this is a", { exact: false }).click();
   await page.getByRole("button", { name: "Enter the observatory" }).click();
   await page.getByRole("button", { name: "I have chosen" }).click();

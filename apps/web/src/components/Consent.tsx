@@ -17,7 +17,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
   useEffect(() => {
     if (restoreFocus) mainRef.current?.focus({ preventScroll: true });
   }, [restoreFocus]);
-  const [effectId, setEffectId] = useState<EffectId>("card-twelve");
+  const [effectId, setEffectId] = useState<EffectId>("countdown-force");
   const [understood, setUnderstood] = useState(false);
   const [cameraOptIn, setCameraOptIn] = useState(false);
   const [mode, setMode] = useState<ShowMode>("click");
@@ -27,6 +27,10 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
   const [hostedVoiceOptIn, setHostedVoiceOptIn] = useState(false);
   const sensorsSupported =
     typeof navigator !== "undefined" && typeof navigator.mediaDevices?.getUserMedia === "function";
+  // The Countdown uses no camera and no microphone; sensor mode is only
+  // offered for the acts that actually use it.
+  const sensorlessEffect = effectId === "countdown-force";
+  const effectiveMode: ShowMode = sensorlessEffect ? "click" : mode;
 
   return (
     <main className="consent" id="main" ref={mainRef} tabIndex={-1}>
@@ -36,9 +40,9 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
           LOKI
         </h1>
         <p className="lede">
-          I will ask you to hold something in your mind. I will make a few claims about it -
-          you only ever answer true or wrong, never the card itself. Then I
-          will make one guess.
+          {effectId === "countdown-force"
+            ? "Name any number from 10 to 19. You deal and count the cards yourself - the card your count lands on was sealed before you spoke."
+            : "I will ask you to hold something in your mind. I will make a few claims about it - you only ever answer true or wrong, never the card itself. Then I will make one guess."}
         </p>
         <p className="lede lede-small">
           It is an illusion, not mind reading. You are always free to stop, answer honestly,
@@ -90,7 +94,10 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
                 name="effect"
                 value={choice.id}
                 checked={effectId === choice.id}
-                onChange={() => setEffectId(choice.id)}
+                onChange={() => {
+                  setEffectId(choice.id);
+                  if (choice.id === "countdown-force") setMode("click");
+                }}
               />
               <span className="effect-choice-copy">
                 <span className="effect-eyebrow">{choice.eyebrow}</span>
@@ -102,7 +109,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
           ))}
         </fieldset>
 
-        <fieldset className="effect-picker">
+        <fieldset className="effect-picker mode-picker">
           <legend>How do you want to play</legend>
           <label className={`effect-choice ${mode === "click" ? "is-selected" : ""}`}>
             <input
@@ -128,13 +135,18 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
               type="radio"
               name="mode"
               value="sensor"
-              checked={mode === "sensor"}
-              disabled={!sensorsSupported}
+              checked={effectiveMode === "sensor"}
+              disabled={!sensorsSupported || sensorlessEffect}
               onChange={() => setMode("sensor")}
             />
             <span className="effect-choice-copy">
               <span className="effect-eyebrow">Experimental - camera + mic required</span>
               <span className="effect-title">Sensor-enabled performance</span>
+              {sensorlessEffect && (
+                <span className="effect-blurb sensor-note">
+                  The Countdown plays in the click demo only - no camera, no microphone.
+                </span>
+              )}
               <span className="effect-blurb">
                 Your camera is used for one bounded purpose: noticing that a face is present during
                 the settling moment. Frames are processed in this tab and discarded immediately; the
@@ -153,7 +165,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
           </label>
         </fieldset>
 
-        {mode === "sensor" && (
+        {effectiveMode === "sensor" && (
           <>
             <label className="check">
               <input
@@ -213,10 +225,10 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
         <button
           type="button"
           className="primary"
-          disabled={!understood || (mode === "sensor" && !(presenceConsent && micConsent && enrollConsent))}
-          onClick={() => onEnter(effectId, cameraOptIn, mode, hostedVoiceOptIn)}
+          disabled={!understood || (effectiveMode === "sensor" && !(presenceConsent && micConsent && enrollConsent))}
+          onClick={() => onEnter(effectId, cameraOptIn, effectiveMode, hostedVoiceOptIn)}
         >
-          {mode === "sensor" ? "Enter with camera + mic" : "Enter the observatory"}
+          {effectiveMode === "sensor" ? "Enter with camera + mic" : "Enter the observatory"}
         </button>
         <p className="tiny">
           Best with a quiet room and a screen at arm's length. Captions are always on.

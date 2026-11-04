@@ -392,9 +392,11 @@ export async function setupHardwareMocks(
 
 export async function enterObservatoryWithSensors(page: Page, effectId?: string): Promise<void> {
   await page.getByText("I understand this is a", { exact: false }).click();
-  if (effectId) {
-    await page.getByRole("radio", { name: effectId }).check().catch(() => {});
-  }
+  // The featured default is the countdown act; sensor mode only exists for the
+  // showrunner acts, so select one explicitly before choosing sensor mode.
+  await page
+    .locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: effectId ?? "The Twelve" })
+    .click();
   await page.getByText("Sensor-enabled performance").click();
   await page.getByText("I allow the camera for presence only", { exact: false }).click();
   await page.getByText("I allow the microphone for answering by voice", { exact: false }).click();

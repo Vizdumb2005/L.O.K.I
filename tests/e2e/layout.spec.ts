@@ -34,6 +34,9 @@ for (const viewport of VIEWPORTS) {
 
     test("'I have chosen' is fully inside the initial viewport in the think beat", async ({ page }) => {
       await page.goto("/");
+      // The think beat belongs to the showrunner acts; pick one explicitly now
+      // that the featured default is the countdown act.
+      await page.locator("label.effect-choice", { hasText: "The Twelve" }).click();
       // Click demo: a single consent checkbox, then enter.
       const demo = page.getByRole("radio", { name: /click demo|no sensors/i });
       if (await demo.isVisible().catch(() => false)) await demo.check();
@@ -51,6 +54,8 @@ for (const viewport of VIEWPORTS) {
 
     test("every visible interactive control is at least 44px tall", async ({ page }) => {
       await page.goto("/");
+      // Same reasoning: the think-beat controls live in the showrunner acts.
+      await page.locator("label.effect-choice", { hasText: "The Twelve" }).click();
       const understood = page.getByRole("checkbox").first();
       if (await understood.isVisible().catch(() => false)) await understood.check();
       await page.getByRole("button", { name: /Enter the observatory/i }).click();

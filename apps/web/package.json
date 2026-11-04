@@ -7,6 +7,7 @@
     "@huggingface/transformers": "4.3.2",
     "@loki/effect-api": "3.0.0",
     "@loki/effect-card": "3.0.0",
+    "@loki/effect-countdown": "3.0.0",
     "@loki/effect-example": "3.0.0",
     "@loki/engine": "3.0.0",
     "@loki/perception": "3.0.0",
