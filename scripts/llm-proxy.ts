@@ -137,12 +137,36 @@ async function conduct(beat: string, cardLabel: string | null, trace: unknown): 
   }
 }
 
-function json(res: ServerResponse, status: number, body: unknown): void {
-  res.writeHead(status, {
+/**
+ * Access control for a hosted deployment. Two layers, both optional at
+ * localhost-demo time and REQUIRED before the proxy is ever exposed:
+ *  - ORACLE_TOKEN: a shared secret the client must send as x-oracle-token.
+ *    Without it the endpoint would let strangers drain the credit wallet.
+ *  - ORACLE_ALLOWED_ORIGIN: the single web origin allowed by CORS. No
+ *    wildcard, ever.
+ * Read per-request so tests can set them.
+ */
+function authorized(req: IncomingMessage): boolean {
+  const token = process.env.ORACLE_TOKEN;
+  if (!token) return true; // localhost demo mode; bind is 127.0.0.1 only
+  return req.headers["x-oracle-token"] === token;
+}
+
+function corsOrigin(req: IncomingMessage): string | null {
+  const allowed = process.env.ORACLE_ALLOWED_ORIGIN;
+  const origin = req.headers.origin;
+  if (!allowed || !origin) return null;
+  return origin === allowed ? allowed : null;
+}
+
+function json(res: ServerResponse, status: number, body: unknown, cors: string | null = null): void {
+  const headers: Record<string, string> = {
     "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store",
     "x-content-type-options": "nosniff"
-  });
+  };
+  if (cors) headers["access-control-allow-origin"] = cors;
+  res.writeHead(status, headers);
   res.end(JSON.stringify(body));
 }
 
@@ -276,54 +300,70 @@ async function rewrite(template: string, beat: string, tone: string): Promise<{
 }
 
 export const server = createServer(async (req, res) => {
+  const cors = corsOrigin(req);
+  if (req.method === "OPTIONS") {
+    const headers: Record<string, string> = { "access-control-max-age": "600" };
+    if (cors) {
+      headers["access-control-allow-origin"] = cors;
+      headers["access-control-allow-methods"] = "POST, GET";
+      headers["access-control-allow-headers"] = "content-type, x-oracle-token";
+    }
+    res.writeHead(204, headers);
+    res.end();
+    return;
+  }
+  if (!authorized(req)) {
+    json(res, 401, { error: "unauthorized" }, cors);
+    return;
+  }
   if (req.method === "GET" && req.url === "/health") {
-    json(res, 200, { ok: true, keyConfigured: Boolean(API_KEY), model: MODEL, baseUrl: BASE_URL });
+    json(res, 200, { ok: true, keyConfigured: Boolean(API_KEY), model: MODEL }, cors);
     return;
   }
   if (req.method === "POST" && req.url === "/api/conduct") {
     const ip = req.socket.remoteAddress ?? "local";
     if (rateLimited(ip)) {
-      json(res, 200, { text: "", voice: "script", reason: "rate-limit" });
+      json(res, 200, { text: "", voice: "script", reason: "rate-limit" }, cors);
       return;
     }
     try {
       const body = JSON.parse(await readBody(req)) as ConductRequest;
       if (typeof body.beat !== "string" || !CONDUCT_BEATS.has(body.beat)) {
-        json(res, 400, { error: "bad-beat" });
+        json(res, 400, { error: "bad-beat" }, cors);
         return;
       }
       const cardLabel = typeof body.cardLabel === "string" ? body.cardLabel.slice(0, 60) : null;
       const trace = body.trace && typeof body.trace === "object" ? body.trace : null;
       const result = await conduct(body.beat, cardLabel, trace);
-      json(res, 200, result);
+      json(res, 200, result, cors);
     } catch {
-      json(res, 400, { error: "bad-request" });
+      json(res, 400, { error: "bad-request" }, cors);
     }
     return;
   }
   if (req.method !== "POST" || req.url !== "/api/patter") {
-    json(res, 404, { error: "not-found" });
+    json(res, 404, { error: "not-found" }, cors);
     return;
   }
 
   const ip = req.socket.remoteAddress ?? "local";
   if (rateLimited(ip)) {
-    json(res, 200, { line: "", source: "template", reason: "rate-limit" });
+    json(res, 200, { line: "", source: "template", reason: "rate-limit" }, cors);
     return;
   }
 
   try {
     const body = JSON.parse(await readBody(req)) as PatterRequest;
     if (typeof body.template !== "string" || body.template.length > 500) {
-      json(res, 400, { error: "bad-template" });
+      json(res, 400, { error: "bad-template" }, cors);
       return;
     }
     const beat = typeof body.beat === "string" ? body.beat.slice(0, 40) : "build";
     const tone = typeof body.tone === "string" ? body.tone.slice(0, 30) : "intimate";
     const result = await rewrite(body.template, beat, tone);
-    json(res, 200, result);
+    json(res, 200, result, cors);
   } catch {
-    json(res, 400, { error: "bad-request" });
+    json(res, 400, { error: "bad-request" }, cors);
   }
 });
 

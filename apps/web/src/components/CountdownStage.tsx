@@ -42,16 +42,20 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
   const [trace, setTrace] = useState<CountdownTrace | null>(force.trace());
   const [showTrace, setShowTrace] = useState(false);
   const [line, setLine] = useState<ConductionLine | null>(null);
+  // Hosted mode requires an explicit spectator opt-in before ANY model call.
+  const [voiceChoice, setVoiceChoice] = useState<"pending" | "live" | "script">("pending");
 
   // The Oracle's voice. Endpoint absent => scripted conduction, always. The
   // "hosted" mode flag drives the privacy copy: only a configured endpoint
   // ever sends spectator text/state anywhere.
+  const hosted = (import.meta.env as Record<string, string | undefined>).VITE_CONDUCTOR_ENDPOINT != null;
   const conductorRef = useRef(
     new ModelConductor({
-      endpoint: (import.meta.env as Record<string, string | undefined>).VITE_CONDUCTOR_ENDPOINT ?? null
+      // The endpoint reaches the conductor only after explicit opt-in.
+      endpoint:
+        ((import.meta.env as Record<string, string | undefined>).VITE_CONDUCTOR_ENDPOINT ?? null) as string | null
     })
   );
-  const hosted = (import.meta.env as Record<string, string | undefined>).VITE_CONDUCTOR_ENDPOINT != null;
 
   const beat: Beat =
     phase === "seal" ? "seal"
@@ -67,13 +71,15 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
       beat === "reveal" || beat === "miss"
         ? (trace?.sealedTargetId ? (COUNTDOWN_CARD_BY_ID.get(trace.sealedTargetId)?.label ?? null) : null)
         : null;
-    void conductorRef.current.conduct(beat, trace ?? force.trace(), label).then((l) => {
+    const conductor =
+      hosted && voiceChoice === "live" ? conductorRef.current : new ModelConductor({ endpoint: null });
+    void conductor.conduct(beat, trace ?? force.trace(), label).then((l) => {
       if (live) setLine(l);
     });
     return () => {
       live = false;
     };
-  }, [beat, trace?.namedNumber, trace?.sealVerified]);
+  }, [beat, trace?.namedNumber, trace?.sealVerified, hosted, voiceChoice]);
 
   const named = trace?.namedNumber ?? null;
   const steps = named === null ? 0 : countedStepsFor(named);
@@ -293,9 +299,29 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
     </section>
   );
 
+  const voiceGate = hosted && voiceChoice === "pending" && (
+    <section aria-label="Live voice consent" style={panelStyle} data-testid="voice-opt-in">
+      <p>
+        This act can be conducted with a live voice. If you turn it on, the number you name and the
+        state of the act are sent to Meta's Muse model through LOKI's server so it can speak the
+        part. No camera, no microphone, no recording - and the card work itself never leaves this
+        page. The scripted voice is the same show without anything being sent.
+      </p>
+      <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+        <button type="button" style={buttonStyle} onClick={() => setVoiceChoice("live")} data-testid="voice-opt-in-live">
+          Use the live voice
+        </button>
+        <button type="button" style={ghostButtonStyle} onClick={() => setVoiceChoice("script")} data-testid="voice-opt-in-script">
+          Keep the scripted voice
+        </button>
+      </div>
+    </section>
+  );
+
   return (
     <main id="main" style={{ maxWidth: "44rem", margin: "0 auto", padding: "2rem 1rem" }} data-testid="countdown-stage">
       {header}
+      {voiceGate}
       {oracleLine}
       {sealPanel}
       {namePanel}
