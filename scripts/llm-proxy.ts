@@ -109,14 +109,12 @@ async function conduct(beat: string, cardLabel: string | null, trace: unknown): 
       usage?: {
         prompt_tokens?: number;
         completion_tokens?: number;
-        completion_tokens_details?: { reasoning_tokens?: number };
       };
     };
     const usage = data.usage
       ? {
           promptTokens: data.usage.prompt_tokens,
-          completionTokens: data.usage.completion_tokens,
-          reasoningTokens: data.usage.completion_tokens_details?.reasoning_tokens
+          completionTokens: data.usage.completion_tokens
         }
       : null;
     const raw = data.choices?.[0]?.message?.content;
@@ -198,6 +196,12 @@ function rateLimited(ip: string): boolean {
   const recent = (hits.get(ip) ?? []).filter((at) => now - at < RATE_WINDOW);
   recent.push(now);
   hits.set(ip, recent);
+  // Bound the map: drop idle IPs so a public deployment cannot grow it forever.
+  if (hits.size > 10_000) {
+    for (const [key, ats] of hits) {
+      if (ats.every((at) => now - at >= RATE_WINDOW)) hits.delete(key);
+    }
+  }
   return recent.length > RATE_LIMIT;
 }
 
@@ -263,14 +267,12 @@ async function rewrite(template: string, beat: string, tone: string): Promise<{
       usage?: {
         prompt_tokens?: number;
         completion_tokens?: number;
-        completion_tokens_details?: { reasoning_tokens?: number };
       };
     };
     const usage = data.usage
       ? {
           promptTokens: data.usage.prompt_tokens,
-          completionTokens: data.usage.completion_tokens,
-          reasoningTokens: data.usage.completion_tokens_details?.reasoning_tokens
+          completionTokens: data.usage.completion_tokens
         }
       : null;
     const raw = data.choices?.[0]?.message?.content;

@@ -8,8 +8,8 @@
  *       at input price + max_tokens at output price. Per Baseten's docs,
  *       max_tokens caps the WHOLE completion (reasoning included) and the
  *       API rejects max_tokens > 262144 - no safety factor needed or honest.
- *     (the factor covers billed reasoning tokens when the API does not
- *     separate them; reconciled down only from real usage fields).
+ *     Reconciliation bills the reported completion_tokens, which include
+ *     reasoning tokens per the OpenAI-compatible usage contract.
  *   - A call starts only if effectiveSpend + reservation <= ceiling, where
  *     effectiveSpend = sum(closed actuals) + sum(open reservations).
  *   - The ledger persists to disk, so restarts do not reset the budget.
@@ -67,8 +67,8 @@ interface Ledger {
 
 export interface Usage {
   promptTokens?: number;
+  /** Includes reasoning tokens (OpenAI-compatible subset semantics). */
   completionTokens?: number;
-  reasoningTokens?: number;
 }
 
 export interface ReserveResult {
@@ -190,10 +190,12 @@ export async function reconcileBudget(
     if (!entry || entry.status === "closed") return;
     let actual = entry.reservedUsd;
     if (usage && typeof usage.promptTokens === "number" && typeof usage.completionTokens === "number") {
+      // OpenAI-compatible usage: completion_tokens ALREADY includes reasoning
+      // tokens (reasoning_tokens is a subset breakdown) - adding both would
+      // bill the reasoning twice. Bill completion_tokens as reported.
       actual =
         (usage.promptTokens / 1_000_000) * cfg.priceInputPerMillion +
-        ((usage.completionTokens + (usage.reasoningTokens ?? 0)) / 1_000_000) *
-          cfg.priceOutputPerMillion;
+        (usage.completionTokens / 1_000_000) * cfg.priceOutputPerMillion;
     }
     entry.status = "closed";
     entry.actualUsd = actual;

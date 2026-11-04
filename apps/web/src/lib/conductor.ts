@@ -87,8 +87,10 @@ export class ModelConductor implements Conductor {
           trace: {
             namedNumber: trace.namedNumber,
             countedSteps: trace.countedSteps,
-            producedCardId: trace.producedCardId,
-            sealedTargetId: trace.sealedTargetId,
+            // The sealed target and the produced card leave the page only once
+            // the seal is open: before that the model must not hold the answer.
+            producedCardId: beat === "reveal" || beat === "miss" ? trace.producedCardId : null,
+            sealedTargetId: beat === "reveal" || beat === "miss" ? trace.sealedTargetId : null,
             sealVerified: trace.sealVerified,
             phase: trace.phase
           }

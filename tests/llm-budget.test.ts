@@ -28,9 +28,10 @@ describe("llm budget guard", () => {
     const r = await reserveBudget(cfg, { inputTokens: inputTokenCeiling("x".repeat(300)), maxOutputTokens: 90 });
     expect(r.ok).toBe(true);
     expect(r.reservedUsd).toBeCloseTo(0.0007575, 10);
-    await reconcileBudget(cfg, r.id, { promptTokens: 120, completionTokens: 30, reasoningTokens: 10 }, "ok");
+    // completion_tokens already includes reasoning (subset breakdown): bill 30, not 40.
+    await reconcileBudget(cfg, r.id, { promptTokens: 120, completionTokens: 30 }, "ok");
     const s = await budgetStatus(cfg);
-    expect(s.closedActualUsd).toBeCloseTo(0.00032, 10);
+    expect(s.closedActualUsd).toBeCloseTo(0.0002775, 10);
     expect(s.openCalls).toBe(0);
   });
 

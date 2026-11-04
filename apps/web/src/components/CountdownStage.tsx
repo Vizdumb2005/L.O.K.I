@@ -306,10 +306,11 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
   const voiceGate = hosted && voiceChoice === "pending" && (
     <section aria-label="Live voice consent" style={panelStyle} data-testid="voice-opt-in">
       <p>
-        This act can be conducted with a live voice. If you turn it on, the number you name and the
-        state of the act are sent to Meta's Muse model through LOKI's server so it can speak the
-        part. No camera, no microphone, no recording - and the card work itself never leaves this
-        page. The scripted voice is the same show without anything being sent.
+        This act can be conducted with live written words. If you turn it on, the number you name and
+        the state of the act are sent to Meta's Muse model through LOKI's server so it can write its
+        lines live on screen - text only, no voice or audio. No camera, no microphone, no recording -
+        and the card work itself never leaves this page. The scripted words are the same show without
+        anything being sent.
       </p>
       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
         <button type="button" style={buttonStyle} onClick={() => setVoiceChoice("live")} data-testid="voice-opt-in-live">

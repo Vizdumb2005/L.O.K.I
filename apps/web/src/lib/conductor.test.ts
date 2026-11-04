@@ -60,6 +60,21 @@ describe("ModelConductor", () => {
     expect(sent).toContain("namedNumber");
     expect(sent).not.toContain("dealOrder");
   });
+  it("never ships the sealed target before the seal is open", async () => {
+    let sent = "";
+    const c = new ModelConductor({
+      endpoint: "http://localhost:1/",
+      fetchImpl: async (_u, init) => { sent = String(init?.body); return new Response(JSON.stringify({ text: "ok" }), { status: 200 }); }
+    });
+    await c.conduct("deal", TRACE, null);
+    const early = JSON.parse(sent) as { trace: { sealedTargetId: unknown; producedCardId: unknown } };
+    expect(early.trace.sealedTargetId).toBeNull();
+    expect(early.trace.producedCardId).toBeNull();
+
+    await c.conduct("reveal", TRACE, "Queen of Spades");
+    const late = JSON.parse(sent) as { trace: { sealedTargetId: unknown } };
+    expect(late.trace.sealedTargetId).toBe(TRACE.sealedTargetId);
+  });
 
   it("passes the abort signal through to fetch and stays quiet after abort", async () => {
     let seenSignal: AbortSignal | null = null;
