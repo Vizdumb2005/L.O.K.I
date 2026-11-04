@@ -39,7 +39,7 @@ export const EFFECTS: EffectChoice[] = [
     title: "The Countdown",
     eyebrow: "Act III \u00b7 A number becomes a card",
     blurb:
-      "Name any number from 10 to 19. A deal you perform yourself lands on a card that was sealed before you spoke - arithmetic, not mind reading. The full method is disclosed at the end.",
+      "Name a number from 10 to 19. Your own deal and count land on the card sealed before you spoke.",
     meta: "52 cards \u00b7 your number \u00b7 sealed prediction \u00b7 method disclosed",
     sealed: true,
     effect: null
