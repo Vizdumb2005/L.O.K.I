@@ -175,6 +175,24 @@ Why gaze is not in the show: browser gaze error is setup-dependent, with 4.17° 
 the 2016 WebGazer work and 10.3–13.6° in a 2026 head-still study. Adjacent cards are too
 small for that error. See [docs/research.md](docs/research.md).
 
+## Sensor mode (experimental)
+
+An opt-in alternative to the click demo, chosen on the consent screen ("Sensor-enabled
+performance"). Camera and microphone enrollment are required: a denied start keeps the
+spectator on the consent screen with a notice and a one-tap recovery into the click
+demo, and capture ending mid-show ends the sensor-enabled performance and releases
+every sensor. Nothing is uploaded in the default build.
+
+- The camera is presence-only: it notices that a face is present during the settling
+  moment. Frames are processed in the tab and discarded immediately; the camera never
+  helps guess the card. A visible indicator stays on while it is active.
+- The microphone allows answering by voice. Short clips are processed in the tab and
+  discarded; uncertain hearing falls back to click.
+- Voice enrollment (about 4 seconds of speech) computes a voice print in the tab, keeps
+  it in memory only, and discards it on stop or leave. It is not identification.
+- This channel passed synthetic-clip checks only - real-device validation is pending,
+  so it is labelled experimental, not proven.
+
 ## Optional LLM patter
 
 Off by default. When enabled in the show, the app calls a **local proxy** at
@@ -191,13 +209,16 @@ npm run dev
 
 The default build makes zero paid calls. The model route verified for this build is
 `meta-models/muse-spark-open` at `https://inference.baseten.co/v1`; the dated `-1026` ID in
-the brief was not found. The proxy sends only a short text template and tone, never audio,
-images, camera frames, or identity data.
+the brief was not found. The proxy's code default still carries that dated ID, so enabling
+the proxy requires setting `BASETEN_MODEL=meta-models/muse-spark-open` explicitly. The
+proxy sends only a short text template and tone, never audio, images, camera frames, or
+identity data. No Meta or other model key is present in this environment and no model call
+has been made; the route is documented, not exercised.
 
 ## CI
 
-A GitHub Actions workflow is prepared at `.github/workflows/ci.yml` (verify + e2e jobs).
-Not yet enabled on the remote.
+GitHub Actions runs `.github/workflows/ci.yml` (verify + e2e jobs) on every pull request
+and on main. Merges require green CI, and the public Pages deployment tracks main.
 
 ## Repository map
 
@@ -231,11 +252,14 @@ tests/e2e/              Playwright flows and screenshots
 
 - Deadline: **2026-11-05 02:00 UTC**. Internal target: 2026-11-03 18:00 UTC.
 - 0 human participants; the pilot protocol exists but was not run.
-- Camera/gaze and force remain off; no human validation.
+- Gaze and force remain off. Camera presence and voice answering run only in the experimental sensor mode above; no human validation yet.
 - Public repo/demo format requirements are `[UNRESOLVED]`; prepared public-ready.
 - Real browser test done (BrowserOS neo / Chromium 155): consent, card show, toy effect,
   camera denial all verified. Physical-device matrix (Safari, low-end GPU, phone camera)
   not tested.
+- Live verification of the deployed build (2026-11-04, cloud Chromium, desktop and
+  mobile viewports): consent flow, click path, sensor denial recovery into the click
+  demo, and reveal gating checked against rendered pixels.
 - LLM route is optional and not exercised without a key in this environment.
 - Long sessions, groups, 52-card decks, voice, and other effects are roadmap.
 
