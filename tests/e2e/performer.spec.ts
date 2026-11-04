@@ -56,7 +56,7 @@ test("performer: the payoff plays as timed cues and Skip ahead stops at the reve
   await expect(page.getByRole("button", { name: "Skip ahead" })).toHaveCount(0);
   await expect(page.locator(".panel-reveal, .panel-miss")).toBeVisible();
   // The card reveal waits for the person to turn the card over themselves.
-  const turnOver = page.getByRole("button", { name: "Turn it over" });
+  const turnOver = page.getByRole("button", { name: "Open the seal" });
   if (await turnOver.isVisible().catch(() => false)) await turnOver.click();
   await expect(page.getByRole("button", { name: "Continue" })).toBeVisible();
 });

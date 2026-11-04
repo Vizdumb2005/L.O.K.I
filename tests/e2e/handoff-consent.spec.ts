@@ -18,7 +18,7 @@ async function walkToAfterglow(page: Page): Promise<void> {
       continue;
     }
     let clicked = false;
-    const labels: Array<string> = ["One clean claim", "Reveal it", "Turn it over", "Skip ahead", "Continue"];
+    const labels: Array<string> = ["One clean claim", "Reveal it", "Open the seal", "Skip ahead", "Continue"];
     for (const label of labels) {
       const button = page.getByRole("button", { name: label });
       if (await button.isVisible().catch(() => false)) {

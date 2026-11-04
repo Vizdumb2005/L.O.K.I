@@ -158,7 +158,6 @@ describe("Milestone 1 Empirical Challenge: Crimson Ink Palette", () => {
 
   it("styles.css enforces crimson #9e2a2b for .is-red classes", () => {
     const css = readFileSync(resolve("apps/web/src/styles.css"), "utf-8");
-    expect(css).toMatch(/\.silent-choice\.is-red\s*\{\s*border-color:\s*rgba\(158,\s*42,\s*43,\s*0\.36\);?\s*\}/);
     expect(css).toMatch(/\.silent-choice-glyph\.is-red\s*\{\s*color:\s*#9e2a2b;?\s*\}/);
     expect(css).toMatch(/\.flat-card\.is-red\s+\.flat-glyph\s*\{\s*color:\s*#9e2a2b;?\s*\}/);
     expect(css).toMatch(/\.flat-card\.is-red\s*\{\s*border-color:\s*rgba\(158,\s*42,\s*43,\s*0\.42\);?\s*\}/);

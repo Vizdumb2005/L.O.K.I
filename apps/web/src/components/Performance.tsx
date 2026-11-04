@@ -431,7 +431,7 @@ export function Performance({
 
   // The target is lit only when the resting reveal cue is on screen, never during the hush beats.
   // When the effect asks the person to perform the reveal, it also stays dark behind the
-  // invitation until they turn it over themselves.
+  // invitation until they open it themselves.
   const revealGated = Boolean(view.revealGate) && view.phase === "reveal" && !cuePending && !userRevealed;
   const stageView: SessionView =
     view.reveal && view.phase === "reveal" && (cuePending || revealGated) ? { ...view, reveal: undefined } : view;
