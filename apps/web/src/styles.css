@@ -771,29 +771,24 @@ button,
 
 .silent-choice-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 6px;
-  margin: 10px 0 0;
-  padding: 0;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 2px 12px;
+  margin: 8px 0 0;
+  padding: 6px 0 0;
+  border-top: 1px solid rgba(216, 184, 119, 0.14);
   list-style: none;
 }
 
 .silent-choice {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: baseline;
+  gap: 10px;
   min-width: 0;
-  min-height: 36px;
-  padding: 6px 10px;
-  border: 1px solid rgba(216, 184, 119, 0.24);
-  border-radius: 3px;
-  background: rgba(7, 17, 15, 0.58);
+  padding: 2px 0;
   color: var(--cream);
   font-size: 16px;
   line-height: 1.25;
 }
-
-.silent-choice.is-red { border-color: rgba(158, 42, 43, 0.36); }
 .silent-choice-glyph.is-red { color: #9e2a2b; }
 .silent-choice-glyph {
   flex: 0 0 auto;

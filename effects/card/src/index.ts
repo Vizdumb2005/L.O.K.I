@@ -144,8 +144,8 @@ export const cardEffect: Effect = {
         : `The card that kept returning was the ${item.label}.`,
     recoverLine: "Hold on — a second impression crossed the screen and muddied the first. One clean claim settles it.",
     missLine: "You beat me. The card stays yours.",
-    revealInvite: "Don't tell me. You turn it over - whenever you are ready.",
-    revealAction: "Turn it over"
+    revealInvite: "Don't tell me. Let me name it - whenever you are ready.",
+    revealAction: "Name it"
   }),
 
   stage: () => CARD_STAGE_BASE,

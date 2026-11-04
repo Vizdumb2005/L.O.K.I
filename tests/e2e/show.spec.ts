@@ -52,7 +52,7 @@ async function answerThreeOfDiamonds(page: Page): Promise<void> {
       await reveal.click();
       const skip = page.getByRole("button", { name: "Skip ahead" }).first();
       if (await skip.isVisible().catch(() => false)) await skip.click();
-      const turnOver = page.getByRole("button", { name: "Turn it over" });
+      const turnOver = page.getByRole("button", { name: "Name it" });
       if (await turnOver.isVisible().catch(() => false)) await turnOver.click();
       await page.waitForTimeout(900);
       return;
