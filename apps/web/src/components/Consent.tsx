@@ -166,7 +166,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
                     {sensorsSupported ? "" : " This device or browser does not expose camera capture."}
                   </span>
                 </>
-              ) : (
+              ) : sensorlessEffect ? null : (
                 <span className="effect-blurb">
                   Camera notices a face is present; microphone lets you answer by voice. All
                   processing stays in this tab, nothing is uploaded - the full details appear
