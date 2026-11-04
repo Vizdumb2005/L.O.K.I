@@ -21,6 +21,7 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
   const [understood, setUnderstood] = useState(false);
   const [cameraOptIn, setCameraOptIn] = useState(false);
   const [mode, setMode] = useState<ShowMode>("click");
+  const enterButtonRef = useRef<HTMLButtonElement>(null);
   const [presenceConsent, setPresenceConsent] = useState(false);
   const [micConsent, setMicConsent] = useState(false);
   const [enrollConsent, setEnrollConsent] = useState(false);
@@ -234,8 +235,24 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
             {sensorNotice}
           </p>
         )}
+        {sensorNotice && mode === "sensor" && (
+          // The denied state keeps its sensor selection; the recovery is one
+          // explicit tap that switches to the click demo and moves focus to
+          // the enter control, so the notice never points at a dead end.
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => {
+              setMode("click");
+              requestAnimationFrame(() => enterButtonRef.current?.focus());
+            }}
+          >
+            Play the click demo instead - no camera, no microphone
+          </button>
+        )}
 
         <button
+          ref={enterButtonRef}
           type="button"
           className="primary"
           disabled={!understood || (effectiveMode === "sensor" && !(presenceConsent && micConsent && enrollConsent))}
