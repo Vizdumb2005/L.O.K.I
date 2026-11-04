@@ -39,25 +39,28 @@ Grounded against Modal's own docs (not Baseten's):
    account's Usage/Credits view.
 4. Set a workspace spend limit of $0 out-of-pocket if the dashboard allows
    (defense in depth; account change - confirmed with the user first).
-5. Reservation policy on this route (grounded 11-04): the guard reserves
-   the actual input byte ceiling (provable from our own payload) plus
-   max_tokens at the output price. The max_tokens cap is contractual, not
-   empirical: Modal advertises an OpenAI-compatible Chat Completions API
-   (modal.com/docs/guide/endpoints.md), and the OpenAI Chat Completions
-   reference defines max_tokens as "the maximum number of tokens that can
-   be generated in the chat completion... used to control costs" (reasoning
-   included per the max_completion_tokens definition). At max_tokens=140
-   the output reservation is $0.000595/call. The unpublished server-side
-   max completion (aggregator-claimed 262,144) is NOT load-bearing: we
-   never request more than 140 output tokens, so the ceiling above the
-   request cannot change the bill. Residual risk - Modal silently
-   dishonoring its advertised API contract - is bounded structurally, not
-   by docs: no payment method on the workspace (verified), awarded credits
-   confirmed covering the Shared Endpoint before the first call, a $0
-   out-of-pocket spend limit where the dashboard allows (step 4), and the
-   fail-closed ledger reconciling actuals after every call. An empirical
-   completion_tokens <= max_tokens observation remains evidence only and
-   is never the bound.
+5. Reservation policy on this route (regrounded 11-04, second pass):
+   credits are money and the $3 test budget is a HARD cap, so a call may
+   only run when its worst case is provably within the remaining ledger
+   balance. Modal publishes per-token rates ($1.25 in / $0.15 cached /
+   $4.25 out per Mtok, modal.com/docs/guide/supported-models) and a
+   1M-token context (modal.com/library/meta/muse-spark-open), and
+   advertises an OpenAI-compatible Chat Completions API
+   (modal.com/docs/guide/endpoints.md) - but NO published max-output
+   bound and no per-parameter billing guarantee. A raw context bound
+   (~1M output tokens worst case, ~$4.25) exceeds the cap, and
+   reconcile-after-the-call is NOT protection against a first overspend.
+   Therefore: after endpoint + proxy-token creation, the FIRST call is
+   the free read-only GET /v1/models metadata probe to capture the
+   server's own reported limits. Real calls proceed only if that
+   metadata (or other Modal-owned documentation) yields a per-call
+   worst case that fits under the $3 cap with the reservation ledger;
+   otherwise the route reports "cannot bound within $3" and holds. We
+   still send max_tokens=140 on every call as cheap insurance, but it
+   is never treated as the bound. Input is bounded by our own byte
+   ceiling (provable from the payload). The $0 out-of-pocket spend
+   limit (step 4) is defense in depth for cash, never a substitute for
+   the credit bound.
 6. Only then: conductor test calls, each reserved against the $3 cumulative
    ledger ceiling.
 
