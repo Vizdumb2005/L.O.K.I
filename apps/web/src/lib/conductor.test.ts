@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ModelConductor, ScriptedConductor, scriptedLine } from "./conductor.js";
+import { ModelConductor, PuterConductor, ScriptedConductor, scriptedLine } from "./conductor.js";
 import type { CountdownTrace } from "@loki/effect-countdown";
 
 const TRACE: CountdownTrace = {
@@ -108,5 +108,71 @@ describe("ScriptedConductor", () => {
   it("labels every line script", async () => {
     const line = await new ScriptedConductor().conduct("seal", TRACE, null);
     expect(line.voice).toBe("script");
+  });
+});
+
+describe("PuterConductor", () => {
+  it("returns model lines when the chat succeeds", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    const c = new PuterConductor({ chatImpl: async () => ({ message: { content: "Thirteen. Heard - watch them fall exactly as you said." } }) });
+    const line = await c.conduct("deal", TRACE, null);
+    expect(line.voice).toBe("model");
+    expect(line.text).toContain("Thirteen");
+  });
+
+  it("pins meta/muse-spark-open", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    let seen: { model?: string } | undefined;
+    const c = new PuterConductor({
+      chatImpl: async (_m, o) => {
+        seen = o;
+        return "A line.";
+      }
+    });
+    await c.conduct("deal", TRACE, null);
+    expect(seen?.model).toBe("meta/muse-spark-open");
+  });
+
+  it("never sends the sealed target or produced card before the seal opens", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    const bodies: string[] = [];
+    const c = new PuterConductor({
+      chatImpl: async (m) => {
+        bodies.push(typeof m[1]?.content === "string" ? m[1].content : JSON.stringify(m));
+        return "A line.";
+      }
+    });
+    await c.conduct("seal", TRACE, null);
+    await c.conduct("deal", TRACE, null);
+    await c.conduct("count", TRACE, null);
+    for (const body of bodies) {
+      expect(body).not.toContain('"sealedTargetId":"qs"');
+      expect(body).not.toContain('"producedCardId":"qs"');
+    }
+    await c.conduct("reveal", TRACE, "Queen of Spades");
+    expect(bodies[bodies.length - 1]).toContain('"sealedTargetId":"qs"');
+  });
+
+  it("falls back to script on error, empty, overlong, URL, brace, or banned-claim output", async () => {
+    const { PuterConductor } = await import("./conductor.js");
+    const cases: unknown[] = [
+      new Error("nope"),
+      { message: { content: "   " } },
+      { message: { content: "x".repeat(400) } },
+      { message: { content: "see https://example.com" } },
+      { message: { content: "has {brace}" } },
+      { message: { content: "I can read your mind with 100% accuracy" } }
+    ];
+    for (const k of cases) {
+      const c = new PuterConductor({
+        chatImpl: async () => {
+          if (k instanceof Error) throw k;
+          return k;
+        }
+      });
+      const line = await c.conduct("deal", TRACE, null);
+      expect(line.voice).toBe("script");
+      expect(line.text).toBe(scriptedLine("deal", TRACE, null));
+    }
   });
 });

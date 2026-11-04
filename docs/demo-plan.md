@@ -1,5 +1,12 @@
 # Safe demo plan - The Countdown with a live Oracle voice
 
+Status (2026-11-04): SUPERSEDED as the default route. The user directed the
+Puter.js route instead (WhatsApp, 2026-11-04 evening): meta/muse-spark-open via
+Puter's User-Pays model needs no keys, no redemption, and no spend of ours, and
+it is now the integrated default (see README "Optional live voice"). This Modal
+plan remains parked, unapproved, and unexecuted - no spend, no endpoint
+creation, no redemption. Original text follows.
+
 Status: plan. No spend, no endpoint creation, no redemption until the user's
 approval lands. Approval asked: fill the verified Modal credit-redemption
 form with exact reviewed fields, then up to $3 of awarded credits for

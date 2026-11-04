@@ -193,27 +193,28 @@ every sensor. Nothing is uploaded in the default build.
 - This channel passed synthetic-clip checks only - real-device validation is pending,
   so it is labelled experimental, not proven.
 
-## Optional LLM patter
+## Optional live voice (Puter.js -> Muse Spark Open)
 
-Off by default. When enabled in the show, the app calls a **local proxy** at
-`/api/patter`; the proxy is the only component that can reach a model. If the key is
-missing, the proxy is offline, the request times out, or the output trips the claim filter,
-the app keeps the bundled line and shows “offline fallback”.
+Off by default. The Countdown offers a "live written words" opt-in, and the other acts
+have a "Patter off" chip. Enabling either loads the Puter.js SDK from `js.puter.com` in
+the browser and calls `puter.ai.chat` with `model: "meta/muse-spark-open"` (pinned; the
+SDK default is a non-Meta model). Puter has **no API keys**: the first call asks the
+spectator to sign into their own Puter account, and usage draws on their own free monthly
+allowance (Puter's documented User-Pays model - the developer is never billed). If the
+SDK fails to load, sign-in is cancelled, the allowance is exhausted, the request times
+out, or the output trips the claim filter, the show keeps the scripted line and the trace
+records the fallback. The payload is a short text template plus beat/tone and public
+trace state only - never audio, images, camera frames, or identity data - and the sealed
+target leaves the page only once the seal is open. The default scripted build makes zero
+requests to Puter (e2e-verified).
 
-```bash
-cp .env.example .env
-# put a key in .env only if you intend to spend money
-npm run llm:proxy
-npm run dev
-```
-
-The default build makes zero paid calls. The model route verified for this build is
+The older operator-hosted proxy (`/api/patter`, `npm run llm:proxy`) remains for a
+budget-guarded key route: set `VITE_CONDUCTOR_ENDPOINT` for the Countdown conductor or
+`VITE_PATTER_PROVIDER=proxy` for patter. The model route verified for that path is
 `meta-models/muse-spark-open` at `https://inference.baseten.co/v1`; the dated `-1026` ID in
-the brief was not found. The proxy's code default still carries that dated ID, so enabling
-the proxy requires setting `BASETEN_MODEL=meta-models/muse-spark-open` explicitly. The
-proxy sends only a short text template and tone, never audio, images, camera frames, or
-identity data. No Meta or other model key is present in this environment and no model call
-has been made; the route is documented, not exercised.
+the brief was not found, and the proxy's code default still carries it, so the proxy path
+requires setting `BASETEN_MODEL=meta-models/muse-spark-open` explicitly. No Meta or other
+model key is present in this environment and no proxied model call has been made.
 
 ## CI
 

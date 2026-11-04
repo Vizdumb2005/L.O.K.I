@@ -273,6 +273,47 @@ whether an unlisted model alias also works; low for unstated submission-format r
 
 ---
 
+## 5b. Puter.js route (added 2026-11-04, user-directed)
+
+**Sources opened (live, 2026-11-04 evening IST)**
+
+- Tutorial, "Free, Unlimited Meta Muse API",
+  <https://developer.puter.com/tutorials/free-unlimited-meta-muse-api/> (updated 2026-10-19).
+- User-Pays model doc, <https://docs.puter.com/user-pays-model/>.
+- `puter.ai.chat()` reference, <https://docs.puter.com/AI/chat/>.
+- Puter privacy policy, <https://puter.com/privacy>.
+
+**What they actually say**
+
+- Puter.js serves the Meta Muse family with model IDs including `meta/muse-spark-open`,
+  `meta/muse-wonder`, `meta/muse-spark-1.3/1.2/1.1`, `meta/muse-glimmer-30b`. The docs
+  attribute the family to Meta Superintelligence Labs. This establishes the *family
+  label and route*, not an independent verification of the served weights; no
+  organiser confirmation of third-party routes has been sought.
+- User-Pays: each end user signs in with their own Puter account; that account covers
+  their own AI usage from a free monthly allowance; exhaustion prompts the *user* to
+  upgrade, never the developer. "Unlimited" in the tutorial title means unlimited scale
+  at $0 developer cost, not unlimited free usage per user.
+- `chat()` supports OpenAI-style messages, `model` pinning (SDK default is a non-Meta
+  model, so pinning is mandatory), `max_tokens`, `temperature`, streaming, abort, and
+  optional provider pinning/fallback control. Client-side SDK via CDN or npm; no API
+  keys exist on this route.
+- The privacy policy is generic and makes no AI-specific retention or training
+  commitment; LOKI's payload remains text-only (template, beat/tone, public trace
+  state), so exposure is limited by architecture.
+
+**Design impact**
+
+- The public build can offer genuine Muse Spark Open lines with no keys, no server, and
+  $0 developer cost; the spectator's explicit opt-in gates every call, and the scripted
+  voice remains the default and the fallback (e2e-verified: zero Puter requests when
+  untouched; model pinned; seal-safe payloads; honest fallback).
+- Honest labelling: "Muse Spark Open via Puter.js" - genuine Meta-model usage per the
+  event page's model list, documented as a third-party route without organiser
+  confirmation.
+
+---
+
 ## 6. Deadline and submission window
 
 **Question.** What is the exact deadline in the builder's timezone?

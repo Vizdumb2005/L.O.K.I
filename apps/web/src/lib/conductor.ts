@@ -1,4 +1,6 @@
 import type { CountdownTrace } from "@loki/effect-countdown";
+import { findBannedClaim } from "@loki/effect-api";
+import { puterChat, PUTER_MODEL, type PuterChatImpl } from "./puter-chat.js";
 
 /**
  * The Oracle's voice: conduction for The Countdown.
@@ -105,5 +107,64 @@ export class ModelConductor implements Conductor {
     } catch {
       return fallback.conduct(beat, trace, cardLabel);
     }
+  }
+}
+
+
+export interface PuterConductorOptions {
+  chatImpl?: PuterChatImpl;
+  timeoutMs?: number;
+  fallback?: Conductor;
+}
+
+const MAX_CONDUCT_LINE = 320;
+
+/**
+ * Muse-backed conduction through Puter.js instead of the operator proxy.
+ * Same honesty contract as ModelConductor: only public trace state is sent,
+ * the sealed target and produced card leave the page only once the seal is
+ * open, the model is instructed never to claim mind-reading, and every
+ * failure or filtered line falls back to the scripted voice.
+ */
+export class PuterConductor implements Conductor {
+  constructor(private readonly opts: PuterConductorOptions = {}) {}
+
+  async conduct(beat: Beat, trace: CountdownTrace, cardLabel: string | null): Promise<ConductionLine> {
+    const fallback = this.opts.fallback ?? new ScriptedConductor();
+    const scripted = await fallback.conduct(beat, trace, cardLabel);
+    const state = {
+      beat,
+      cardLabel,
+      trace: {
+        namedNumber: trace.namedNumber,
+        countedSteps: trace.countedSteps,
+        producedCardId: beat === "reveal" || beat === "miss" ? trace.producedCardId : null,
+        sealedTargetId: beat === "reveal" || beat === "miss" ? trace.sealedTargetId : null,
+        sealVerified: trace.sealVerified,
+        phase: trace.phase
+      }
+    };
+    const result = await puterChat(
+      [
+        {
+          role: "system",
+          content:
+            "You are the Oracle in LOKI, a consent-based mentalism performance. Write the performer's " +
+            "line for the current beat from the public state of the act. Rules: one or two sentences, " +
+            "under 300 characters, plain text, no URLs, no braces. Never claim mind reading, lie " +
+            "detection, emotion reading, certainty, or a guaranteed result; the act is an illusion " +
+            "and the number is honored exactly as named. Keep every number and card name in the state " +
+            "exactly as given."
+        },
+        { role: "user", content: `Scripted line for reference: "${scripted.text}". Public state: ${JSON.stringify(state)}` }
+      ],
+      { model: PUTER_MODEL, max_tokens: 120, temperature: 0.8, timeoutMs: this.opts.timeoutMs, chatImpl: this.opts.chatImpl }
+    );
+    if ("error" in result) return scripted;
+    const text = result.text.replace(/\s+/g, " ").trim();
+    if (!text || text.length > MAX_CONDUCT_LINE) return scripted;
+    if (/https?:\/\//i.test(text) || /[{}]/.test(text)) return scripted;
+    if (findBannedClaim(text)) return scripted;
+    return { beat, text, voice: "model" };
   }
 }

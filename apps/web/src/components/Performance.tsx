@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Effect } from "@loki/effect-api";
 import { rewritePatter } from "@loki/showrunner";
+import { rewritePatterViaPuter } from "../lib/puter-patter.js";
 import { Stage, cardPalette } from "./Stage.js";
 import { usePerformance } from "../lib/performance.js";
 import type { SessionView } from "@loki/showrunner";
@@ -221,15 +222,20 @@ export function Performance({
     if (!view) return;
     if (!llmEnabled || !["build", "afterglow"].includes(view.phase)) return;
     let live = true;
-    void rewritePatter(
-      {
-        beat: view.phase,
-        tone: view.phase === "afterglow" ? "reassuring" : "intimate",
-        allowedClaims: ["mentalism", "illusion", "performance", "consent"],
-        template: view.line
-      },
-      { endpoint: "/api/patter", timeoutMs: 1200 }
-    ).then((result) => {
+    const payload = {
+      beat: view.phase,
+      tone: (view.phase === "afterglow" ? "reassuring" : "intimate") as "reassuring" | "intimate",
+      allowedClaims: ["mentalism", "illusion", "performance", "consent"],
+      template: view.line
+    };
+    // Default live route is Puter.js (no keys, the spectator's own account and
+    // allowance); VITE_PATTER_PROVIDER=proxy keeps the operator endpoint path.
+    const patterProvider = (import.meta.env as Record<string, string | undefined>).VITE_PATTER_PROVIDER;
+    const rewrite =
+      patterProvider === "proxy"
+        ? rewritePatter(payload, { endpoint: "/api/patter", timeoutMs: 1200 })
+        : rewritePatterViaPuter(payload, { timeoutMs: 15000 });
+    void rewrite.then((result) => {
       if (!live) return;
       setDisplayLine(result.line);
       setPatterSource(result.source);
@@ -473,12 +479,19 @@ export function Performance({
             {reducedMotion ? "Motion reduced" : "Motion on"}
           </button>
           <button type="button" className="chip" onClick={onToggleLlm} aria-pressed={llmEnabled}>
-            {llmEnabled ? "Proxy patter" : "Patter off"}
+            {llmEnabled ? "Live patter on" : "Patter off"}
           </button>
           <button type="button" className="chip" onClick={onExit}>
             Leave
           </button>
         </div>
+        {llmEnabled && (
+          <p className="tiny" role="note" style={{ margin: "0.35rem 0 0", opacity: 0.75 }}>
+            Live patter: short text prompts (the beat and tone only) go to Puter (puter.com), which
+            routes them to Meta's Muse Spark Open. First use asks you to sign into your own Puter
+            account and draws on your own free allowance. No audio, video, or personal data is sent.
+          </p>
+        )}
       </section>
 
       {sensorMode && (
