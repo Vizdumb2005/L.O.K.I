@@ -135,9 +135,19 @@ export function numbersConsistent(
   text: string,
   namedNumber: number | null,
   stepsToCount: number | null,
-  stepsCompleted: number
+  stepsCompleted: number,
+  referenceText?: string
 ): boolean {
   const allowed = new Set<number>([namedNumber, stepsToCount, stepsCompleted].filter((v): v is number => v !== null));
+  // Numbers the scripted reference line itself cites (the 10-19 naming range
+  // on the invite beat) are given to the model, so they are not inventions.
+  if (referenceText) {
+    for (const m of referenceText.matchAll(/\d+/g)) allowed.add(Number(m[0]));
+    const refLower = ` ${referenceText.toLowerCase()} `;
+    for (const [word, value] of Object.entries(NUMBER_WORDS)) {
+      if (new RegExp(`\\b${word}\\b`).test(refLower)) allowed.add(value);
+    }
+  }
   // Card names carry their own number words ("Four of Hearts"); they are
   // governed by the seal-timing rule, not the count rule.
   const withoutCards = text.replace(new RegExp(CARD_NAME_RE.source, "gi"), " ");
@@ -226,7 +236,7 @@ export class PuterConductor implements Conductor {
     if (!text || text.length > MAX_CONDUCT_LINE) return withReason("filtered");
     if (/https?:\/\//i.test(text) || /[{}]/.test(text)) return withReason("filtered");
     if (findBannedClaim(text)) return withReason("filtered");
-    if (!numbersConsistent(text, trace.namedNumber, trace.countedSteps, stepsCompleted ?? 0)) return withReason("filtered");
+    if (!numbersConsistent(text, trace.namedNumber, trace.countedSteps, stepsCompleted ?? 0, scripted.text)) return withReason("filtered");
     if (beat !== "reveal" && beat !== "miss" && namesCard(text)) return withReason("filtered");
     return { beat, text: text.replace(/\u2014/g, "-"), voice: "model" };
   }
