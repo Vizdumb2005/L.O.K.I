@@ -259,14 +259,20 @@ test("Ember sensory probes reveal the sealed word Comet at desktop and mobile wi
       "Trace the outline of the image in your mind's eye — its silhouette is a golden disc, a pale crescent, a bright tail, or an opening bloom.": "Disc"
     };
     const reveal = page.getByRole("button", { name: "Reveal it" });
-    for (let i = 0; i < 3 && !(await reveal.isVisible().catch(() => false)); i++) {
-      await expect(page.locator("button.choice").first()).toBeVisible();
+    for (let i = 0; i < 3; i++) {
+      // "Reveal it" shows only once the build beats rest; during cue playback the
+      // primary is "Skip ahead". Wait for either a resting probe or the rested
+      // build line, and stop answering once the probes are done.
+      const probe = page.locator("button.choice").first();
+      await expect(probe.or(reveal)).toBeVisible({ timeout: 15000 });
+      if (await reveal.isVisible().catch(() => false)) break;
       // displayLine updates in an effect: wait for a complete current probe caption.
       await expect.poll(async () => Object.keys(sun).includes((await page.locator("#line-heading").innerText()).trim())).toBe(true);
       const prompt = (await page.locator("#line-heading").innerText()).trim();
       await page.locator("button.choice").filter({ hasText: new RegExp(`^\\s*\\d+\\s*${sun[prompt]}\\s*$`) }).click();
       await expect(page.locator("#line-heading")).not.toHaveText(prompt);
     }
+    await expect(reveal).toBeVisible({ timeout: 15000 });
     await expect(page.getByText(/Sealed before your first answer/)).toBeVisible();
     await page.getByRole("button", { name: "Reveal it" }).click();
     await expect(page.locator("#line-heading")).toHaveText("Your word was Comet.");

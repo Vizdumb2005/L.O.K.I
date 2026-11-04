@@ -331,6 +331,10 @@ export function Performance({
     const watch = (stream: MediaStream | null, kind: "camera" | "mic") => {
       stream?.getTracks().forEach((t) => {
         const h = () => {
+          // stopAll() (Stop, Reset, or an act handoff into the sensorless
+          // Countdown) fires "ended" on purpose: the session already knows it
+          // stopped, so this is not capture loss.
+          if (sensorSession.state(kind) === "stopped") return;
           onStopSensorsRef.current?.(
             kind === "mic"
               ? "The microphone capture ended, and the sensor-enabled performance requires it - so the performance has ended and every sensor was released. The click demo below runs without sensors."
