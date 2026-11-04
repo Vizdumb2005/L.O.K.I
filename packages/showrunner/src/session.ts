@@ -806,24 +806,28 @@ export class PerformanceSession {
       return;
     }
 
-    // 4. Statement spine (default): greedy information-seeking selection over
-    // the remaining authored statements. Walking the authored array in fixed
-    // order (the 11-03 behavior) asked redundant impressions and stalled the
-    // posterior below the commit bar, so truthful runs missed.
+    // 4. Statement spine (default): authored order, unless the effect opts into
+    // greedy information-seeking selection (card: its pool order is not
+    // salience-optimized, so fixed walking stalls below the commit bar; Ember
+    // Words' authored order IS its salience order and stays). Selection order
+    // never changes evidence semantics or the commit bar.
     const statements = this.statementPool();
     if (statements.length > 0) {
-      const choice = selectProbe(
-        this.belief,
-        statements,
-        this.used,
-        this.policy,
-        this.config,
-        this.effect.config.costWeight
-      );
-      if (choice) {
+      const probe =
+        this.effect.config.statementPolicy === "greedy"
+          ? selectProbe(
+              this.belief,
+              statements,
+              this.used,
+              this.policy,
+              this.config,
+              this.effect.config.costWeight
+            )?.probe
+          : statements[0]!;
+      if (probe) {
         this.phase = "probe";
-        this.promptProbe = choice.probe;
-        this.line = sanitizeLine(choice.probe.prompt, "One more impression. What feels true?");
+        this.promptProbe = probe;
+        this.line = sanitizeLine(probe.prompt, "One more impression. What feels true?");
         return;
       }
     }

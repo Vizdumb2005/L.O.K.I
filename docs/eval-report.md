@@ -4,7 +4,7 @@
 This report measures a synthetic answer model, not people. It is evidence about the
 implementation's behavior under controlled noise, not proof of real-world accuracy.
 
-**Generated:** 2026-11-04T01:51:42.601Z · **Runs per cell:** 1000 ·
+**Generated:** 2026-11-04T02:03:27.251Z · **Runs per cell:** 1000 ·
 **Seed base:** 20261027 · **Cells:** 33 ·
 **Total runs:** 33000
 
@@ -120,13 +120,13 @@ shipping effect and was not tuned for the same accuracy target.
 
 | Policy | Commits | Wrong | Committed accuracy | Wrong, all runs | Brier | ECE | Mean probes |
 |---|---|---|---|---|---|---|---|
-| greedy | 704 / 1000 (70.4%) | 5 | 99.3% [98.3%, 99.7%] | 0.5% [0.2%, 1.2%] | 0.091 [0.070, 0.112] | 0.005 | 2.30 [2.27, 2.32] |
-| median | 704 / 1000 (70.4%) | 5 | 99.3% [98.3%, 99.7%] | 0.5% [0.2%, 1.2%] | 0.091 [0.070, 0.112] | 0.005 | 2.30 [2.27, 2.32] |
+| greedy | 889 / 1000 (88.9%) | 67 | 92.5% [90.5%, 94.0%] | 6.7% [5.3%, 8.4%] | 0.163 [0.133, 0.193] | 0.013 | 2.24 [2.21, 2.27] |
+| median | 889 / 1000 (88.9%) | 67 | 92.5% [90.5%, 94.0%] | 6.7% [5.3%, 8.4%] | 0.163 [0.133, 0.193] | 0.013 | 2.24 [2.21, 2.27] |
 | fixed | 889 / 1000 (88.9%) | 67 | 92.5% [90.5%, 94.0%] | 6.7% [5.3%, 8.4%] | 0.163 [0.133, 0.193] | 0.013 | 2.24 [2.21, 2.27] |
 
-Toy shipping cell at 10% error: 803 commits, 1 wrong,
-99.9% committed accuracy, Brier
-0.040. The three probes now ask objective spelling properties: ends in n,
+Toy shipping cell at 10% error: 926 commits, 31 wrong,
+96.7% committed accuracy, Brier
+0.080. The three probes now ask objective spelling properties: ends in n,
 contains m, and odd letter count. They form distinct balanced partitions whose truth
 codewords have pairwise Hamming distance two. All four truthful paths reveal; every
 single flipped answer abstains. Two flips can imitate another word and cause a wrong

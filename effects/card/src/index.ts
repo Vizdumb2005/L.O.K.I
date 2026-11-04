@@ -53,6 +53,7 @@ export const cardEffect: Effect = {
     outlierWeight: 0.06,
     temperature: 1,
     costWeight: 0.03,
+    statementPolicy: "greedy",
     gazeEnabledByDefault: false
   },
 

@@ -176,6 +176,16 @@ export interface EffectConfig {
   temperature: number;
   /** Penalty multiplier for probe cost in the greedy policy. */
   costWeight: number;
+  /**
+   * Statement selection within a run. "spine" (default) walks the authored
+   * statements in effect order - effects whose authored order is deliberate
+   * salience order (Ember Words) depend on it for honest two-beat commits.
+   * "greedy" picks the highest information-gain statement each beat; the card
+   * effect's pool order is not salience-optimized, so fixed walking stalls the
+   * posterior below the commit bar. Selection order never changes evidence
+   * semantics or the commit bar.
+   */
+  statementPolicy?: "spine" | "greedy";
   /** The show must not enable this until a validation gate passes. */
   gazeEnabledByDefault: boolean;
 }
