@@ -129,7 +129,7 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
       {line.text}
       {line.voice === "model" && (
         <span style={{ display: "block", fontSize: "0.7rem", opacity: 0.6, fontStyle: "normal" }} data-testid="oracle-live-badge">
-          performed live by Muse Spark Open
+          words written live by Muse Spark Open
         </span>
       )}
     </p>

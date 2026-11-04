@@ -39,10 +39,16 @@ Grounded against Modal's own docs (not Baseten's):
    account's Usage/Credits view.
 4. Set a workspace spend limit of $0 out-of-pocket if the dashboard allows
    (defense in depth; account change - confirmed with the user first).
-5. Empirical bound check: one call with max_tokens=64; require
-   usage.completion_tokens <= 64 before trusting the guard's reservation
-   arithmetic on THIS route. Baseten's documented cap semantics do not
-   automatically bind Modal.
+5. Reservation policy on this route: the guard reserves the FULL THEORETICAL
+   MAXIMUM per call - actual input byte ceiling (provable from our own
+   payload) plus the endpoint's maximum completion tokens - with NO reliance
+   on max_tokens being honored, until Modal's own documentation (not
+   Baseten's, not an experiment) confirms the cap contract. At 262,144 max
+   completion that reservation is ~$1.12/call, inside the $3 ceiling; if the
+   endpoint's true max completion is unverified, no call is made. An
+   empirical completion_tokens <= max_tokens observation is extra evidence
+   only - it can never establish a billing upper bound, and no call is made
+   to "prove" safety.
 6. Only then: conductor test calls, each reserved against the $3 cumulative
    ledger ceiling.
 
@@ -51,19 +57,25 @@ Grounded against Modal's own docs (not Baseten's):
 - Local/demo video: proxy on 127.0.0.1, scripted or live voice from the
   developer machine. Public Pages visitors get the scripted voice by
   default - nothing is sent anywhere.
-- Public hosted mode (not yet authorized): the proxy must sit on a hosted
-  server the user approves (candidate: a Modal web endpoint, keeping the
-  whole route inside the approved workspace). Requirements already
-  implemented: ORACLE_TOKEN shared secret (401 otherwise), single-origin
-  CORS allow-list, per-IP rate limit, body size cap, honesty-filtered
-  output, fail-closed budget guard, and the spectator opt-in gate in the
-  stage. The API key/proxy token lives only in server env, never in the
-  Pages bundle (bundle grep-verified clean).
+- Operator-hosted mode (the only hosted mode currently built): the proxy
+  runs where the operator runs it (localhost or an operator tunnel). The
+  ORACLE_TOKEN is entered by the operator at runtime and is NEVER shipped in
+  the frontend bundle - a public Pages build carries no endpoint URL and no
+  token, so visitors always get the scripted voice.
+- Public hosted launch (NOT authorized, NOT built): would need per-visitor
+  scoped server sessions (a shared token in a public bundle is no auth at
+  all; CORS is not auth) plus a server-side global budget kill. The guard's
+  cumulative ledger already provides global drain denial - reservations
+  refuse at the $3 ceiling no matter how many clients call; per-IP rate
+  limiting alone could not. Do not call the endpoint public-ready without
+  the session design.
+- The badge reads "words written live by Muse Spark Open" - text only; no
+  TTS exists and none is implied.
 
 ## Claims discipline
 
 - The act is arithmetic plus a model-voiced conductor. Copy never says or
   implies Meta/Muse does the prediction.
-- "performed live by Muse Spark Open" renders only on lines the model
+- "words written live by Muse Spark Open" renders only on lines the model
   actually produced (voice=model); scripted lines carry no badge.
 - On any mismatch the seal is opened as an owned miss.

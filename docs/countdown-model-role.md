@@ -31,8 +31,8 @@ never presented as reading a mind.
 
 If the model route is unavailable, unbudgeted, or errors, every beat falls
 back to scripted static lines. The trace records `voice: "model" | "script"`
-per line, and the UI shows "performed live by Muse Spark Open" **only** for
-lines the model actually produced. A scripted show is never dressed as a live
+per line, and the UI shows "words written live by Muse Spark Open" **only**
+for lines the model actually produced (text only - no TTS exists). A scripted show is never dressed as a live
 one.
 
 ## Billing bound (grounded 2026-11-04)
