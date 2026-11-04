@@ -8,7 +8,6 @@ import {
   MIN_NUMBER,
   arrangeWithTargetAt,
   countedStepsFor,
-  digitSum,
   type CountdownTrace
 } from "@loki/effect-countdown";
 
@@ -74,7 +73,6 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
     return () => {
       live = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [beat, trace?.namedNumber, trace?.sealVerified]);
 
   const named = trace?.namedNumber ?? null;
