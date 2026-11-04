@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ModelConductor, type Beat, type ConductionLine } from "../lib/conductor.js";
+import { ModelConductor, PuterConductor, type Beat, type ConductionLine, type Conductor } from "../lib/conductor.js";
 import type { EffectId } from "../lib/effects.js";
 import {
   CountdownForce,
@@ -49,16 +49,18 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
   // Hosted mode requires an explicit spectator opt-in before ANY model call.
   const [voiceChoice, setVoiceChoice] = useState<"pending" | "live" | "script">("pending");
 
-  // The Oracle's voice. Endpoint absent => scripted conduction, always. The
-  // "hosted" mode flag drives the privacy copy: only a configured endpoint
-  // ever sends spectator text/state anywhere.
-  const hosted = (import.meta.env as Record<string, string | undefined>).VITE_CONDUCTOR_ENDPOINT != null;
-  const conductorRef = useRef(
-    new ModelConductor({
-      // The endpoint reaches the conductor only after explicit opt-in.
-      endpoint:
-        ((import.meta.env as Record<string, string | undefined>).VITE_CONDUCTOR_ENDPOINT ?? null) as string | null
-    })
+  // The Oracle's voice. No live route configured => scripted conduction, always.
+  // Two live routes, both behind the same explicit spectator opt-in:
+  //   - "proxy": the operator's budget-guarded endpoint (VITE_CONDUCTOR_ENDPOINT).
+  //   - "puter": Puter.js from this browser, no keys, the spectator's own Puter
+  //     account and allowance (default when no proxy endpoint is configured).
+  const env = import.meta.env as Record<string, string | undefined>;
+  const provider: "proxy" | "puter" = env.VITE_CONDUCTOR_ENDPOINT != null ? "proxy" : "puter";
+  const hosted = true;
+  const conductorRef = useRef<Conductor>(
+    provider === "proxy"
+      ? new ModelConductor({ endpoint: (env.VITE_CONDUCTOR_ENDPOINT ?? null) as string | null })
+      : new PuterConductor()
   );
 
   const beat: Beat =
@@ -321,10 +323,11 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
     <section aria-label="Live voice consent" style={panelStyle} data-testid="voice-opt-in">
       <p>
         This act can be conducted with live written words. If you turn it on, the number you name and
-        the state of the act are sent to Meta's Muse model through LOKI's server so it can write its
-        lines live on screen - text only, no voice or audio. No camera, no microphone, no recording -
-        and the card work itself never leaves this page. The scripted words are the same show without
-        anything being sent.
+        the public state of the act are sent as text to Puter (puter.com), which routes them to Meta's
+        Muse Spark Open so it can write its lines live on screen - text only, no voice or audio. The
+        first line asks you to sign into your own Puter account, and usage draws on your own free
+        Puter allowance. No camera, no microphone, no recording - and the card work itself never
+        leaves this page. The scripted words are the same show without anything being sent.
       </p>
       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
         <button type="button" style={buttonStyle} onClick={() => setVoiceChoice("live")} data-testid="voice-opt-in-live">

@@ -1,8 +1,13 @@
 # The model's role in The Countdown (honest spec)
 
-Status: design, not yet implemented. No real-model call is made until the
-billing-bound guard is verified against a live route and the wallet scope is
-approved.
+Status (2026-11-04): live conduction (item 1) is implemented for two routes -
+the operator proxy (ModelConductor, gated on VITE_CONDUCTOR_ENDPOINT) and the
+default Puter.js route (PuterConductor, the spectator's own Puter account and
+free allowance under Puter's User-Pays model). Both fall back to the scripted
+voice on any failure and keep the sealed target out of pre-reveal payloads
+(e2e-verified). Free-form dialogue (item 2) remains design. No wallet of ours is
+involved on the Puter route; the proxy route's billing-bound guard and wallet
+scope are still unapproved and unexercised.
 
 ## What the model is
 
