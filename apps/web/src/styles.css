@@ -771,10 +771,10 @@ button,
 
 .silent-choice-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 2px 24px;
-  margin: 10px 0 0;
-  padding: 10px 0 0;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 2px 12px;
+  margin: 8px 0 0;
+  padding: 6px 0 0;
   border-top: 1px solid rgba(216, 184, 119, 0.14);
   list-style: none;
 }
