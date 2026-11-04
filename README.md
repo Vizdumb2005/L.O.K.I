@@ -6,7 +6,8 @@ LOKI is a small, offline-first platform: a domain-neutral inference engine, a vi
 performance state machine, optional on-device perception, and effects as plugins. The
 proof of concept is **The Twelve** — twelve cards, six questions at most, and an honest
 miss when the evidence is not there. A second toy effect, **Ember Words**, proves the
-plugin contract with no card code in the core.
+plugin contract with no card code in the core. A third effect, **The Countdown**, is a
+sealed-prediction number force with a fully disclosed arithmetic method.
 
 ![The Twelve stage](docs/screenshots/stage-desktop.png)
 
@@ -25,7 +26,7 @@ stage is the documented degradation path, not a mock-up.*
   the stage; the core knows none of them.
 - A **measured prototype**: 33,000 seeded simulator runs, 95% intervals, calibration, and
   ablations. The shipping card gate passes at a nominal 10% answer-error condition.
-  Results confirmed on a held-out seed (99999). 82 unit/property tests. Verified in a
+  Results confirmed on a held-out seed (99999). 502 unit tests. Verified in a
   real browser (BrowserOS neo / Chromium 155): consent, card show, toy effect, and
   camera denial all pass.
 - **Local by default**: no account, analytics, database, or upload. The default build
