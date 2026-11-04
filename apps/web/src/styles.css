@@ -1891,3 +1891,16 @@ button,
     padding: 12px 14px;
   }
 }
+
+/* Shown only while the lazily loaded 3D stage chunk arrives (usually prefetched). */
+.stage-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #cbb47d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
