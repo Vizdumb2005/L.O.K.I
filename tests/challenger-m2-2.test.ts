@@ -260,9 +260,12 @@ describe("Milestone 2 Adversarial Challenge: Shannon Entropy Collapse & Posterio
     console.log(`[Challenge Empirical Data] Two windows (rel=0.80):`);
     console.log(`  H_final = ${hFinal.toFixed(4)} bits, Drop = ${drop.toFixed(4)} bits, Top-2 Mass = ${(mass * 100).toFixed(2)}%`);
 
-    // Note: 2.2565 bits rounds to 2.257 bits at 3 decimal places
-    expect(drop).toBeCloseTo(2.257, 2);
-    expect(mass).toBeGreaterThan(0.96);
+    // Recalibrated to the restored honest noise model (epsilon 0.1, outlier 0.06):
+    // two 0.80-reliability windows now yield 2.2018 bits / 95.3% zone mass. The
+    // 11-03 pins (2.257 bits, >96%) assumed the overconfident 11-03 noise model
+    // (epsilon 0.045) that failed the held-out gate with 12-16% wrong reveals.
+    expect(drop).toBeCloseTo(2.2, 2);
+    expect(mass).toBeGreaterThan(0.94);
   });
 
   it("entropy behavior across reliability sweep [0.35, 0.50, 0.70, 0.80, 0.88, 0.95, 1.0]", () => {
@@ -294,20 +297,22 @@ describe("Milestone 2 Adversarial Challenge: Shannon Entropy Collapse & Posterio
     }
 
     console.table(results);
-    // At rel >= 0.80, two windows achieve ~2.257 bits drop (2.2565) and > 96% mass
+    // At rel >= 0.80, two windows achieve ~2.20 bits drop and > 94% mass
+    // (honest-regime measured: 2.2018 bits, 95.29%; see note above)
     const r80 = results.find(r => r.rel === 0.80)!;
-    expect(r80.w2_drop).toBeCloseTo(2.257, 2);
-    expect(r80.w2_mass).toBeGreaterThan(0.96);
+    expect(r80.w2_drop).toBeCloseTo(2.2, 2);
+    expect(r80.w2_mass).toBeGreaterThan(0.94);
 
-    // At nominal rel = 0.88, two windows achieve 2.368 bits drop and > 97.6% mass
+    // At nominal rel = 0.88, two windows achieve ~2.32 bits drop and > 97% mass
     const r88 = results.find(r => r.rel === 0.88)!;
-    expect(r88.w2_drop).toBeGreaterThanOrEqual(2.257);
+    expect(r88.w2_drop).toBeGreaterThanOrEqual(2.25);
     expect(r88.w2_mass).toBeGreaterThan(0.97);
 
-    // At perfect reliability (1.0), two windows reach > 99.0% mass and 2.48+ bits drop
+    // At perfect reliability (1.0), two windows reach > 98% mass and ~2.45 bits drop
+    // (honest-regime measured: 2.4514 bits, 98.66%)
     const r100 = results.find(r => r.rel === 1.0)!;
-    expect(r100.w2_drop).toBeGreaterThan(2.45);
-    expect(r100.w2_mass).toBeGreaterThan(0.99);
+    expect(r100.w2_drop).toBeGreaterThan(2.4);
+    expect(r100.w2_mass).toBeGreaterThan(0.98);
   });
 
   it("adversarial: conflicting cross-zone gaze windows (zone A followed by zone B)", () => {
@@ -382,10 +387,12 @@ describe("Milestone 2 Adversarial Challenge: Low Reliability Gaze & Manual Fallb
     session.finishAttune();
     expect(session.phaseName).toBe("probe");
 
-    // Probes work identically to pure manual flow
+    // Probes work identically to pure manual flow. Answer a valid option of
+    // whatever probe greedy selection issues (no longer fixed array order).
     const snap = session.snapshot();
     expect(snap.prompt).toBeDefined();
-    session.answer("yes");
+    expect(snap.options!.length).toBeGreaterThan(0);
+    session.answer(snap.options![0]!.id);
     expect(session.internal().answered).toBe(1);
   });
 

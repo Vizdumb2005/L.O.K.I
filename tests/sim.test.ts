@@ -41,12 +41,16 @@ describe("simulator", () => {
 
   it("handles a truthful spectator with no errors", () => {
     const cell = runCell(spec({ runs: 100, answerError: 0 }));
-    // At the 2-statement budget the no-gaze show honestly misses when two
-    // statements cannot identify the card; it never commits wrongly.
+    // The no-gaze show never commits wrongly: it commits to the right card
+    // or honestly misses.
     expect(cell.wrong).toBe(0);
     expect(cell.correct).toBe(cell.commits);
     expect(cell.commits + cell.misses).toBe(cell.n);
-    expect(cell.meanProbes).toBeLessThanOrEqual(3);
+    // Restored honest budget: the 11-03 pin (<=3 mean probes) was only met by the
+    // 0.89/0.60 commit bars that produced 12-16% wrong reveals on the held-out
+    // gate. Greedy statement selection at threshold 0.96 commits truthful runs in
+    // ~4.15 probes on average (1000-run matrix).
+    expect(cell.meanProbes).toBeLessThanOrEqual(4.5);
   });
 
   it("runs both effects through the same harness", () => {

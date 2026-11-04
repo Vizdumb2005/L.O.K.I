@@ -13,6 +13,59 @@ import { PerformanceSession } from "../packages/showrunner/src/session.js";
 import { posterior } from "../packages/engine/src/belief.js";
 
 describe("Milestone 3 Challenger Empirical Adversarial Stress Suite", () => {
+  // Honest-regime drivers. Semantic change (honesty repair): the 11-03 suite
+  // scripted yes/no/cast-black answers against the equivocation choreography
+  // (hard-eliminating zone probes, 0.60 commit bar, 2-probe clamp). That regime
+  // produced 12-16% wrong confident reveals on the held-out gate and was
+  // removed. Shipping probes are statements with varying option shapes, so
+  // tests drive options by likelihood, not by hardcoded option ids.
+  function answerTruthfully(session: PerformanceSession, trueId: string): void {
+    const view = session.snapshot();
+    const probe = cardEffect.probes(session.stage).find((pr) => pr.id === view.probeId);
+    if (!probe) throw new Error(`unknown probe ${view.probeId}`);
+    let best = view.options![0]!.id;
+    let bestP = -1;
+    for (const option of view.options!) {
+      const p = probe.likelihood(trueId, option.id);
+      if (p > bestP) {
+        bestP = p;
+        best = option.id;
+      }
+    }
+    session.answer(best);
+    session.clearAck();
+  }
+
+  // Adversarial drive: repeatedly answer the option LEAST consistent with a
+  // fixed reference card - the honest-regime analogue of scripted "no" spam.
+  function answerAdversarial(session: PerformanceSession, refId: string): void {
+    const view = session.snapshot();
+    const probe = cardEffect.probes(session.stage).find((pr) => pr.id === view.probeId);
+    if (!probe) throw new Error(`unknown probe ${view.probeId}`);
+    let worst = view.options![0]!.id;
+    let worstP = Infinity;
+    for (const option of view.options!) {
+      const p = probe.likelihood(refId, option.id);
+      if (p < worstP) {
+        worstP = p;
+        worst = option.id;
+      }
+    }
+    session.answer(worst);
+    session.clearAck();
+  }
+
+  function zoneCardsOf(stage: any, zoneId: string): string[] {
+    return stage.items
+      .filter((_: any, idx: number) => {
+        const row = Math.floor(idx / stage.columns);
+        const col = idx % stage.columns;
+        const half = col < stage.columns / 2 ? 0 : 1;
+        return stage.zones![row * 2 + half]!.id === zoneId;
+      })
+      .map((i: any) => i.hypothesisId);
+  }
+
   // =========================================================================
   // OBJECTIVE 3: Patter Length Boundary (<= 160 chars)
   // =========================================================================
@@ -65,11 +118,11 @@ describe("Milestone 3 Challenger Empirical Adversarial Stress Suite", () => {
   // OBJECTIVE 2: Denial Pivot Coverage Across All 12 Cards
   // =========================================================================
   describe("Objective 2: Denial Pivot Coverage Across All 12 Cards", () => {
-    it("tests denial pivot and affirmative commit across all 6 zones and 12 cards", () => {
-      const testedUpperCards = new Set<string>();
-      const testedLowerCards = new Set<string>();
-
-      // Test across multiple seeds to ensure all 12 cards are tested as both lower and upper
+    it("truthful resolution across all 6 zones and 12 cards at the honest bar", () => {
+      // Honest regime: replaces the 11-03 denial-pivot commit test. For every
+      // seed layout, every zone, and both cards of the zone, a truthful run
+      // after two gaze windows must commit to the true card at the 0.96 bar
+      // within the probe budget - never via a relaxed gaze bar.
       for (let seed = 10; seed <= 20; seed++) {
         const templateSession = new PerformanceSession(cardEffect, {
           seed,
@@ -81,27 +134,11 @@ describe("Milestone 3 Challenger Empirical Adversarial Stress Suite", () => {
         const zones = stage.zones!;
         expect(zones.length).toBe(6);
 
-        // Map items by zone
-        const columns = stage.columns;
-        const itemsByZone = new Map<string, string[]>();
-        stage.items.forEach((item, idx) => {
-          const row = Math.floor(idx / columns);
-          const col = idx % columns;
-          const half = col < columns / 2 ? 0 : 1;
-          const zoneId = stage.zones![row * 2 + half]!.id;
-          const list = itemsByZone.get(zoneId) ?? [];
-          list.push(item.hypothesisId);
-          itemsByZone.set(zoneId, list);
-        });
-
         for (const zone of zones) {
-          const pair = itemsByZone.get(zone.id)!;
+          const pair = zoneCardsOf(stage, zone.id);
           expect(pair.length).toBe(2);
-          const lowerCard = CARD_BY_ID.get(pair[0]!)!;
-          const upperCard = CARD_BY_ID.get(pair[1]!)!;
 
-          // TEST CASE A: Spectator thinking of Card B (Upper). Answers "no" to Card A's probe.
-          {
+          for (const trueId of pair) {
             const session = new PerformanceSession(cardEffect, {
               seed,
               cameraEnabled: true,
@@ -110,78 +147,25 @@ describe("Milestone 3 Challenger Empirical Adversarial Stress Suite", () => {
             });
             session.begin();
             session.chosen();
-
-            // Provide 2 strong gaze windows on this zone
             session.addGaze({ zone: zone.id, reliability: 0.88 });
             session.addGaze({ zone: zone.id, reliability: 0.88 });
             session.finishAttune();
 
             expect(session.phaseName).toBe("probe");
-            expect(session.snapshot().probeId).toBe(`zone-statement-${zone.id}`);
-
-            // Spectator denies lower card
-            session.answer("no");
-            session.clearAck();
-
-            // Verify clean commit in <= 2 beats (here exactly Beat 1)
+            for (let guard = 0; guard < 8 && session.phaseName === "probe"; guard++) {
+              answerTruthfully(session, trueId);
+            }
             const internal = session.internal();
             expect(session.phaseName).toBe("build");
-            expect(internal.answered).toBeLessThanOrEqual(2);
-            expect(internal.confidence).toBeGreaterThanOrEqual(0.94);
-            expect(internal.revealedId).toBe(upperCard.id);
-
-            // Verify denial pivot patter was captured and injected in build sequence cues
-            const expectedPivot = denialPivotForPair(lowerCard, upperCard);
-            const cues = session.snapshot().cues;
-            const pivotCue = cues.find((c) => c.id === "denial-pivot" || c.line?.includes("Wait—"));
-            expect(pivotCue, `Expected denial-pivot cue containing "${expectedPivot}"`).toBeDefined();
-            expect(pivotCue!.line).toBe(expectedPivot);
-
-            testedUpperCards.add(upperCard.id);
-          }
-
-          // TEST CASE B: Spectator thinking of Card A (Lower). Answers "yes" to Card A's probe.
-          {
-            const session = new PerformanceSession(cardEffect, {
-              seed,
-              cameraEnabled: true,
-              cameraValidated: true,
-              presenceEnabled: true
-            });
-            session.begin();
-            session.chosen();
-
-            session.addGaze({ zone: zone.id, reliability: 0.88 });
-            session.addGaze({ zone: zone.id, reliability: 0.88 });
-            session.finishAttune();
-
-            expect(session.phaseName).toBe("probe");
-            expect(session.snapshot().probeId).toBe(`zone-statement-${zone.id}`);
-
-            // Spectator affirms lower card
-            session.answer("yes");
-            session.clearAck();
-
-            const internal = session.internal();
-            expect(session.phaseName).toBe("build");
-            expect(internal.answered).toBeLessThanOrEqual(2);
-            expect(internal.confidence).toBeGreaterThanOrEqual(0.94);
-            expect(internal.revealedId).toBe(lowerCard.id);
-
-            testedLowerCards.add(lowerCard.id);
+            expect(internal.revealedId).toBe(trueId);
+            expect(internal.answered).toBeLessThanOrEqual(6);
+            expect(internal.confidence).toBeGreaterThanOrEqual(0.96);
           }
         }
       }
-
-      // Verify all 12 cards were covered as upper (denial pivot target) and lower (affirmative target)
-      expect(testedUpperCards.size).toBe(12);
-      expect(testedLowerCards.size).toBe(12);
     });
   });
 
-  // =========================================================================
-  // OBJECTIVE 1: Probe Clamping Enforcement Under Adversarial Sequences
-  // =========================================================================
   describe("Objective 1: Probe Clamping Enforcement Under Adversarial Sequences", () => {
     it("asserts rapid clicks while ackCue is pending are rejected and do not advance answered count", () => {
       // In un-gazed mode where minProbes = 2, first answer leaves phase as probe while ackCue is active
@@ -231,50 +215,42 @@ describe("Milestone 3 Challenger Empirical Adversarial Stress Suite", () => {
       expect(session.phaseName).toBe("probe");
     });
 
-    it("verifies single-zone gaze commits cleanly in 1 beat for affirmative and denial answers", () => {
+    it("verifies single-zone gaze resolves truthfully at the honest bar for both cards of the pair", () => {
+      // Honest regime: one answer after gaze cannot commit (zone pair starts at
+      // ~0.47/card); the 11-03 1-beat commits used 0.82/0.60 bars. Truthful
+      // statements resolve either card within budget at 0.96.
       for (let seed = 1; seed <= 20; seed++) {
-        // Test with 2 gaze windows (standard think phase output): posterior >= 0.94
-        const session2W = new PerformanceSession(cardEffect, {
-          seed,
-          cameraEnabled: true,
-          cameraValidated: true,
-          presenceEnabled: true
-        });
-        session2W.begin();
-        session2W.chosen();
-        session2W.addGaze({ zone: "top-left", reliability: 0.88 });
-        session2W.addGaze({ zone: "top-left", reliability: 0.88 });
-        session2W.finishAttune();
-        expect(session2W.phaseName).toBe("probe");
-        session2W.answer("yes");
-        session2W.clearAck();
-        expect(session2W.phaseName).toBe("build");
-        expect(session2W.internal().answered).toBe(1);
-        expect(session2W.internal().confidence).toBeGreaterThanOrEqual(0.94);
-
-        // Test with 1 gaze window: posterior >= commitThresholdGazed (0.82)
-        const session1W = new PerformanceSession(cardEffect, {
-          seed,
-          cameraEnabled: true,
-          cameraValidated: true,
-          presenceEnabled: true
-        });
-        session1W.begin();
-        session1W.chosen();
-        session1W.addGaze({ zone: "top-left", reliability: 0.88 });
-        session1W.finishAttune();
-        expect(session1W.phaseName).toBe("probe");
-        session1W.answer("no");
-        session1W.clearAck();
-        expect(session1W.phaseName).toBe("build");
-        expect(session1W.internal().answered).toBe(1);
-        expect(session1W.internal().confidence).toBeGreaterThanOrEqual(0.82);
+        for (const pick of [0, 1]) {
+          const session = new PerformanceSession(cardEffect, {
+            seed,
+            cameraEnabled: true,
+            cameraValidated: true,
+            presenceEnabled: true
+          });
+          session.begin();
+          session.chosen();
+          const trueId = zoneCardsOf(session.stage, "top-left")[pick]!;
+          session.addGaze({ zone: "top-left", reliability: 0.88 });
+          session.addGaze({ zone: "top-left", reliability: 0.88 });
+          session.finishAttune();
+          expect(session.phaseName).toBe("probe");
+          for (let guard = 0; guard < 8 && session.phaseName === "probe"; guard++) {
+            answerTruthfully(session, trueId);
+          }
+          expect(session.phaseName).toBe("build");
+          expect(session.internal().revealedId).toBe(trueId);
+          expect(session.internal().answered).toBeLessThanOrEqual(6);
+          expect(session.internal().confidence).toBeGreaterThanOrEqual(0.96);
+        }
       }
     });
 
     // CRITICAL ADVERSARIAL TEST:
     // When gaze evidence exists, under NO circumstances does the session issue more than 2 probes.
-    it("empirically tests if session ever issues > 2 probes under conflicting gaze and ['no', 'no'] answers", () => {
+    it("conflicting gaze + adversarial answers: terminates within the honest budget, never a relaxed commit", () => {
+      // Honest invariant replacing the 11-03 2-probe clamp: with contradictory
+      // evidence the show must END (miss/recovery) inside the honest budget and
+      // must never commit below 0.96.
       const session = new PerformanceSession(cardEffect, {
         seed: 999,
         cameraEnabled: true,
@@ -285,48 +261,36 @@ describe("Milestone 3 Challenger Empirical Adversarial Stress Suite", () => {
       session.chosen();
 
       const stage = session.stage;
-      const zone1 = stage.zones![0]!.id;
-      const zone2 = stage.zones![1]!.id;
-
-      // Conflicting gaze between zone 1 and zone 2 (moderate reliability)
-      session.addGaze({ zone: zone1, reliability: 0.55 });
-      session.addGaze({ zone: zone2, reliability: 0.55 });
+      session.addGaze({ zone: stage.zones![0]!.id, reliability: 0.55 });
+      session.addGaze({ zone: stage.zones![1]!.id, reliability: 0.55 });
       session.finishAttune();
 
-      let probesIssued = 0;
       let steps = 0;
-      const maxSteps = 15;
-
-      while (steps < maxSteps) {
+      while (steps < 15) {
         steps++;
         const phase = session.phaseName;
-
-        if (phase === "build" || phase === "miss" || phase === "reveal" || phase === "afterglow" || phase === "done") {
-          break;
-        }
-
+        if (phase === "build" || phase === "miss" || phase === "reveal" || phase === "afterglow" || phase === "done") break;
         if (phase === "recover") {
-          // In recovery, session is advanced to see what happens next
           session.advance();
           continue;
         }
-
-        if (phase === "probe") {
-          probesIssued++;
-          session.answer("no");
-          session.clearAck();
-        }
+        if (phase === "probe") answerAdversarial(session, "s-a");
       }
 
-      console.log(`[Empirical Result] Conflicting gaze ['no', 'no']: probesIssued = ${probesIssued}, answered = ${session.internal().answered}, finalPhase = ${session.phaseName}`);
-
-      // THE CORE ASSERTION: Under gaze evidence, under NO circumstances does the session issue more than 2 probes
-      expect(probesIssued).toBeLessThanOrEqual(2);
-      expect(session.internal().answered).toBeLessThanOrEqual(2);
+      const internal = session.internal();
+      console.log(`[Empirical Result] conflicting gaze adversarial: answered=${internal.answered}, finalPhase=${session.phaseName}`);
+      // Honest budget: maxProbesGazed plus at most one CRIT-03 recovery statement.
+      expect(internal.answered).toBeLessThanOrEqual(cardEffect.config.maxProbesGazed! + 1);
+      if (session.phaseName === "build") {
+        expect(internal.confidence).toBeGreaterThanOrEqual(0.96);
+      }
     });
 
-    it("sweeps 100 seeds with conflicting gaze and adversarial ['no', 'no', 'no'] sequence to check probe clamping", () => {
-      const violations: Array<{ seed: number; probesIssued: number; answered: number; finalPhase: string }> = [];
+    it("sweeps 100 seeds with conflicting gaze and adversarial answers: budget and bar never breached", () => {
+      // Honest invariant replacing the 11-03 clamp sweep: across 100 seeds, an
+      // adversarial spectator under conflicting gaze never triggers a commit
+      // below 0.96 and never exceeds the honest budget.
+      const violations: Array<{ seed: number; answered: number; finalPhase: string; confidence: number }> = [];
 
       for (let seed = 1; seed <= 100; seed++) {
         const session = new PerformanceSession(cardEffect, {
@@ -339,59 +303,45 @@ describe("Milestone 3 Challenger Empirical Adversarial Stress Suite", () => {
         session.chosen();
 
         const stage = session.stage;
-        const zone1 = stage.zones![0]!.id;
-        const zone2 = stage.zones![1]!.id;
-
-        session.addGaze({ zone: zone1, reliability: 0.52 });
-        session.addGaze({ zone: zone2, reliability: 0.52 });
+        session.addGaze({ zone: stage.zones![0]!.id, reliability: 0.52 });
+        session.addGaze({ zone: stage.zones![1]!.id, reliability: 0.52 });
         session.finishAttune();
 
-        let probesIssued = 0;
         let steps = 0;
-        const maxSteps = 10;
-
-        while (steps < maxSteps) {
+        while (steps < 10) {
           steps++;
           const phase = session.phaseName;
-
-          if (phase === "build" || phase === "miss" || phase === "reveal" || phase === "afterglow" || phase === "done") {
-            break;
-          }
-
+          if (phase === "build" || phase === "miss" || phase === "reveal" || phase === "afterglow" || phase === "done") break;
           if (phase === "recover") {
             session.advance();
             continue;
           }
-
-          if (phase === "probe") {
-            probesIssued++;
-            session.answer("no");
-            session.clearAck();
-          }
+          if (phase === "probe") answerAdversarial(session, "s-a");
         }
 
-        if (probesIssued > 2 || session.internal().answered > 2) {
+        const internal = session.internal();
+        const committedLow = session.phaseName === "build" && internal.confidence < 0.96;
+        if (internal.answered > cardEffect.config.maxProbesGazed! + 1 || committedLow) {
           violations.push({
             seed,
-            probesIssued,
-            answered: session.internal().answered,
-            finalPhase: session.phaseName
+            answered: internal.answered,
+            finalPhase: session.phaseName,
+            confidence: internal.confidence
           });
         }
       }
 
-      console.log(`[Empirical Result] Probe Clamping Sweep: ${violations.length} of 100 seeds violated probe clamping`);
-      if (violations.length > 0) {
-        console.log(`Sample violations:`, violations.slice(0, 5));
-      }
-
-      expect(violations.length, `Probe clamping breached in ${violations.length} of 100 runs!`).toBe(0);
+      console.log(`[Empirical Result] Honest adversarial sweep: ${violations.length} of 100 seeds breached budget/bar`);
+      if (violations.length > 0) console.log(`Sample violations:`, violations.slice(0, 5));
+      expect(violations.length, `Honest budget/bar breached in ${violations.length} of 100 runs!`).toBe(0);
     });
 
-    it("tests equivocation fallback probe clamping under adversarial ['cast-black', 'no'] answers", () => {
-      const equivocationViolations: Array<{ seed: number; probesIssued: number; answered: number; finalPhase: string }> = [];
+    it("low-reliability gaze path: adversarial answers stay in the honest statement loop", () => {
+      // Honest invariant replacing the 11-03 equivocation clamp sweep: the
+      // gesture probe never appears, adversarial answers terminate within the
+      // honest budget, and no commit lands below 0.96.
+      const violations: Array<{ seed: number; answered: number; finalPhase: string }> = [];
 
-      // Sweep seeds with low-reliability gaze (equivocation path)
       for (let seed = 1; seed <= 50; seed++) {
         const session = new PerformanceSession(cardEffect, {
           seed,
@@ -401,56 +351,33 @@ describe("Milestone 3 Challenger Empirical Adversarial Stress Suite", () => {
         });
         session.begin();
         session.chosen();
-
-        // Feed low reliability (< 0.50) gaze window
         session.addGaze({ zone: "top-left", reliability: 0.40 });
         session.finishAttune();
 
-        let probesIssued = 0;
         let steps = 0;
-        const maxSteps = 10;
-
-        while (steps < maxSteps) {
+        while (steps < 12) {
           steps++;
           const phase = session.phaseName;
-
-          if (phase === "build" || phase === "miss" || phase === "reveal" || phase === "afterglow" || phase === "done") {
-            break;
-          }
-
+          if (phase === "build" || phase === "miss" || phase === "reveal" || phase === "afterglow" || phase === "done") break;
           if (phase === "recover") {
             session.advance();
             continue;
           }
-
           if (phase === "probe") {
-            probesIssued++;
-            const probeId = session.snapshot().probeId;
-            if (probeId === "card-equivocation-gesture") {
-              session.answer("cast-black");
-            } else {
-              session.answer("no");
-            }
-            session.clearAck();
+            expect(session.snapshot().probeId).not.toBe("card-equivocation-gesture");
+            answerAdversarial(session, "s-a");
           }
         }
 
-        if (probesIssued > 2 || session.internal().answered > 2) {
-          equivocationViolations.push({
-            seed,
-            probesIssued,
-            answered: session.internal().answered,
-            finalPhase: session.phaseName
-          });
+        const internal = session.internal();
+        const committedLow = session.phaseName === "build" && internal.confidence < 0.96;
+        if (internal.answered > cardEffect.config.maxProbes + 1 || committedLow) {
+          violations.push({ seed, answered: internal.answered, finalPhase: session.phaseName });
         }
       }
 
-      console.log(`[Empirical Result] Equivocation Clamping Sweep: ${equivocationViolations.length} of 50 seeds violated probe clamping`);
-      if (equivocationViolations.length > 0) {
-        console.log(`Sample equivocation violations:`, equivocationViolations.slice(0, 5));
-      }
-
-      expect(equivocationViolations.length, `Equivocation probe clamping breached in ${equivocationViolations.length} of 50 runs!`).toBe(0);
+      console.log(`[Empirical Result] Honest low-gaze adversarial sweep: ${violations.length} of 50 seeds breached budget/bar`);
+      expect(violations.length, `Honest budget/bar breached in ${violations.length} of 50 runs!`).toBe(0);
     });
   });
 });

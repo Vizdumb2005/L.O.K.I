@@ -414,7 +414,14 @@ export class PerformanceSession {
     return this.cameraActive;
   }
 
-  answer(optionId: string): void {
+  /**
+   * Answer the current probe. reliability defaults to 1 (a deliberate tap).
+   * A free-form reply interpreted by the on-device model passes a lower,
+   * conservative reliability - interpreted text is never stronger evidence
+   * than an explicit choice. Clamped to [0, 1]; the commit gates are
+   * untouched, so weaker evidence simply takes longer or misses honestly.
+   */
+  answer(optionId: string, reliability = 1): void {
     if (this.phase !== "probe" || !this.promptProbe) {
       throw new Error(`cannot answer in phase ${this.phase}`);
     }
@@ -444,7 +451,7 @@ export class PerformanceSession {
       optionId,
       this.config,
       this.tick(),
-      1
+      Math.min(1, Math.max(0, reliability))
     );
     this.belief = result.state;
     this.answered += 1;
@@ -477,11 +484,12 @@ export class PerformanceSession {
     // gazed setting and a single explicit answer suffices.
     const gazed = this.gazedZones.length > 0 || this.gazeWindows >= 1;
     const equiv = this.equivocationActive || this.used.has("card-equivocation-gesture") || this.used.has("card-equivocation-secondary");
-    const threshold = equiv
-      ? 0.60
-      : (gazed && this.effect.config.commitThresholdGazed !== undefined
-        ? this.effect.config.commitThresholdGazed
-        : this.effect.config.commitThreshold);
+    // The commit bar never relaxes: not for gaze, not for equivocation.
+    // (The 11-03 build dropped it to 0.60-0.82 here, which let one flipped
+    // answer commit a wrong reveal - the held-out gate caught it.)
+    const threshold = gazed && this.effect.config.commitThresholdGazed !== undefined
+      ? this.effect.config.commitThresholdGazed
+      : this.effect.config.commitThreshold;
     if (commitGate(this.belief, threshold, this.answered, (gazed || equiv) ? 1 : 2)) {
       this.freezeAndBuild();
       return;
@@ -698,7 +706,7 @@ export class PerformanceSession {
     if (Math.abs(top[0]!.probability - top[1]!.probability) >= TIE_GAP) return false;
     const gazed = this.gazedZones.length > 0 || this.gazeWindows >= 1;
     const equiv = this.equivocationActive || this.used.has("card-equivocation-gesture");
-    const threshold = equiv ? 0.60 : gazed && this.effect.config.commitThresholdGazed !== undefined ? this.effect.config.commitThresholdGazed : this.effect.config.commitThreshold;
+    const threshold = gazed && this.effect.config.commitThresholdGazed !== undefined ? this.effect.config.commitThresholdGazed : this.effect.config.commitThreshold;
     if (commitGate(this.belief, threshold, this.answered, gazed || equiv ? 1 : 2)) return false;
     return true;
   }
@@ -759,8 +767,7 @@ export class PerformanceSession {
       }
 
       // If equivocation probes are exhausted, evaluate commitGate or miss strictly (NEVER fall through to generalProbes)
-      const threshold = 0.60;
-      if (commitGate(this.belief, threshold, this.answered, 1)) {
+      if (commitGate(this.belief, this.effect.config.commitThreshold, this.answered, 2)) {
         this.freezeAndBuild();
       } else {
         this.miss();
@@ -799,14 +806,26 @@ export class PerformanceSession {
       return;
     }
 
-    // 4. Statement spine (default): first unused authored statement, in effect order.
+    // 4. Statement spine (default): greedy information-seeking selection over
+    // the remaining authored statements. Walking the authored array in fixed
+    // order (the 11-03 behavior) asked redundant impressions and stalled the
+    // posterior below the commit bar, so truthful runs missed.
     const statements = this.statementPool();
     if (statements.length > 0) {
-      const probe = statements[0]!;
-      this.phase = "probe";
-      this.promptProbe = probe;
-      this.line = sanitizeLine(probe.prompt, "One more impression. What feels true?");
-      return;
+      const choice = selectProbe(
+        this.belief,
+        statements,
+        this.used,
+        this.policy,
+        this.config,
+        this.effect.config.costWeight
+      );
+      if (choice) {
+        this.phase = "probe";
+        this.promptProbe = choice.probe;
+        this.line = sanitizeLine(choice.probe.prompt, "One more impression. What feels true?");
+        return;
+      }
     }
 
     // 5. Tie-break question only on a genuine posterior tie (pool exhausted).
@@ -859,12 +878,17 @@ export class PerformanceSession {
     }
     const statements = this.statementPool();
     if (statements.length > 0) {
-      const probe = statements[0]!;
-      this.inRecovery = true;
-      this.phase = "probe";
-      this.promptProbe = probe;
-      this.line = sanitizeLine(`One clean claim. ${probe.prompt}`, "One clean claim. What feels true?");
-      return;
+      const choice = selectProbe(this.belief, statements, this.used, "greedy", this.config, 0);
+      if (choice) {
+        this.inRecovery = true;
+        this.phase = "probe";
+        this.promptProbe = choice.probe;
+        this.line = sanitizeLine(
+          `One clean claim. ${choice.probe.prompt}`,
+          "One clean claim. What feels true?"
+        );
+        return;
+      }
     }
     const hasStatements = this.probes.some(
       (p) => p.discourse === "statement" && !p.channelHint && !p.id.startsWith("card-equivocation")

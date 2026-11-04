@@ -117,10 +117,12 @@ describe("card effect contract", () => {
       }
       break;
     }
-    // At the 2-statement budget a no-gaze truthful run either commits to the
-    // right card or honestly misses; it never reveals a wrong card.
+    // A no-gaze truthful run either commits to the right card or honestly
+    // misses; it never reveals a wrong card. Answer count is bounded by the
+    // restored honest budget (maxProbes 6), not the 11-03 clamp whose lowered
+    // commit bars failed the held-out gate.
     expect(["build", "miss"]).toContain(session.phaseName);
-    expect(session.internal().answered).toBeLessThanOrEqual(3);
+    expect(session.internal().answered).toBeLessThanOrEqual(6);
     if (session.phaseName === "build") {
       session.advance();
       expect(session.snapshot().phase).toBe("reveal");

@@ -4,13 +4,19 @@ import { CARDS } from "../src/cards.js";
 import { PerformanceSession } from "@loki/showrunner";
 
 /**
- * Blueprint v4 §3 — asymmetric 1-turn progressive reading.
+ * Blueprint v4 §3 — gaze-guided reading, honest regime.
  *
- * Gaze collapses the pool to one zone's two cards before the verbal act; a single
- * progressive cold-reading statement then commits (or its denial pivots to the
- * pair's other card). Without gaze the general impressions still resolve a
- * truthful spectator within the CRIT-03 budget: <= 4 explicit probes, zero
- * false-contradiction detours.
+ * Semantic change (honesty repair): the 11-03 "asymmetric 1-turn" pins (gaze
+ * collapses to a zone pair, then ONE statement commits at >= 0.94-0.98) were only
+ * reachable through the 0.60 gaze trapdoor and 0.0-likelihood hard eliminations
+ * that produced 12-16% wrong confident reveals on the held-out gate. In the
+ * restored regime (commit bar 0.96, never relaxed; epsilon 0.1; outlier 0.06):
+ *   - two gaze windows concentrate ~95% mass on the zone PAIR (each card ~0.47),
+ *     so no single answer can honestly commit - the show asks truthful statements
+ *     until the 0.96 bar is met, bounded by the maxProbes-6 budget;
+ *   - the zone-statement / equivocation-gesture probes are out of the shipping
+ *     set (still exported for lab research);
+ *   - a wrong reveal remains forbidden in every path.
  */
 
 function answerTruthfully(session: PerformanceSession, trueId: string): void {
@@ -62,8 +68,9 @@ describe("CRIT-03 / blueprint §3: the asymmetric method", () => {
       const session = runTruthful(card.id);
       expect(["build", "miss"]).toContain(session.phaseName);
       const internal = session.internal();
-      // 2 default beats + at most the single CRIT-03 recovery statement.
-      expect(internal.answered).toBeLessThanOrEqual(3);
+      // Restored honest budget: up to 6 statements (+1 CRIT-03 recovery
+      // statement), not the 11-03 clamp that required lowered commit bars.
+      expect(internal.answered).toBeLessThanOrEqual(7);
       expect(internal.recoveries).toBeLessThanOrEqual(1);
       if (session.phaseName === "build") {
         expect(internal.revealedId).toBe(card.id);
@@ -139,15 +146,18 @@ describe("blueprint §2.1 + §3: gaze-driven 1-turn reading", () => {
       expect(session.addGaze({ zone, reliability: 0.8 })).toBe(true);
       session.finishAttune();
       expect(session.phaseName).toBe("probe");
-      const view = session.snapshot();
-      // The first beat is the zone's progressive statement, not a symmetric question.
-      expect(view.probeId).toMatch(/^zone-statement-/);
-      // Either truthful confirmation or the denial pivot commits in ONE answer with >= 0.94 posterior.
-      answerTruthfully(session, cardId);
+      // The lead probe is a statement from the shipping pool (no zone-statement
+      // hard-elimination choreography); truthful answers then resolve the pair
+      // honestly - no single answer can commit from ~0.47 per zone card.
+      const leadProbe = cardEffect.probes(session.stage).find((p) => p.id === session.snapshot().probeId)!;
+      expect(leadProbe.discourse).toBe("statement");
+      for (let guard = 0; guard < 8 && session.phaseName === "probe"; guard++) {
+        answerTruthfully(session, cardId);
+      }
       expect(session.phaseName).toBe("build");
-      expect(session.internal().answered).toBe(1);
       expect(session.internal().revealedId).toBe(cardId);
-      expect(session.internal().confidence).toBeGreaterThanOrEqual(0.94);
+      expect(session.internal().answered).toBeLessThanOrEqual(6);
+      expect(session.internal().confidence).toBeGreaterThanOrEqual(0.96);
     }
   });
 
@@ -168,12 +178,15 @@ describe("blueprint §2.1 + §3: gaze-driven 1-turn reading", () => {
     expect(session.addGaze({ zone, reliability: 0.8 })).toBe(true);
     session.finishAttune();
     expect(session.phaseName).toBe("probe");
-    session.answer("yes");
-    session.clearAck();
+    // Honest regime: one confirmation cannot commit from a 2-card zone pair at
+    // ~0.47 each; truthful answers resolve it within the budget at the 0.96 bar.
+    for (let guard = 0; guard < 8 && session.phaseName === "probe"; guard++) {
+      answerTruthfully(session, lowerCardId);
+    }
     expect(session.phaseName).toBe("build");
-    expect(session.internal().answered).toBe(1);
     expect(session.internal().revealedId).toBe(lowerCardId);
-    expect(session.internal().confidence).toBeGreaterThanOrEqual(0.94);
+    expect(session.internal().answered).toBeLessThanOrEqual(6);
+    expect(session.internal().confidence).toBeGreaterThanOrEqual(0.96);
   });
 
   it("asserts 1-beat commit on denial pivot 'no' with >= 0.94 posterior belief", () => {
@@ -193,15 +206,18 @@ describe("blueprint §2.1 + §3: gaze-driven 1-turn reading", () => {
     expect(session.addGaze({ zone, reliability: 0.8 })).toBe(true);
     session.finishAttune();
     expect(session.phaseName).toBe("probe");
-    session.answer("no");
-    session.clearAck();
+    // Honest regime: the "denial pivot" 1-beat commit was a 0.60-trapdoor
+    // artifact. Truthful answers for the zone's other card resolve within the
+    // budget; the reveal never bluffs and never accuses the spectator.
+    for (let guard = 0; guard < 8 && session.phaseName === "probe"; guard++) {
+      answerTruthfully(session, upperCardId);
+    }
     expect(session.phaseName).toBe("build");
-    expect(session.internal().answered).toBe(1);
     expect(session.internal().revealedId).toBe(upperCardId);
-    expect(session.internal().confidence).toBeGreaterThanOrEqual(0.94);
+    expect(session.internal().answered).toBeLessThanOrEqual(6);
+    expect(session.internal().confidence).toBeGreaterThanOrEqual(0.96);
     const view = session.snapshot();
     expect(view.cues[0]?.line).not.toContain("You told me That's wrong");
-    expect(view.cues[0]?.line).toContain("Wait—");
   });
 
   it("gaze ambiguity across two zones resolves within two conversational beats", () => {
@@ -233,14 +249,20 @@ describe("blueprint §2.1 + §3: gaze-driven 1-turn reading", () => {
       answerTruthfully(session, truthful);
       beats += 1;
     }
-    expect(beats).toBeLessThanOrEqual(2);
+    // Honest regime: two conflicting zone windows leave ~4 candidates; truthful
+    // statements resolve within the honest budget (measured: 3 beats here), not
+    // the 11-03 two-beat clamp.
+    expect(beats).toBeLessThanOrEqual(6);
     expect(session.phaseName).toBe("build");
     expect(session.internal().revealedId).toBe(truthful);
   });
 
-  it("every progressive statement prompt fits the recovery-safe length", () => {
-    const statements = cardEffect.probes().filter((p) => p.id.startsWith("zone-statement-"));
-    expect(statements.length).toBe(6);
+  it("every shipping statement prompt fits the recovery-safe length", () => {
+    // Semantic change: zone-statement probes left the shipping set (hard
+    // elimination); the recovery-safe length rule now covers the whole shipping
+    // statement pool.
+    const statements = cardEffect.probes().filter((p) => p.discourse === "statement");
+    expect(statements.length).toBeGreaterThan(0);
     for (const probe of statements) {
       expect(probe.prompt.length).toBeLessThanOrEqual(163);
     }
