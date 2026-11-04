@@ -67,6 +67,10 @@ test("flow: keyboard only. Digits answer, Space skips the payoff pause, Escape t
   await enter(page);
   await playToPayoff(page);
   await expect(page.getByRole("button", { name: "Reveal it" }).or(page.locator(".panel-miss"))).toBeVisible({ timeout: 8000 });
+  // "Reveal it" shows once the build beats rest; click through to the payoff,
+  // whose cue pause is pending while the reveal lines play.
+  const payoff = page.getByRole("button", { name: "Reveal it" });
+  if (await payoff.isVisible().catch(() => false)) await payoff.click();
   // First Escape while a pause is pending only skips it; the show stays.
   await page.keyboard.press("Escape");
   await expect(page.locator("main.performance")).toBeVisible();

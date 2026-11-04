@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ModelConductor, type Beat, type ConductionLine } from "../lib/conductor.js";
+import type { EffectId } from "../lib/effects.js";
 import {
   CountdownForce,
   COUNTDOWN_CARD_BY_ID,
@@ -20,11 +21,14 @@ import {
 
 interface CountdownStageProps {
   onExit: () => void;
+  onSelectEffect?: (effectId: EffectId) => void;
+  /** The act this one hands off to; rendered as a continue action after the reveal. */
+  nextEffect?: { id: EffectId; label: string } | null;
 }
 
 type UiPhase = "seal" | "name" | "deal" | "count" | "open";
 
-export function CountdownStage({ onExit }: CountdownStageProps) {
+export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: CountdownStageProps) {
   // One force per mount. The target is picked once, placed at the forced
   // position, and sealed before the spectator names anything.
   const forceRef = useRef<CountdownForce | null>(null);
@@ -296,6 +300,16 @@ export function CountdownStage({ onExit }: CountdownStageProps) {
         </div>
       )}
       <div>
+        {nextEffect && onSelectEffect && (
+          <button
+            type="button"
+            style={ghostButtonStyle}
+            onClick={() => onSelectEffect(nextEffect.id)}
+            data-testid="countdown-continue"
+          >
+            {nextEffect.label}
+          </button>
+        )}{" "}
         <button type="button" style={ghostButtonStyle} onClick={onExit} data-testid="countdown-exit">
           Leave the stage
         </button>

@@ -193,7 +193,11 @@ export function App() {
           onReviewConsent={leave}
         />
       ) : entered && choice.id === "countdown-force" ? (
-        <CountdownStage onExit={leave} />
+        <CountdownStage
+          onExit={leave}
+          onSelectEffect={(nextId) => setEffectId(nextId)}
+          nextEffect={choice.next ?? null}
+        />
       ) : entered ? (
         <Suspense fallback={<div className="stage-loading" role="status">The stage is being set.</div>}>
           <Performance
@@ -207,6 +211,7 @@ export function App() {
           hostedVoiceOptIn={hostedVoiceOptIn}
           onStopSensors={stopSensors}
           onSelectEffect={(nextId) => setEffectId(nextId)}
+          nextEffect={choice.next ?? null}
           onExit={leave}
           onOpenLab={() => setScreen("lab")}
           onToggleReducedMotion={() => setReducedMotion((value) => !value)}
