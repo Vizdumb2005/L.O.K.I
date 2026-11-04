@@ -68,19 +68,21 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
             reading, and that I can stop at any time.
           </span>
         </label>
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={cameraOptIn}
-            onChange={(event) => setCameraOptIn(event.target.checked)}
-          />
-          <span>
-            <strong>Camera lab opt-in (optional).</strong> The click demo never uses the
-            camera; the sensor-enabled mode uses it only as described below. In the lab,
-            frames are processed locally, a visible indicator stays on, nothing is
-            uploaded or stored, and I can release the camera at any time.
-          </span>
-        </label>
+        {!sensorlessEffect && (
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={cameraOptIn}
+              onChange={(event) => setCameraOptIn(event.target.checked)}
+            />
+            <span>
+              <strong>Camera lab opt-in (optional).</strong> The click demo never uses the
+              camera; the sensor-enabled mode uses it only as described below. In the lab,
+              frames are processed locally, a visible indicator stays on, nothing is
+              uploaded or stored, and I can release the camera at any time.
+            </span>
+          </label>
+        )}
 
         <fieldset className="effect-picker">
           <legend>Choose an effect</legend>
@@ -147,20 +149,31 @@ export function Consent({ onEnter, restoreFocus = false, sensorNotice = null, ho
                   The Countdown plays in the click demo only - no camera, no microphone.
                 </span>
               )}
-              <span className="effect-blurb">
-                Your camera is used for one bounded purpose: noticing that a face is present during
-                the settling moment. Frames are processed in this tab and discarded immediately; the
-                camera never helps guess your card. A visible indicator stays on while it is active,
-                and Stop ends the performance and releases the camera.
-              </span>
-              <span className="effect-blurb">
-                Your microphone lets you answer by voice: you speak your answers to the
-                performer's claims (like "true" or "wrong", or the name of a choice). Audio is
-                processed in this tab and discarded; uncertain hearing falls back to click. This
-                channel passed synthetic-clip checks only - real-device validation is pending,
-                so it is labelled experimental, not proven.
-                {sensorsSupported ? "" : " This device or browser does not expose camera capture."}
-              </span>
+              {effectiveMode === "sensor" ? (
+                <>
+                  <span className="effect-blurb">
+                    Your camera is used for one bounded purpose: noticing that a face is present during
+                    the settling moment. Frames are processed in this tab and discarded immediately; the
+                    camera never helps guess your card. A visible indicator stays on while it is active,
+                    and Stop ends the performance and releases the camera.
+                  </span>
+                  <span className="effect-blurb">
+                    Your microphone lets you answer by voice: you speak your answers to the
+                    performer's claims (like "true" or "wrong", or the name of a choice). Audio is
+                    processed in this tab and discarded; uncertain hearing falls back to click. This
+                    channel passed synthetic-clip checks only - real-device validation is pending,
+                    so it is labelled experimental, not proven.
+                    {sensorsSupported ? "" : " This device or browser does not expose camera capture."}
+                  </span>
+                </>
+              ) : (
+                <span className="effect-blurb">
+                  Camera notices a face is present; microphone lets you answer by voice. All
+                  processing stays in this tab, nothing is uploaded - the full details appear
+                  here before any permission is asked.
+                  {sensorsSupported ? "" : " This device or browser does not expose camera capture."}
+                </span>
+              )}
             </span>
           </label>
         </fieldset>
