@@ -42,6 +42,11 @@ test.describe("countdown force", () => {
       // Conduction tracks the real state: the count line names the digit-sum.
       await expect(page.getByTestId("oracle-line")).toContainText(String(steps));
 
+      // No result leakage before the seal is opened: the count beat never
+      // names the sealed card, and the reveal panel is not on the page yet.
+      await expect(page.getByTestId("oracle-line")).not.toContainText("written before you spoke");
+      await expect(page.getByTestId("countdown-reveal")).toHaveCount(0);
+
       await page.getByTestId("countdown-open-seal").click();
       const reveal = page.getByTestId("countdown-reveal");
       await expect(reveal).toBeVisible();
