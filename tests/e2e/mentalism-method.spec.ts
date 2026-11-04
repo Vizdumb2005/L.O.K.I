@@ -80,8 +80,16 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
     }
   });
 
-  test("Tier 1 - F12: equivocation fallback triggers physical elimination gesture when gaze is ambiguous", async ({ page }) => {
-    // Ambiguous reliability (< 0.50) or calibration failure triggers Magician's Choice physical elimination gesture
+  test("Tier 1 - F12: ambiguous gaze never triggers the equivocation elimination gesture", async ({ page }) => {
+    // SEMANTIC CHANGE (2026-11-04 honesty repair): the 11-03 "Magician's Choice"
+    // physical-elimination gesture ("Push the black cards away") treated spectator
+    // COMPLIANCE with an instruction as hard card-color evidence (likelihood 1/0) -
+    // a textbook equivocation that manufactures certainty and produced wrong reveals
+    // on the held-out gate. It is removed from the shipping probe set (kept exported
+    // for lab research only). The honest regime: ambiguous or uncalibrated gaze is
+    // refused as evidence and the show falls back to ordinary impression statements;
+    // no beat may hard-eliminate, and the run ends only in a committed reveal at the
+    // full 0.96 bar or an owned miss.
     await setupHardwareMocks(page, { scenario: "collinear-degenerate-anchors", gazeReliability: 0.45 });
     await page.goto("/");
 
@@ -89,34 +97,44 @@ test.describe("Phase 2: Asymmetric Mentalism Method Choreography", () => {
     await page.waitForTimeout(1100);
     await page.getByRole("button", { name: "I have chosen" }).click();
 
-    // The physical elimination gesture appears on Beat 1 (after attunement calibration completes)
     const heading = page.locator("#line-heading");
     await expect(heading).toBeVisible({ timeout: 15000 });
-    await expect(heading).toContainText("Push the black cards away", { timeout: 15000 });
 
-    // Options for the physical elimination gesture
-    const castOption = page.locator("button.choice").filter({ hasText: /cast them away|hold the red/i }).first();
-    await expect(castOption).toBeVisible();
-    await castOption.click();
-    await page.waitForTimeout(200);
-
-    // Beat 2: Progressive impression or Reveal is reachable in <= 2 conversational turns
-    let probeCount = 1;
-    for (let step = 0; step < 5; step++) {
+    // Play through the full probe budget, asserting the elimination gesture never
+    // appears at any beat. The run must terminate at a reveal gate or an owned miss.
+    let ended = false;
+    for (let step = 0; step < 40 && !ended; step++) {
+      const text = (await heading.innerText().catch(() => "")) ?? "";
+      expect(text.trim()).not.toContain("Push the black cards away");
       const revealBtn = page.getByRole("button", { name: "Reveal it" });
       if (await revealBtn.isVisible().catch(() => false)) {
         await revealBtn.click();
+        ended = true;
         break;
       }
+      if (await page.locator(".panel-miss").isVisible().catch(() => false)) {
+        ended = true;
+        break;
+      }
+      const recover = page.getByRole("button", { name: "One clean claim" });
+      if (await recover.isVisible().catch(() => false)) {
+        await recover.click();
+        await page.waitForTimeout(300);
+        continue;
+      }
+      const skip = page.getByRole("button", { name: "Skip ahead" }).first();
       const choice = page.locator("button.choice:not([disabled])").first();
       if (await choice.isVisible().catch(() => false)) {
-        probeCount++;
         await choice.click();
-        await page.waitForTimeout(200);
+        await page.waitForTimeout(500);
+      } else if (await skip.isVisible().catch(() => false)) {
+        await skip.click();
+        await page.waitForTimeout(300);
+      } else {
+        await page.waitForTimeout(600);
       }
     }
-
-    expect(probeCount).toBeLessThanOrEqual(2);
+    expect(ended).toBe(true);
     await expect(page.locator("canvas, .flat-stage").first()).toBeVisible();
   });
 

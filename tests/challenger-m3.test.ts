@@ -10,6 +10,27 @@ import {
 } from "../effects/card/src/cards.js";
 import { PerformanceSession } from "../packages/showrunner/src/session.js";
 
+// Answer truthfully for the spectator's actual card on the session's current
+// probe (max-likelihood option). Honest-regime driver: probes are statements
+// from the shipping pool with varying option shapes, so scripted "yes"/"no"
+// answers are no longer valid.
+function answerTruthfully(session: PerformanceSession, trueId: string): void {
+  const view = session.snapshot();
+  const probe = cardEffect.probes(session.stage).find((pr) => pr.id === view.probeId);
+  if (!probe) throw new Error(`unknown probe ${view.probeId}`);
+  let best = view.options![0]!.id;
+  let bestP = -1;
+  for (const option of view.options!) {
+    const p = probe.likelihood(trueId, option.id);
+    if (p > bestP) {
+      bestP = p;
+      best = option.id;
+    }
+  }
+  session.answer(best);
+  session.clearAck();
+}
+
 describe("Milestone 3 Challenger: Empirical Adversarial Stress Suite", () => {
   describe("Objective 3: Patter Length Boundary (<= 160 chars)", () => {
     it("scans all CARD_PROBES prompts to assert length <= 160", () => {
@@ -54,33 +75,49 @@ describe("Milestone 3 Challenger: Empirical Adversarial Stress Suite", () => {
       const zones = stage.zones!;
       expect(zones.length).toBe(6);
 
-      // Verify each zone has 2 cards
+      // Verify each zone has 2 cards. Semantic change (honesty repair): the
+      // 11-03 denial-pivot choreography (zone-statement lead, one "no" pivots
+      // to the pair's other card at a 0.60 bar) was removed with the zone
+      // probes. Coverage intent preserved: for every zone, BOTH of its cards
+      // resolve truthfully at the honest 0.96 bar within the probe budget.
       for (const zone of zones) {
-        const testSession = new PerformanceSession(cardEffect, {
-          seed: 42,
-          cameraEnabled: true,
-          cameraValidated: true,
-          presenceEnabled: true
-        });
-        testSession.begin();
-        testSession.chosen();
+        const zoneCards = stage.items
+          .filter((item, i) => {
+            const col = i % stage.columns;
+            const row = Math.floor(i / stage.columns);
+            return stage.zones![row * 2 + (col < stage.columns / 2 ? 0 : 1)]!.id === zone.id;
+          })
+          .map((item) => item.hypothesisId);
+        expect(zoneCards.length).toBe(2);
+        for (const trueId of zoneCards) {
+          const testSession = new PerformanceSession(cardEffect, {
+            seed: 42,
+            cameraEnabled: true,
+            cameraValidated: true,
+            presenceEnabled: true
+          });
+          testSession.begin();
+          testSession.chosen();
 
-        // Feed 2 gaze windows on this zone
-        testSession.addGaze({ zone: zone.id, reliability: 0.85 });
-        testSession.addGaze({ zone: zone.id, reliability: 0.85 });
-        testSession.finishAttune();
+          // Feed 2 gaze windows on this zone
+          testSession.addGaze({ zone: zone.id, reliability: 0.85 });
+          testSession.addGaze({ zone: zone.id, reliability: 0.85 });
+          testSession.finishAttune();
 
-        expect(testSession.phaseName).toBe("probe");
-        const view = testSession.snapshot();
-        expect(view.probeId).toBe(`zone-statement-${zone.id}`);
-
-        // Spectator is thinking of Card B (upper), so answers "no" to Card A's probe
-        testSession.answer("no");
-        testSession.clearAck();
-
-        // Assert that the denial pivot is triggered and commits cleanly in <= 2 beats
-        const internal = testSession.internal();
-        console.log(`Zone ${zone.id}: answered=${internal.answered}, confidence=${internal.confidence}, revealed=${internal.revealedId}`);
+          expect(testSession.phaseName).toBe("probe");
+          for (let guard = 0; guard < 8 && testSession.phaseName !== "build" && testSession.phaseName !== "miss"; guard++) {
+            if (testSession.phaseName === "recover") {
+              testSession.advance();
+              continue;
+            }
+            if (testSession.phaseName !== "probe") break;
+            answerTruthfully(testSession, trueId);
+          }
+          expect(testSession.phaseName).toBe("build");
+          expect(testSession.internal().revealedId).toBe(trueId);
+          expect(testSession.internal().answered).toBeLessThanOrEqual(6);
+          expect(testSession.internal().confidence).toBeGreaterThanOrEqual(0.96);
+        }
       }
     });
   });
@@ -119,7 +156,21 @@ describe("Milestone 3 Challenger: Empirical Adversarial Stress Suite", () => {
         }
         if (phase === "probe") {
           probeCount++;
-          session.answer("no");
+          // Adversarial drive under the honest probe set: options are no longer
+          // yes/no, so answer the option LEAST consistent with a fixed card
+          // (s-a) - the honest analogue of repeated denial.
+          const view = session.snapshot();
+          const probe = cardEffect.probes(session.stage).find((pr) => pr.id === view.probeId)!;
+          let worst = view.options![0]!.id;
+          let worstP = Infinity;
+          for (const option of view.options!) {
+            const p = probe.likelihood("s-a", option.id);
+            if (p < worstP) {
+              worstP = p;
+              worst = option.id;
+            }
+          }
+          session.answer(worst);
           session.clearAck();
         }
       }
@@ -153,16 +204,16 @@ describe("Milestone 3 Challenger: Empirical Adversarial Stress Suite", () => {
       const probe1 = session.snapshot().probeId;
       console.log(`Probe 1: ${probe1}`);
 
-      // Answer 1: answer "yes" or "no"
-      // If we answer "no", let's see what happens
-      session.answer("no");
+      // Answer 1: honest-regime drive - answer the first valid option
+      // (options are no longer yes/no).
+      session.answer(session.snapshot().options![0]!.id);
       session.clearAck();
       console.log(`After answer 1: phase=${session.phaseName}, answered=${session.internal().answered}, confidence=${session.internal().confidence}`);
 
       if (session.phaseName === "probe") {
         const probe2 = session.snapshot().probeId;
         console.log(`Probe 2: ${probe2}`);
-        session.answer("no");
+        session.answer(session.snapshot().options![0]!.id);
         session.clearAck();
         console.log(`After answer 2: phase=${session.phaseName}, answered=${session.internal().answered}, confidence=${session.internal().confidence}`);
 
@@ -173,7 +224,7 @@ describe("Milestone 3 Challenger: Empirical Adversarial Stress Suite", () => {
           if (session.phaseName === "probe") {
             const probe3 = session.snapshot().probeId;
             console.log(`BREACH DETECTED: Probe 3 issued: ${probe3}`);
-            session.answer("yes");
+            session.answer(session.snapshot().options![0]!.id);
             session.clearAck();
             console.log(`After answer 3: phase=${session.phaseName}, answered=${session.internal().answered}`);
           }

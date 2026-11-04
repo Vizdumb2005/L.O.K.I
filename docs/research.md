@@ -458,3 +458,47 @@ See `docs/research-live-mentalism-method-comparison-2026-11-01.md` for full deri
 
 **Confidence.** High for mathematical error rates and information-source boundaries; medium
 for perceived theatrical feel pending real-device human feedback.
+
+---
+
+## 2026-11-04 — Honesty repair: the 11-03 asymmetric regime failed its own gate
+
+**Finding.** The 11-03 "anti-Akinator" retune (maxProbes 2, commit thresholds
+0.89/0.60 trapdoors, epsilon 0.045, outlier 0.02, hard-eliminating
+equivocation/zone probes, fixed authored-order statement spine) was pushed to
+main with CI red at the provenance step; Pages deployed anyway. Held-out gate
+(seed 99999, 10% answer error): 859/1000 commits with 12.1% wrong-of-runs /
+14.3% wrong-of-commits — gates are < 3% / < 10%. The 2-beat clamp plus 0.60 bar
+is exactly the failure mode the gate exists to catch: one flipped answer could
+commit a wrong reveal. Separately, the fixed-order statement spine stalled even
+truthful runs below the honest 0.96 bar (posterior plateau ~0.84).
+
+**Repair (this branch).** Restored the proven shipping regime — maxProbes 6 /
+maxProbesGazed 4, commit bar 0.96 everywhere (never relaxed for gaze or
+equivocation), epsilon 0.1, outlier 0.06 — dropped the equivocation-gesture and
+zone-statement probes from the shipping set (still exported for lab research),
+and replaced fixed-order walking with greedy information-seeking selection over
+the statement pool. Held-out after repair: 768/1000 commits, 16 wrong (1.6% of
+runs, 2.1% of commits). Truthful runs: 1000/1000. The statement-first
+presentation survives — every probe remains a cold-reading statement; only the
+order is entropy-ranked.
+
+**Structural finding for the next effect.** Camera gaze resolves only to a zone
+PAIR (2 cards): repeated windows saturate at ~0.50 posterior per card, so gaze
+alone can never honestly commit to one of twelve cards. Any "no questions" act
+built on zone gaze is mathematically impossible without either fewer cards
+(one card per zone) or a within-zone disambiguator. Also: repeated gaze windows
+from one biased fixation are correlated evidence; integrating them as
+independent manufactures false confidence. Both facts constrain whatever the
+post-repair effect becomes.
+
+**Test-suite policy.** Tests that pinned the 11-03 regime were updated with
+documented semantic changes: numeric expectations recalibrated to measured
+honest-regime values (each with a comment citing the regime and the measured
+number), and behavior pins rewritten to assert the honest replacement
+(statement discourse, full budget, 0.96 bar, never-bluff invariants). The
+equivocation F12 suite now pins the honest fallback contract. No threshold was
+weakened to make a test pass; the held-out provenance gate remains the arbiter.
+
+**Confidence.** High (simulator + held-out gate). Human felt-quality is not
+established by any of this and remains a separate, empirical question.

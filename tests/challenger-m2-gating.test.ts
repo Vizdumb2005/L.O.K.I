@@ -197,7 +197,10 @@ describe("Challenger 1 M2-IT2: isGazeGateSatisfied and validateCamera Stress Sui
       expect(accepted).toBe(true);
 
       const h1 = beliefEntropy(s.internal().belief);
-      expect(h0 - h1).toBeGreaterThan(1.10);
+      // Recalibrated to the restored honest noise model (epsilon 0.1, outlier 0.06):
+      // one 0.88-reliability window yields ~1.07 bits. The 11-03 pin (> 1.10)
+      // assumed the overconfident noise model that failed the held-out gate.
+      expect(h0 - h1).toBeGreaterThan(1.05);
     });
 
     it("strictly refuses gaze window when camera validation failed", () => {

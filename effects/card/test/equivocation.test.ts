@@ -2,8 +2,39 @@ import { describe, expect, it } from "vitest";
 import { PerformanceSession } from "@loki/showrunner";
 import { cardEffect } from "../src/index.js";
 
-describe("F12: Equivocation Fallback (Magician's Choice Physical Elimination Gesture)", () => {
-  it("triggers equivocation physical elimination gesture when gaze reliability is low (< 0.50)", () => {
+/**
+ * F12, honest regime: low-gaze / failed-calibration fallback.
+ *
+ * Semantic change (honesty repair): the 11-03 build replaced the statement loop
+ * with a "card-equivocation-gesture" (magician's-choice pantomime) whose
+ * 0.0-likelihood updates HARD-eliminated cards regardless of actual spectator
+ * behavior, then committed through a hard-coded 0.60 bar in at most 2 beats.
+ * That choreography produced 12-16% wrong confident reveals on the held-out
+ * gate and was removed from the shipping probe set (the probes remain exported
+ * for lab research). The honest fallback for weak or missing gaze is the
+ * ordinary statement loop: full budget, 0.96 commit bar, abstain when the
+ * evidence cannot commit. These tests pin that contract.
+ */
+
+function answerTruthfully(session: PerformanceSession, trueId: string): void {
+  const view = session.snapshot();
+  const probe = cardEffect.probes(session.stage).find((p) => p.id === view.probeId);
+  if (!probe) throw new Error(`unknown probe ${view.probeId}`);
+  let best = view.options![0]!.id;
+  let bestP = -1;
+  for (const option of view.options!) {
+    const p = probe.likelihood(trueId, option.id);
+    if (p > bestP) {
+      bestP = p;
+      best = option.id;
+    }
+  }
+  session.answer(best);
+  session.clearAck();
+}
+
+describe("F12 honest fallback: weak or missing gaze uses the ordinary statement loop", () => {
+  it("low-reliability gaze (< 0.50) leads with a shipping statement, never the gesture", () => {
     const session = new PerformanceSession(cardEffect, {
       seed: 42,
       cameraEnabled: true,
@@ -12,26 +43,23 @@ describe("F12: Equivocation Fallback (Magician's Choice Physical Elimination Ges
     });
     session.begin();
     session.chosen();
-
-    // Feed ambiguous low-reliability gaze window (0.45 < 0.50)
     expect(session.addGaze({ zone: "top-left", reliability: 0.45 })).toBe(true);
     session.finishAttune();
 
     expect(session.phaseName).toBe("probe");
     const view = session.snapshot();
-    // Beat 1 must be the physical elimination gesture
-    expect(view.probeId).toBe("card-equivocation-gesture");
-    expect(view.prompt).toContain("Push the black cards away");
-    expect(view.prompt?.length).toBeLessThanOrEqual(160);
-    expect(view.options?.length).toBe(2);
-    expect(view.options?.map((o) => o.id)).toEqual(["cast-black", "keep-crimson"]);
+    expect(view.probeId).not.toBe("card-equivocation-gesture");
+    const probe = cardEffect.probes(session.stage).find((p) => p.id === view.probeId)!;
+    expect(probe.discourse).toBe("statement");
+    // Honest budget, not the 2-beat equivocation clamp.
+    expect(session.effectiveMaxProbes).toBeGreaterThanOrEqual(4);
   });
 
-  it("triggers equivocation gesture when camera calibration fails (0 gaze windows validated)", () => {
+  it("failed camera calibration also leads with a shipping statement", () => {
     const session = new PerformanceSession(cardEffect, {
       seed: 43,
       cameraEnabled: true,
-      cameraValidated: false, // Calibration failed
+      cameraValidated: false,
       presenceEnabled: true
     });
     session.begin();
@@ -40,37 +68,41 @@ describe("F12: Equivocation Fallback (Magician's Choice Physical Elimination Ges
 
     expect(session.phaseName).toBe("probe");
     const view = session.snapshot();
-    expect(view.probeId).toBe("card-equivocation-gesture");
-    expect(view.prompt).toContain("Push the black cards away from you");
+    expect(view.probeId).not.toBe("card-equivocation-gesture");
+    const probe = cardEffect.probes(session.stage).find((p) => p.id === view.probeId)!;
+    expect(probe.discourse).toBe("statement");
+    expect(session.effectiveMaxProbes).toBe(cardEffect.config.maxProbes);
   });
 
-  it("reduces candidate pool from 4 cards to 2 candidate cards in Beat 1", () => {
-    const session = new PerformanceSession(cardEffect, {
-      seed: 44,
-      cameraEnabled: true,
-      cameraValidated: true,
-      presenceEnabled: true
-    });
-    session.begin();
-    session.chosen();
-    session.addGaze({ zone: "top-left", reliability: 0.45 });
-    session.finishAttune();
-
-    expect(session.snapshot().probeId).toBe("card-equivocation-gesture");
-
-    // Answer the equivocation physical elimination gesture
-    session.answer("cast-black");
-    session.clearAck();
-
-    // Posterior mass must now be concentrated on the remaining 2 red cards
-    const internal = session.internal();
-    expect(internal.confidence).toBeGreaterThan(0.25);
-    expect(session.phaseName).toBe("probe");
-    // Next probe must be the progressive reading probe targeting the remaining pair
-    expect(session.snapshot().probeId).toMatch(/^zone-statement-/);
+  it("truthful low-gaze run commits at the honest bar or misses; never bluffs", () => {
+    for (const trueId of ["s-a", "d-3", "h-4", "c-k"]) {
+      const session = new PerformanceSession(cardEffect, {
+        seed: 44,
+        cameraEnabled: true,
+        cameraValidated: true,
+        presenceEnabled: true
+      });
+      session.begin();
+      session.chosen();
+      session.addGaze({ zone: "top-left", reliability: 0.45 });
+      session.finishAttune();
+      for (let guard = 0; guard < 10; guard++) {
+        if (session.phaseName === "recover") {
+          session.advance();
+          continue;
+        }
+        if (session.phaseName !== "probe") break;
+        answerTruthfully(session, trueId);
+      }
+      expect(["build", "miss"]).toContain(session.phaseName);
+      if (session.phaseName === "build") {
+        expect(session.internal().revealedId).toBe(trueId);
+        expect(session.internal().confidence).toBeGreaterThanOrEqual(0.96);
+      }
+    }
   });
 
-  it("reaches the reveal within at most 2 conversational beats under equivocation", () => {
+  it("no answer ever hard-eliminates: contradicted cards keep nonzero recovery weight", () => {
     const session = new PerformanceSession(cardEffect, {
       seed: 45,
       cameraEnabled: true,
@@ -81,48 +113,25 @@ describe("F12: Equivocation Fallback (Magician's Choice Physical Elimination Ges
     session.chosen();
     session.addGaze({ zone: "top-left", reliability: 0.45 });
     session.finishAttune();
-
-    expect(session.phaseName).toBe("probe");
-    expect(session.effectiveMaxProbes).toBe(2);
-    expect(session.snapshot()).not.toHaveProperty("progress");
-    expect(session.snapshot()).not.toHaveProperty("resonance");
-
-    // Beat 1: Equivocation gesture eliminates black cards
-    expect(session.snapshot().probeId).toBe("card-equivocation-gesture");
-    session.answer("cast-black");
+    // Lie once (answer against the true card), then answer truthfully.
+    const trueId = "s-a";
+    const view = session.snapshot();
+    const probe = cardEffect.probes(session.stage).find((p) => p.id === view.probeId)!;
+    let truthful = view.options![0]!.id;
+    let bestP = -1;
+    for (const option of view.options!) {
+      const p = probe.likelihood(trueId, option.id);
+      if (p > bestP) {
+        bestP = p;
+        truthful = option.id;
+      }
+    }
+    const lie = view.options!.find((o) => o.id !== truthful)!;
+    session.answer(lie.id);
     session.clearAck();
-
-    // Beat 2: Progressive impression confirm
-    expect(session.phaseName).toBe("probe");
-    session.answer("yes");
-    session.clearAck();
-
-    expect(["build", "reveal"]).toContain(session.phaseName);
-    expect(session.internal().answered).toBeLessThanOrEqual(2);
-  });
-
-  it("collapses candidate pool from 4 to 2, then 2 to 1 with final commit", () => {
-    const session = new PerformanceSession(cardEffect, {
-      seed: 46,
-      cameraEnabled: true,
-      cameraValidated: true,
-      presenceEnabled: true
-    });
-    session.begin();
-    session.chosen();
-    session.addGaze({ zone: "top-left", reliability: 0.45 });
-    session.finishAttune();
-
-    // Beat 1: Equivocation eliminates black cards (4 -> 2)
-    session.answer("cast-black");
-    session.clearAck();
-    expect(session.phaseName).toBe("probe");
-
-    // Beat 2: Progressive cold reading commits to single card (2 -> 1)
-    session.answer("yes");
-    session.clearAck();
-    expect(session.phaseName).toBe("build");
-    expect(session.internal().answered).toBe(2);
-    expect(session.internal().confidence).toBeGreaterThanOrEqual(0.85);
+    // The true card's posterior is reduced but NOT zeroed: outlier weight keeps
+    // a recovery path (the 11-03 gesture zeroed whole halves unconditionally).
+    const post = session.internal().posterior;
+    expect(post[trueId]).toBeGreaterThan(0);
   });
 });

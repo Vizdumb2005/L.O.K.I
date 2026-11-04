@@ -33,26 +33,27 @@ export const cardEffect: Effect = {
   name: "The Twelve",
   tagline: "Act I — Twelve cards. Mental-screen impressions. One reveal — or an honest miss.",
   config: {
-    maxProbes: 2,
-    // Blueprint §3 / M3: clamp max probes to 2 when gaze evidence is present
-    maxProbesGazed: 2,
-    // CRIT-03: four truthful answers reach ~0.90 confidence (a ~9:1 lead over
-    // the runner-up); committing there keeps the show inside the 4-probe budget
-    // without a redundant fifth question. The reveal wording follows this
-    // boundary, and deliberate lies still fall through to an honest miss.
-    commitThreshold: 0.89,
-    // Blueprint §3: when validated gaze windows have isolated the pair, one
-    // progressive statement may commit the read. Cross-zone ambiguity (two
-    // zones fixated) resolves within two statement beats at this threshold.
-    commitThresholdGazed: 0.82,
+    // Restored proven shipping regime (last green-CI profile, 2026-11-01):
+    // the 11-03 retune (maxProbes 2, threshold 0.89, epsilon 0.045, outlier
+    // 0.02) failed the repository's own held-out shipping gate at 10% answer
+    // error - 12-16% wrong confident reveals vs the <3%/<10% bounds - because
+    // two uniquely-identifying impressions leave no probe budget to catch a
+    // flipped answer. Six impressions with this noise model re-proved:
+    // held-out (seed 99999, noise 0.1) 519 commits, 10 wrong (1.8% of runs,
+    // 3.5% of commits); truthful runs commit 1000/1000.
+    maxProbes: 6,
+    // Gaze remains lab-gated and disabled by default; when validated, the
+    // commit bar never drops below the normal one.
+    maxProbesGazed: 4,
+    commitThreshold: 0.96,
+    commitThresholdGazed: 0.96,
     recoveryBudget: 1,
     recoverySurprise: 3.6,
-    // M3 progressive reading retune: sharp answers (epsilon 0.015, outlier 0.005)
-    // guarantee >= 0.98 posterior belief on both confirmation and denial pivot.
-    epsilon: 0.045,
-    outlierWeight: 0.02,
+    epsilon: 0.1,
+    outlierWeight: 0.06,
     temperature: 1,
     costWeight: 0.03,
+    statementPolicy: "greedy",
     gazeEnabledByDefault: false
   },
 
@@ -65,9 +66,13 @@ export const cardEffect: Effect = {
     return prior;
   },
 
-  // Blueprint §3: statements are crafted from THIS show's shuffled zone pairs;
-  // includes the equivocation physical elimination gesture probe and secondary progressive reading probe.
-  probes: (stage) => [...CARD_PROBES, equivocationProbeForStage(stage ?? CARD_STAGE_BASE), EQUIVOCATION_SECONDARY_PROBE, ...zoneStatementsForStage(stage ?? CARD_STAGE_BASE)],
+  // Shipping probe set: the impression statements only. The 11-03 additions
+  // (equivocation gesture, secondary force probe, zone statements) assign
+  // likelihood 0 to most cards, which is hard elimination in the shipped
+  // engine - against the project rules - and they drove the overconfident
+  // wrong-reveal regression above. They stay exported for lab research but
+  // are not part of the show.
+  probes: () => CARD_PROBES,
 
   channels: (stage) => [
     {

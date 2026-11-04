@@ -467,7 +467,12 @@ describe("Milestone 2 Challenge Vector 5: Mathematical Shannon Entropy Collapse 
     const mass1 = targetCards.reduce((sum, id) => sum + (post1[id] ?? 0), 0);
     const h1 = beliefEntropy(session.internal().belief);
     expect(mass1).toBeGreaterThan(0.70); // > 70% probability mass
-    expect(h0 - h1).toBeGreaterThan(1.10); // > 1.1 bits passive extraction
+    // Recalibrated to the restored honest noise model (epsilon 0.1, outlier 0.06):
+    // one 0.88-reliability window yields ~1.07 bits. The 11-03 pin (> 1.10) assumed
+    // the overconfident 11-03 noise model (epsilon 0.045) that produced 12-16% wrong
+    // confident reveals on the held-out gate. Two-window totals below are unchanged
+    // and still pass (2.32 bits, h2 1.26), so only the per-window pin moves.
+    expect(h0 - h1).toBeGreaterThan(1.05); // > 1.05 bits passive extraction
 
     // Second gaze window (nominal reliability 0.88)
     const fed2 = session.addGaze({ zone: targetZone, reliability: 0.88 });

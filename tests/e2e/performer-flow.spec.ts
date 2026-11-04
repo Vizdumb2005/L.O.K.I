@@ -8,12 +8,37 @@ async function enter(page: Page): Promise<void> {
   await expect(page.locator("button.choice").first()).toBeVisible();
 }
 
-async function playToPayoff(page: Page): Promise<void> {
+async function playToPayoff(page: Page, truthfulEmberWord?: "comet"): Promise<void> {
   // CRIT-02: input is gated while the acknowledgement cue shows; each digit press
   // must wait for the next prompt to re-enable the choice buttons.
+  // SEMANTIC CHANGE (2026-11-04 honesty repair): under the honest engine, blind
+  // "always option 1" answers contradict themselves and correctly miss for Ember
+  // Words. When a chosen word is given, answer TRUTHFULLY for it (the reveal must
+  // come from verifiable consistent selection, never from the engine hitting
+  // regardless of answers).
+  const emberTruth = (statement: string): string | null => {
+    if (statement.includes("scene around your image")) return "True"; // has-m: comet contains m
+    if (statement.includes("atmosphere around the image")) return "Streak"; // first letter c
+    if (statement.includes("Fierce heat")) return "True"; // odd length: comet = 5
+    if (statement.includes("permanent sky lights")) return "wrong"; // ends-n: comet ends t
+    if (statement.includes("silhouette")) return "Tail"; // letter-count: 5
+    return null;
+  };
   for (let i = 0; i < 60; i++) {
     const ready = page.locator("button.choice:not([disabled])").first();
     if (await ready.isVisible().catch(() => false)) {
+      if (truthfulEmberWord) {
+        const statement = ((await page.locator("#line-heading").innerText().catch(() => "")) ?? "").trim();
+        const wanted = emberTruth(statement);
+        const target = wanted
+          ? page.locator("button.choice:not([disabled])").filter({ hasText: new RegExp(wanted, "i") }).first()
+          : null;
+        if (target && (await target.isVisible().catch(() => false))) {
+          await target.click();
+          await page.waitForTimeout(150);
+          continue;
+        }
+      }
       await page.keyboard.press("1");
       await page.waitForTimeout(150);
       continue;
@@ -74,9 +99,9 @@ test("flow: focus follows the moment and is restored when leaving", async ({ pag
   await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("main");
 });
 
-async function reachRevealOrMiss(page: Page, tries = 8): Promise<"reveal" | "miss"> {
+async function reachRevealOrMiss(page: Page, tries = 8, truthfulEmber = false): Promise<"reveal" | "miss"> {
   for (let t = 0; t < tries; t++) {
-    await playToPayoff(page);
+    await playToPayoff(page, truthfulEmber ? "comet" : undefined);
     const rv = page.getByRole("button", { name: "Reveal it" });
     await expect(rv.or(page.locator(".panel-miss"))).toBeVisible({ timeout: 10000 });
     if (await rv.isVisible()) {
@@ -99,7 +124,7 @@ for (const effectName of ["The Twelve", "Ember Words"] as const) {
     await page.getByRole("button", { name: "I have chosen" }).click();
     // Always answer option 1 until a payoff appears; retry from a fresh show if it is a miss.
     for (let attempt = 0; attempt < 6; attempt++) {
-      const outcome = await reachRevealOrMiss(page);
+      const outcome = await reachRevealOrMiss(page, 8, effectName === "Ember Words");
       if (outcome === "miss") {
         await expect(page.locator(".stage-shell")).toHaveAttribute("data-target-lit", "false");
         await page.getByRole("button", { name: "Skip ahead" }).click().catch(() => undefined);

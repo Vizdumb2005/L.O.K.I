@@ -2,6 +2,25 @@ import { describe, expect, it } from "vitest";
 import { PerformanceSession } from "@loki/showrunner";
 import { cardEffect } from "../src/index.js";
 
+// Answer truthfully on behalf of the spectator's actual card: pick the option
+// whose likelihood is highest for that card on the session's current probe.
+function answerTruth(session: PerformanceSession, trueId: string): void {
+  const view = session.snapshot();
+  const probe = cardEffect.probes(session.stage).find((p) => p.id === view.probeId);
+  if (!probe) throw new Error("no probe");
+  let best = probe.options[0]!.id;
+  let bestP = -1;
+  for (const option of probe.options) {
+    const p = probe.likelihood(trueId, option.id);
+    if (p > bestP) {
+      bestP = p;
+      best = option.id;
+    }
+  }
+  session.answer(best);
+  session.clearAck();
+}
+
 function gazedBuild(attuneEndMs: number) {
   let now = 0;
   const session = new PerformanceSession(cardEffect, {
@@ -20,9 +39,20 @@ function gazedBuild(attuneEndMs: number) {
   now = attuneEndMs;
   session.finishAttune();
   expect(session.phaseName).toBe("probe");
-  session.answer("yes");
-  session.clearAck();
+  // Honest regime: gaze zones hold 2 cards at ~0.47 each, so one answer no
+  // longer commits at the 0.96 bar (the 11-03 build committed here only via
+  // its 0.60 gaze trapdoor). Answer truthfully for a zone-0 card until the
+  // session commits, bounded by the honest probe budget.
+  const trueId = session.stage.items[0]!.hypothesisId;
+  for (let i = 0; i < 8 && session.phaseName !== "build"; i++) {
+    if (session.phaseName === "recover") {
+      session.advance();
+      continue;
+    }
+    if (session.phaseName === "probe") answerTruth(session, trueId);
+  }
   expect(session.phaseName).toBe("build");
+  expect(session.internal().revealedId).toBe(trueId);
   return session;
 }
 
