@@ -590,7 +590,7 @@ export function Performance({
           )}
           {llmEnabled && (view.phase === "build" || view.phase === "afterglow") && (
             <p className="source-line">
-              {patterSource === "llm" ? "Optional proxy patter · filtered" : "Bundled patter · offline fallback"}
+              {patterSource === "llm" ? "Live patter · Muse Spark Open via Puter · filtered" : "Live patter unavailable · using the written script"}
             </p>
           )}
           {view.sealedCommitment && (

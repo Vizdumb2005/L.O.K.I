@@ -73,4 +73,5 @@ test("puter failure falls back to the scripted voice with no badge", async ({ pa
   await page.getByTestId("voice-opt-in-live").click();
   await expect(page.getByTestId("oracle-line")).toHaveAttribute("data-voice", "script");
   await expect(page.getByTestId("oracle-live-badge")).toHaveCount(0);
+  await expect(page.getByTestId("oracle-live-unavailable")).toHaveText("Live writing unavailable. Using the written script.");
 });

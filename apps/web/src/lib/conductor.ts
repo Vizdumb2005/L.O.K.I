@@ -158,7 +158,7 @@ export class PuterConductor implements Conductor {
         },
         { role: "user", content: `Scripted line for reference: "${scripted.text}". Public state: ${JSON.stringify(state)}` }
       ],
-      { model: PUTER_MODEL, max_tokens: 120, temperature: 0.8, timeoutMs: this.opts.timeoutMs, chatImpl: this.opts.chatImpl }
+      { model: PUTER_MODEL, temperature: 0.8, timeoutMs: this.opts.timeoutMs, chatImpl: this.opts.chatImpl }
     );
     if ("error" in result) return scripted;
     const text = result.text.replace(/\s+/g, " ").trim();
