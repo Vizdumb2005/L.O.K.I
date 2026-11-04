@@ -72,8 +72,8 @@ export function App() {
           sensorRef.current = null;
           setSensorNotice(
             session.state("camera") === "unsupported"
-              ? "This device or browser does not expose camera capture, so the sensor-enabled performance cannot run. The click demo below runs without sensors."
-              : `The camera was not available (${session.error("camera") ?? "permission not granted"}), so the sensor-enabled performance did not start. Nothing was captured. The click demo below runs without sensors.`
+              ? "This device or browser does not expose camera capture, so the sensor-enabled performance cannot run."
+              : `The camera was not available (${session.error("camera") ?? "permission not granted"}), so the sensor-enabled performance did not start. Nothing was captured.`
           );
           return;
         }
@@ -85,8 +85,8 @@ export function App() {
           sensorRef.current = null;
           setSensorNotice(
             session.state("mic") === "unsupported"
-              ? "This device or browser does not expose microphone capture, so the sensor-enabled performance cannot run. The click demo below runs without sensors."
-              : `The microphone was not available (${session.error("mic") ?? "permission not granted"}), so the sensor-enabled performance did not start and the camera was released again. The click demo below runs without sensors.`
+              ? "This device or browser does not expose microphone capture, so the sensor-enabled performance cannot run."
+              : `The microphone was not available (${session.error("mic") ?? "permission not granted"}), so the sensor-enabled performance did not start and the camera was released again.`
           );
           return;
         }
@@ -127,7 +127,7 @@ export function App() {
     sensorRef.current = null;
     session?.stopAll();
     setSensorMode(false);
-    setSensorNotice(notice ?? "Sensors stopped - camera and microphone are released and the sensor-enabled performance has ended. The click demo below runs without sensors.");
+    setSensorNotice(notice ?? "Sensors stopped - camera and microphone are released and the sensor-enabled performance has ended.");
     setHasLeft(true);
     setEntered(false);
     setScreen("show");
@@ -140,7 +140,7 @@ export function App() {
       const session = sensorRef.current;
       sensorRef.current = null;
       session.stopAll();
-      if (sensorMode) setSensorNotice("Sensors stopped - the camera is released and the sensor-enabled performance has ended. The click demo below runs without sensors.");
+      if (sensorMode) setSensorNotice("Sensors stopped - the camera is released and the sensor-enabled performance has ended.");
       setSensorMode(false);
     }
     setHasLeft(true);

@@ -174,3 +174,40 @@ test("camera: preview remains available when both local and CDN model assets fai
   await page.getByRole("button", { name: "Stop camera" }).click();
   expect(await stateValue<number>(page, "stops")).toBe(1);
 });
+
+test("consent: camera denial leaves a one-tap click-demo recovery, never a dead end", async ({ page }) => {
+  // The consent gate acquires the camera before entering sensor mode; force a denial.
+  await page.addInitScript(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (navigator as any).mediaDevices.getUserMedia = async () => {
+      throw new DOMException("Permission denied by test", "NotAllowedError");
+    };
+  });
+  await page.goto("/");
+  await page.locator('input[type="checkbox"]').first().check();
+  await page.locator(".effect-picker:not(.mode-picker) label.effect-choice", { hasText: "The Twelve" }).click();
+  await page.locator(".mode-picker label.effect-choice", { hasText: "Sensor-enabled performance" }).click();
+  await page.getByText("I allow the camera for presence only").click();
+  await page.getByText("I allow the microphone for answering by voice").click();
+  await page.getByText("I allow a voice enrollment").click();
+  await page.getByRole("button", { name: "Enter with camera + mic" }).click();
+
+  // Owned denial: the notice names the failure and that nothing was captured,
+  // and no longer points at a "click demo below" that is not there.
+  const notice = page.getByRole("status").filter({ hasText: "did not start" });
+  await expect(notice).toContainText("Nothing was captured");
+  await expect(notice).not.toContainText("click demo below");
+
+  // The recovery is an explicit usable action: one tap switches to the click
+  // demo and focuses the enter control.
+  const recovery = page.getByRole("button", { name: /Play the click demo instead/ });
+  await expect(recovery).toBeVisible();
+  await recovery.click();
+  const enter = page.getByRole("button", { name: "Enter the observatory" });
+  await expect(enter).toBeEnabled();
+  await expect(enter).toBeFocused();
+
+  // The recovered path actually plays without sensors.
+  await enter.click();
+  await expect(page.getByRole("region", { name: "Choose privately" })).toBeVisible();
+});
