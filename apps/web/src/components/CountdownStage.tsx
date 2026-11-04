@@ -142,6 +142,11 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
           words written live by Muse Spark Open
         </span>
       )}
+      {voiceChoice === "live" && line.voice !== "model" && (
+        <span style={{ display: "block", fontSize: "0.7rem", opacity: 0.6, fontStyle: "normal" }} data-testid="oracle-live-unavailable">
+          Live writing unavailable. Using the written script.
+        </span>
+      )}
     </p>
   );
 
@@ -322,12 +327,11 @@ export function CountdownStage({ onExit, onSelectEffect, nextEffect = null }: Co
   const voiceGate = hosted && voiceChoice === "pending" && (
     <section aria-label="Live voice consent" style={panelStyle} data-testid="voice-opt-in">
       <p>
-        This act can be conducted with live written words. If you turn it on, the number you name and
-        the public state of the act are sent as text to Puter (puter.com), which routes them to Meta's
-        Muse Spark Open so it can write its lines live on screen - text only, no voice or audio. The
-        first line asks you to sign into your own Puter account, and usage draws on your own free
-        Puter allowance. No camera, no microphone, no recording - and the card work itself never
-        leaves this page. The scripted words are the same show without anything being sent.
+        Turn this on and the Oracle's lines are written live by Meta's Muse Spark Open, through Puter
+        (puter.com). Only the number you name and what happens in the act are sent - as text. No
+        camera, no microphone, no recording. The first line asks you to sign into your own free Puter
+        account, and the words use your own free allowance. The card work never leaves this page.
+        Keep the scripted words and nothing is sent at all.
       </p>
       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
         <button type="button" style={buttonStyle} onClick={() => setVoiceChoice("live")} data-testid="voice-opt-in-live">

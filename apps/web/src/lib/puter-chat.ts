@@ -30,44 +30,68 @@ export type PuterChatImpl = (messages: PuterChatMessage[], options: PuterChatOpt
 declare global {
   interface Window {
     puter?: { ai?: { chat?: PuterChatImpl } };
+    __lokiPuterSdk?: Promise<PuterChatImpl> | null;
   }
 }
 
-let sdkPromise: Promise<PuterChatImpl> | null = null;
+const SDK_READY_TIMEOUT_MS = 5000;
 
-/** Loads the Puter SDK once and returns its chat function. Rejects if unavailable. */
+/** The SDK's chat can land after the script's onload; wait briefly. */
+function whenChatReady(): Promise<PuterChatImpl> {
+  return new Promise((resolve, reject) => {
+    const started = Date.now();
+    const tick = () => {
+      const chat = window.puter?.ai?.chat;
+      if (chat) {
+        resolve(chat.bind(window.puter!.ai));
+        return;
+      }
+      if (Date.now() - started > SDK_READY_TIMEOUT_MS) {
+        reject(new Error("sdk-missing-chat"));
+        return;
+      }
+      setTimeout(tick, 100);
+    };
+    tick();
+  });
+}
+
+/**
+ * Loads the Puter SDK once per page and returns its chat function. Rejects if
+ * unavailable. The SDK cannot execute twice - it registers custom elements and
+ * a second execution crashes the registry - so the promise is cached on window
+ * and an existing script tag is always reused instead of injecting again.
+ */
 export function loadPuterChat(scriptInjector?: (src: string) => Promise<void>): Promise<PuterChatImpl> {
   if (window.puter?.ai?.chat) return Promise.resolve(window.puter.ai.chat.bind(window.puter.ai));
-  if (!sdkPromise) {
-    const inject =
-      scriptInjector ??
-      ((src: string) =>
-        new Promise<void>((resolve, reject) => {
-          const el = document.createElement("script");
-          el.src = src;
-          el.async = true;
-          el.onload = () => resolve();
-          el.onerror = () => reject(new Error("sdk-load-failed"));
-          document.head.appendChild(el);
-        }));
-    sdkPromise = inject(PUTER_SDK_URL).then(() => {
-      const chat = window.puter?.ai?.chat;
-      if (!chat) {
-        sdkPromise = null;
-        throw new Error("sdk-missing-chat");
-      }
-      return chat.bind(window.puter!.ai);
-    });
-    sdkPromise.catch(() => {
-      sdkPromise = null;
+  if (!window.__lokiPuterSdk) {
+    const hasTag = () => document.querySelector(`script[src="${PUTER_SDK_URL}"]`) !== null;
+    const injected = hasTag()
+      ? Promise.resolve()
+      : (
+          scriptInjector ??
+          ((src: string) =>
+            new Promise<void>((resolve, reject) => {
+              const el = document.createElement("script");
+              el.src = src;
+              el.async = true;
+              el.onload = () => resolve();
+              el.onerror = () => reject(new Error("sdk-load-failed"));
+              document.head.appendChild(el);
+            }))
+        )(PUTER_SDK_URL);
+    window.__lokiPuterSdk = injected.then(whenChatReady);
+    window.__lokiPuterSdk.catch(() => {
+      // Allow a later retry, which re-injects only when no tag survived.
+      window.__lokiPuterSdk = null;
     });
   }
-  return sdkPromise;
+  return window.__lokiPuterSdk;
 }
 
 /** Test hook: reset the cached SDK promise. */
 export function resetPuterSdkCache(): void {
-  sdkPromise = null;
+  window.__lokiPuterSdk = null;
 }
 
 /**
